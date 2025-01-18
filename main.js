@@ -70,23 +70,57 @@ const simulation = forceSimulation(leMis.nodes, 3)
 //Create a Center of Transform TransformNode using create() that serves the parent node for all our meshes that make up our network
 let CoT = anu.bind("cot", "cot");
 
-//We will be using instancing, so create a sphere mesh to be the root of our instanced meshes
-let rootSphere = anu.create("sphere", "node");
-rootSphere.isVisible = false;
-rootSphere.material = new StandardMaterial("mat");
-rootSphere.material.specularColor = new Color3(0, 0, 0);
-rootSphere.registerInstancedBuffer("color", 4);
-rootSphere.instancedBuffers.color = new Color4(0, 0, 0, 1);
+// //We will be using instancing, so create a sphere mesh to be the root of our instanced meshes
+// let rootSphere = anu.create("sphere", "node");
+// rootSphere.isVisible = false;
+// rootSphere.material = new StandardMaterial("mat");
+// rootSphere.material.specularColor = new Color3(0, 0, 0);
+// rootSphere.registerInstancedBuffer("color", 4);
+// rootSphere.instancedBuffers.color = new Color4(0, 0, 0, 1);
 
-//Create the spheres for our network and set their properties
-// let nodes = CoT.bindInstance(rootSphere, leMis.nodes)
-//   .position((d) => new Vector3(d.x, d.y, d.z))
-//   .scaling(new Vector3(6, 6, 6))
-//   .id((d) => d.name)
-//   .setInstancedBuffer("color", (d) => scaleC(d.group));
 
 //Create a Babylon HighlightLayer that will allow us to add a highlight stencil to meshes
 const highlighter = new BABYLON.HighlightLayer("highlighter", scene);
+
+//Create a plane mesh that will serve as the basis for our details on demand label
+// const hoverPlane = anu.create('plane', 'hoverPlane', {width: 1, height: 1});
+let hoverPlane = null;
+CoT.bind("plane", { width: 200, height: 200 }, [{}])
+    .run((d, n) => {
+        hoverPlane = n; // Get the first created mesh
+    });
+console.log("Hover Plane:", hoverPlane); // Should now reference the plane
+
+hoverPlane.isPickable = false; //Disable picking so it doesn't get in the way of interactions
+hoverPlane.renderingGroupId = 1; //Set render id higher so it always renders in front
+
+//Use the Babylon GUI system to create an AdvancedDynamicTexture that will the updated with our label content
+let advancedTexture = AdvancedDynamicTexture.CreateForMesh(hoverPlane);
+
+//Create a rectangle for the background
+let UIBackground = new Rectangle();
+UIBackground.adaptWidthToChildren = true;
+UIBackground.adaptHeightToChildren = true;
+UIBackground.cornerRadius = 20;
+UIBackground.color = "Black";
+UIBackground.thickness = 2;
+UIBackground.background = "White";
+advancedTexture.addControl(UIBackground);
+
+//Create an empty text block
+let label = new TextBlock();
+label.paddingLeftInPixels = 25;
+label.paddingRightInPixels = 25;
+label.fontSizeInPixels = 50;
+label.resizeToFit = true;
+label.text = " "
+UIBackground.addControl(label);
+
+//Hide the plane until it is needed
+hoverPlane.isVisible = false;
+//Set billboard mode to always face camera
+hoverPlane.billboardMode = 7;
+
 
 //Create the spheres for our network and set their properties
 //bind(mesh: string, options?: {}, data?: {}, scene?: Scene)
@@ -115,53 +149,28 @@ let nodes = CoT.bind("sphere", {}, leMis.nodes)
         new Vector3(6, 6, 6),
         100
     ))
-    //Add an action that will highlight the sphere mesh using the highlight stencil when the pointer is moved over it
+    //Add an action that will highlight the sphere mesh using the highlight stencil when the pointer is moved over it,
+    //as well as show and properly position the hoverPlane above the sphere mesh
     .action((d,n,i) => new BABYLON.ExecuteCodeAction(          //ExecudeCodeAction allows us to execute a given function
         BABYLON.ActionManager.OnPointerOverTrigger,
         () => {
             highlighter.addMesh(n, Color3.White());
+            //Show and adjust the label
+            hoverPlane.isVisible = true;
+            label.text = d.name;
+            hoverPlane.position = n.position.add(new Vector3(0, 12, 0));  //Add vertical offset
         }
     ))
-    //Add an action that will remove the highlight on the sphere mesh when the pointer is moved out of it
+    //Add an action that will undo the above when the pointer is moved away from the sphere mesh
     .action((d,n,i) => new BABYLON.ExecuteCodeAction( //Same as above but in reverse
         BABYLON.ActionManager.OnPointerOutTrigger,
         () => {
             highlighter.removeMesh(n);
+            hoverPlane.isVisible = false;
         }
     ));
 
 
-//Create a plane mesh that will serve as the basis for our details on demand label
-const hoverPlane = anu.create("plane", "hoverPlane", { width: 10, height: 10 });
-hoverPlane.isPickable = false; //Disable picking so it doesn't get in the way of interactions
-hoverPlane.renderingGroupId = 1; //Set render id higher so it always renders in front
-
-//Use the Babylon GUI system to create an AdvancedDynamicTexture that will the updated with our label content
-let advancedTexture = AdvancedDynamicTexture.CreateForMesh(hoverPlane);
-
-//Create a rectangle for the background
-let UIBackground = new Rectangle();
-
-UIBackground.cornerRadius = 20;
-UIBackground.color = "Black";
-UIBackground.thickness = 2;
-UIBackground.background = "White";
-
-advancedTexture.addControl(UIBackground);
-
-//Create an empty text block
-let label = new TextBlock();
-label.paddingLeftInPixels = 25;
-label.paddingRightInPixels = 25;
-label.fontSizeInPixels = 50;
-
-label.text = " ";
-UIBackground.addControl(label);
-
-//Hide the plane until it is needed
-hoverPlane.isVisible = false;
-//Set billboard mode to always face camera
-hoverPlane.billboardMode = 7;
 
 //We will be using a lineSystem mesh for our edges which takes a two dimension array and draws a line for each sub array.
 //lineSystems use one draw call for all line meshes and will be the most performant option
