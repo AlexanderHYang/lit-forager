@@ -79,11 +79,57 @@ rootSphere.registerInstancedBuffer("color", 4);
 rootSphere.instancedBuffers.color = new Color4(0, 0, 0, 1);
 
 //Create the spheres for our network and set their properties
-let nodes = CoT.bindInstance(rootSphere, leMis.nodes)
-  .position((d) => new Vector3(d.x, d.y, d.z))
-  .scaling(new Vector3(6, 6, 6))
-  .id((d) => d.name)
-  .setInstancedBuffer("color", (d) => scaleC(d.group));
+// let nodes = CoT.bindInstance(rootSphere, leMis.nodes)
+//   .position((d) => new Vector3(d.x, d.y, d.z))
+//   .scaling(new Vector3(6, 6, 6))
+//   .id((d) => d.name)
+//   .setInstancedBuffer("color", (d) => scaleC(d.group));
+
+//Create a Babylon HighlightLayer that will allow us to add a highlight stencil to meshes
+const highlighter = new BABYLON.HighlightLayer("highlighter", scene);
+
+//Create the spheres for our network and set their properties
+//bind(mesh: string, options?: {}, data?: {}, scene?: Scene)
+let nodes = CoT.bind("sphere", {}, leMis.nodes)
+    .position((d) => new Vector3(d.x, d.y, d.z))
+    .scaling((d) => new Vector3(6,6,6))
+    .material((d) => {
+        let mat = new StandardMaterial("mat");
+        mat.specularColor = new Color3(0,0,0);
+        mat.diffuseColor = scaleC(d.group)
+        return mat;
+    })
+    //Add an action that will increase the size of the sphere when the pointer is moved over it
+    .action((d, n, i) => new BABYLON.InterpolateValueAction(   //Type of action, InterpolateValueAction will interpolave a given property's value over a specified period of time
+        BABYLON.ActionManager.OnPointerOverTrigger,            //Action Trigger
+        n,                                             //The Mesh or Node to Change, n in Anu refers to the mesh itself
+        'scaling',                                     //The property to Change
+        new Vector3(8.5, 8.5, 8.5),                    //The value that the property should be set to
+        100                                            //The duration in milliseconds that the value is interpolated for
+    ))
+    //Add an action that will return the size of the sphere to its original value when the pointer is moved out of it
+    .action((d, n, i) => new BABYLON.InterpolateValueAction(
+        BABYLON.ActionManager.OnPointerOutTrigger,
+        n,
+        'scaling',
+        new Vector3(6, 6, 6),
+        100
+    ))
+    //Add an action that will highlight the sphere mesh using the highlight stencil when the pointer is moved over it
+    .action((d,n,i) => new BABYLON.ExecuteCodeAction(          //ExecudeCodeAction allows us to execute a given function
+        BABYLON.ActionManager.OnPointerOverTrigger,
+        () => {
+            highlighter.addMesh(n, Color3.White());
+        }
+    ))
+    //Add an action that will remove the highlight on the sphere mesh when the pointer is moved out of it
+    .action((d,n,i) => new BABYLON.ExecuteCodeAction( //Same as above but in reverse
+        BABYLON.ActionManager.OnPointerOutTrigger,
+        () => {
+            highlighter.removeMesh(n);
+        }
+    ));
+
 
 //Create a plane mesh that will serve as the basis for our details on demand label
 const hoverPlane = anu.create("plane", "hoverPlane", { width: 10, height: 10 });
@@ -159,52 +205,6 @@ function ticked() {
       d
     )
   );
-
-  // Add hover effects on nodes
-  nodes.run((d, n, i) => {
-    n.actionManager = new BABYLON.ActionManager(scene);
-    n.actionManager.registerAction(
-      new BABYLON.InterpolateValueAction(
-        BABYLON.ActionManager.OnPointerOverTrigger,
-        n,
-        "scaling",
-        new Vector3(8.5, 8.5, 8.5),
-        150
-      )
-    );
-    n.actionManager.registerAction(
-      new BABYLON.InterpolateValueAction(
-        BABYLON.ActionManager.OnPointerOutTrigger,
-        n,
-        "scaling",
-        new Vector3(6, 6, 6),
-        150
-      )
-    );
-    n.actionManager.registerAction(
-      new BABYLON.ExecuteCodeAction(
-        BABYLON.ActionManager.OnPointerOverTrigger,
-        () => {
-          hoverPlane.isVisible = true;
-          label.text = "test";
-          hoverPlane.position = n.position;
-          console.log(hoverPlane.isVisible);
-          console.log(hoverPlane.position);
-        }
-      )
-    );
-
-    n.actionManager.registerAction(
-      new BABYLON.ExecuteCodeAction(
-        BABYLON.ActionManager.OnPointerOutTrigger,
-        () => {
-          hoverPlane.isVisible = false;
-          console.log(hoverPlane.isVisible);
-          console.log(hoverPlane.position);
-        }
-      )
-    );
-  });
 }
 
 // Node Label Creation
