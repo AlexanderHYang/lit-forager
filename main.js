@@ -30,7 +30,7 @@ const canvas = document.createElement("canvas");
 app.appendChild(canvas);
 
 //initialize babylon engine, passing in our target canvas element, and create a new scene
-const babylonEngine = new Engine(canvas, true);
+const babylonEngine = new Engine(canvas, true, { stencil: true });
 
 //create a scene object using our engine
 const scene = new Scene(babylonEngine);
@@ -70,23 +70,27 @@ const simulation = forceSimulation(leMis.nodes, 3)
 //Create a Center of Transform TransformNode using create() that serves the parent node for all our meshes that make up our network
 let CoT = anu.bind("cot", "cot");
 
-//We will be using instancing, so create a sphere mesh to be the root of our instanced meshes
-let rootSphere = anu.create("sphere", "node");
-rootSphere.isVisible = false;
-rootSphere.material = new StandardMaterial("mat");
-rootSphere.material.specularColor = new Color3(0, 0, 0);
-rootSphere.registerInstancedBuffer("color", 4);
-rootSphere.instancedBuffers.color = new Color4(0, 0, 0, 1);
+// //We will be using instancing, so create a sphere mesh to be the root of our instanced meshes
+// let rootSphere = anu.create("sphere", "node");
+// rootSphere.isVisible = false;
+// rootSphere.material = new StandardMaterial("mat");
+// rootSphere.material.specularColor = new Color3(0, 0, 0);
+// rootSphere.registerInstancedBuffer("color", 4);
+// rootSphere.instancedBuffers.color = new Color4(0, 0, 0, 1);
 
-//Create the spheres for our network and set their properties
-let nodes = CoT.bindInstance(rootSphere, leMis.nodes)
-  .position((d) => new Vector3(d.x, d.y, d.z))
-  .scaling(new Vector3(6, 6, 6))
-  .id((d) => d.name)
-  .setInstancedBuffer("color", (d) => scaleC(d.group));
+
+//Create a Babylon HighlightLayer that will allow us to add a highlight stencil to meshes
+const highlighter = new BABYLON.HighlightLayer("highlighter", scene);
 
 //Create a plane mesh that will serve as the basis for our details on demand label
-const hoverPlane = anu.create("plane", "hoverPlane", { width: 10, height: 10 });
+// const hoverPlane = anu.create('plane', 'hoverPlane', {width: 1, height: 1});
+let hoverPlane = null;
+CoT.bind("plane", { width: 200, height: 200 }, [{}])
+    .run((d, n) => {
+        hoverPlane = n; // Get the first created mesh
+    });
+console.log("Hover Plane:", hoverPlane); // Should now reference the plane
+
 hoverPlane.isPickable = false; //Disable picking so it doesn't get in the way of interactions
 hoverPlane.renderingGroupId = 1; //Set render id higher so it always renders in front
 
@@ -95,12 +99,12 @@ let advancedTexture = AdvancedDynamicTexture.CreateForMesh(hoverPlane);
 
 //Create a rectangle for the background
 let UIBackground = new Rectangle();
-
+UIBackground.adaptWidthToChildren = true;
+UIBackground.adaptHeightToChildren = true;
 UIBackground.cornerRadius = 20;
 UIBackground.color = "Black";
 UIBackground.thickness = 2;
 UIBackground.background = "White";
-
 advancedTexture.addControl(UIBackground);
 
 //Create an empty text block
@@ -108,14 +112,68 @@ let label = new TextBlock();
 label.paddingLeftInPixels = 25;
 label.paddingRightInPixels = 25;
 label.fontSizeInPixels = 50;
-
-label.text = " ";
+label.resizeToFit = true;
+label.text = " "
 UIBackground.addControl(label);
 
 //Hide the plane until it is needed
 hoverPlane.isVisible = false;
 //Set billboard mode to always face camera
 hoverPlane.billboardMode = 7;
+
+
+//Create the spheres for our network and set their properties
+//bind(mesh: string, options?: {}, data?: {}, scene?: Scene)
+let nodes = CoT.bind("sphere", {}, leMis.nodes)
+    .position((d) => new Vector3(d.x, d.y, d.z))
+    .scaling((d) => new Vector3(6,6,6))
+    .material((d) => {
+        let mat = new StandardMaterial("mat");
+        mat.specularColor = new Color3(0,0,0);
+        mat.diffuseColor = scaleC(d.group)
+        return mat;
+    })
+    //Add an action that will increase the size of the sphere when the pointer is moved over it
+    .action((d, n, i) => new BABYLON.InterpolateValueAction(   //Type of action, InterpolateValueAction will interpolave a given property's value over a specified period of time
+        BABYLON.ActionManager.OnPointerOverTrigger,            //Action Trigger
+        n,                                             //The Mesh or Node to Change, n in Anu refers to the mesh itself
+        'scaling',                                     //The property to Change
+        new Vector3(8.5, 8.5, 8.5),                    //The value that the property should be set to
+        100                                            //The duration in milliseconds that the value is interpolated for
+    ))
+    //Add an action that will return the size of the sphere to its original value when the pointer is moved out of it
+    .action((d, n, i) => new BABYLON.InterpolateValueAction(
+        BABYLON.ActionManager.OnPointerOutTrigger,
+        n,
+        'scaling',
+        new Vector3(6, 6, 6),
+        100
+    ))
+    //Add an action that will highlight the sphere mesh using the highlight stencil when the pointer is moved over it,
+    //as well as show and properly position the hoverPlane above the sphere mesh
+    .action((d,n,i) => new BABYLON.ExecuteCodeAction(          //ExecudeCodeAction allows us to execute a given function
+        BABYLON.ActionManager.OnPointerOverTrigger,
+        () => {
+            highlighter.addMesh(n, Color3.White());
+            scene.setRenderingAutoClearDepthStencil(1, true, true, false);
+            //Show and adjust the label
+            hoverPlane.isVisible = true;
+            label.text = d.name;
+            hoverPlane.position = n.position.add(new Vector3(0, 12, 0));  //Add vertical offset
+            highlighter.addExcludedMesh(hoverPlane);
+            
+        }
+    ))
+    //Add an action that will undo the above when the pointer is moved away from the sphere mesh
+    .action((d,n,i) => new BABYLON.ExecuteCodeAction( //Same as above but in reverse
+        BABYLON.ActionManager.OnPointerOutTrigger,
+        () => {
+            highlighter.removeMesh(n);
+            hoverPlane.isVisible = false;
+        }
+    ));
+
+
 
 //We will be using a lineSystem mesh for our edges which takes a two dimension array and draws a line for each sub array.
 //lineSystems use one draw call for all line meshes and will be the most performant option
@@ -159,52 +217,6 @@ function ticked() {
       d
     )
   );
-
-  // Add hover effects on nodes
-  nodes.run((d, n, i) => {
-    n.actionManager = new BABYLON.ActionManager(scene);
-    n.actionManager.registerAction(
-      new BABYLON.InterpolateValueAction(
-        BABYLON.ActionManager.OnPointerOverTrigger,
-        n,
-        "scaling",
-        new Vector3(8.5, 8.5, 8.5),
-        150
-      )
-    );
-    n.actionManager.registerAction(
-      new BABYLON.InterpolateValueAction(
-        BABYLON.ActionManager.OnPointerOutTrigger,
-        n,
-        "scaling",
-        new Vector3(6, 6, 6),
-        150
-      )
-    );
-    n.actionManager.registerAction(
-      new BABYLON.ExecuteCodeAction(
-        BABYLON.ActionManager.OnPointerOverTrigger,
-        () => {
-          hoverPlane.isVisible = true;
-          label.text = "test";
-          hoverPlane.position = n.position;
-          console.log(hoverPlane.isVisible);
-          console.log(hoverPlane.position);
-        }
-      )
-    );
-
-    n.actionManager.registerAction(
-      new BABYLON.ExecuteCodeAction(
-        BABYLON.ActionManager.OnPointerOutTrigger,
-        () => {
-          hoverPlane.isVisible = false;
-          console.log(hoverPlane.isVisible);
-          console.log(hoverPlane.position);
-        }
-      )
-    );
-  });
 }
 
 // Node Label Creation
