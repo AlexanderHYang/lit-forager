@@ -30,7 +30,7 @@ const canvas = document.createElement("canvas");
 app.appendChild(canvas);
 
 //initialize babylon engine, passing in our target canvas element, and create a new scene
-const babylonEngine = new Engine(canvas, true);
+const babylonEngine = new Engine(canvas, true, { stencil: true });
 
 //create a scene object using our engine
 const scene = new Scene(babylonEngine);
@@ -155,10 +155,13 @@ let nodes = CoT.bind("sphere", {}, leMis.nodes)
         BABYLON.ActionManager.OnPointerOverTrigger,
         () => {
             highlighter.addMesh(n, Color3.White());
+            scene.setRenderingAutoClearDepthStencil(1, true, true, false);
             //Show and adjust the label
             hoverPlane.isVisible = true;
             label.text = d.name;
             hoverPlane.position = n.position.add(new Vector3(0, 12, 0));  //Add vertical offset
+            highlighter.addExcludedMesh(hoverPlane);
+            
         }
     ))
     //Add an action that will undo the above when the pointer is moved away from the sphere mesh
