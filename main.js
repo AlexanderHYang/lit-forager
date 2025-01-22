@@ -62,7 +62,8 @@ const simulation = forceSimulation(leMis.nodes, 3)
     .on("end", () => simulation.stop());
 
 //Create a Center of Transform TransformNode using create() that serves the parent node for all our meshes that make up our network
-let CoT = anu.bind("cot", "cot");
+const CoT_babylon = anu.create("cot", "cot");
+const CoT = anu.selectName("cot", scene);
 
 
 //Create a Babylon HighlightLayer that will allow us to add a highlight stencil to meshes
@@ -164,6 +165,44 @@ let nodes = CoT.bind("sphere", {}, leMis.nodes)
             })
     );
 
+
+
+// Add SixDofDrag behavior
+nodes.run((d, n, i) => {
+    let dragBehavior = new BABYLON.SixDofDragBehavior();
+    dragBehavior.dragDeltaRatio = 50;
+    dragBehavior.rotateDraggedObject = false;
+    dragBehavior.detachCameraControls = true;
+    dragBehavior.onPositionChangedObservable.add((data) => {
+        // d.x = n.position.x;
+        // d.y = n.position.y;
+        // d.z = n.position.z;
+
+        // Fix node in place by reducing its velocity in the simulation
+        d.fx = n.position.x;
+        d.fy = n.position.y;
+        d.fz = n.position.z;
+
+        // simulation.alpha(0.3).restart();
+    });
+    dragBehavior.onDragObservable.add((data) => {
+        simulation.alpha(1).restart();
+    })
+    // USE THIS TO UNLOCK NODE WHEN IT IS LET GO
+    // dragBehavior.onDragEndObservable.add(() => {
+    //     console.log(`Released Node: ${d.name}`);
+    
+    //     // Release node from being fixed in place
+    //     delete d.fx;
+    //     delete d.fy;
+    //     delete d.fz;
+    
+    //     // Let the simulation relax
+    //     simulation.alpha(0.1).restart();
+    // });
+    n.addBehavior(dragBehavior);
+});
+
 //We will be using a lineSystem mesh for our edges which takes a two dimension array and draws a line for each sub array.
 //lineSystems use one draw call for all line meshes and will be the most performant option
 //This function helps prepare our data for that data structure format.
@@ -190,7 +229,9 @@ CoT.run((d, n) => {
 //Update the position of the nodes and links each time the simulation ticks.
 function ticked() {
     //For the instanced spheres just set a new position
-    nodes.position((d) => new Vector3(d.x, d.y, d.z));
+    nodes.position((d, n) => {
+        return new Vector3(d.x, d.y, d.z);
+    });
 
     //For the links use the run method to replace the lineSystem mesh with a new one.
     //The option instance takes the old mesh and replaces it with a new mesh.
