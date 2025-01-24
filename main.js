@@ -28,7 +28,6 @@ const babylonEngine = new Engine(canvas, true, { stencil: true });
 
 //create a scene object using our engine
 const scene = new Scene(babylonEngine);
-const scale = 0.01;
 
 //Add lights and a camera
 let light = new HemisphericLight("light1", new Vector3(0, 10, 0), scene);
@@ -55,9 +54,17 @@ const scaleC = d3.scaleOrdinal(anu.ordinalChromatic("d310").toColor4());
 
 //Create a D3 simulation with several forces
 const simulation = forceSimulation(leMis.nodes, 3)
-    .force("link", forceLink(leMis.links))
-    .force("charge", forceManyBody())
-    .force("collide", forceCollide())
+    .force("link", forceLink(leMis.links)
+        .distance(0.3)
+        .strength(1)
+    )
+    .force("charge", forceManyBody()
+        .strength(-0.03)
+    )
+    .force("collide", forceCollide()
+        .radius(0.1)
+        .strength(0.1)
+    )
     .force("center", forceCenter(0, 0, 0))
     .on("tick", ticked)
     .on("end", () => simulation.stop());
@@ -112,7 +119,7 @@ hoverPlane.billboardMode = 7;
 //bind(mesh: string, options?: {}, data?: {}, scene?: Scene)
 let nodes = CoT.bind("sphere", {}, leMis.nodes)
     .position((d) => new Vector3(d.x, d.y, d.z))
-    .scaling((d) => new Vector3(scale * 6, scale * 6, scale * 6))
+    .scaling((d) => new Vector3(0.06, 0.06, 0.06))
     .material((d) => {
         let mat = new StandardMaterial("mat");
         mat.specularColor = new Color3(0, 0, 0);
@@ -126,7 +133,7 @@ let nodes = CoT.bind("sphere", {}, leMis.nodes)
                 BABYLON.ActionManager.OnPointerOverTrigger, //Action Trigger
                 n, //The Mesh or Node to Change, n in Anu refers to the mesh itself
                 "scaling", //The property to Change
-                new Vector3(scale * 8.5, scale * 8.5, scale * 8.5), //The value that the property should be set to
+                new Vector3(0.085, 0.085, 0.085), //The value that the property should be set to
                 100 //The duration in milliseconds that the value is interpolated for
             )
     )
@@ -137,7 +144,7 @@ let nodes = CoT.bind("sphere", {}, leMis.nodes)
                 BABYLON.ActionManager.OnPointerOutTrigger,
                 n,
                 "scaling",
-                new Vector3(scale * 6, scale * 6, scale * 6),
+                new Vector3(0.06, 0.06, 0.06),
                 100
             )
     )
@@ -180,14 +187,14 @@ nodes.run((d, n, i) => {
         // d.z = n.position.z;
 
         // Fix node in place by reducing its velocity in the simulation
-        d.fx = n.position.x / scale;
-        d.fy = n.position.y / scale;
-        d.fz = n.position.z / scale;
+        d.fx = n.position.x;
+        d.fy = n.position.y;
+        d.fz = n.position.z;
 
         // simulation.alpha(0.3).restart();
     });
     dragBehavior.onDragObservable.add((data) => {
-        simulation.alpha(1).restart();
+        simulation.alpha(0.1).restart();
     });
     dragBehavior.onDragEndObservable.add(() => {
         // Release node from being fixed in place
@@ -205,10 +212,11 @@ nodes.run((d, n, i) => {
 //lineSystems use one draw call for all line meshes and will be the most performant option
 //This function helps prepare our data for that data structure format.
 let updateLines = (data) => {
+    console.log("updateLines() called");
     let lines = [];
     data.forEach((v, i) => {
-        let start = new Vector3(scale * v.source.x, scale * v.source.y, scale * v.source.z);
-        let end = new Vector3(scale * v.target.x, scale * v.target.y, scale * v.target.z);
+        let start = new Vector3(v.source.x, v.source.y, v.source.z);
+        let end = new Vector3(v.target.x, v.target.y, v.target.z);
         lines.push([start, end]);
     });
     return lines;
@@ -228,7 +236,7 @@ let links = CoT.bind("lineSystem", { lines: (d) => updateLines(d), updatable: tr
 function ticked() {
     //For the instanced spheres just set a new position
     nodes.position((d, n) => {
-        return new Vector3(scale * d.x, scale * d.y, scale * d.z);
+        return new Vector3(d.x, d.y, d.z);
     });
 
     //For the links use the run method to replace the lineSystem mesh with a new one.
