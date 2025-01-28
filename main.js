@@ -47,7 +47,7 @@ const camera = new ArcRotateCamera(
 camera.wheelPrecision = 20;     // Adjust the sensitivity of the mouse wheel's zooming
 camera.minZ = 0;                // Adjust the distance of the camera's near plane
 camera.attachControl(true);     // Allow the camera to respond to user controls
-camera.position = new Vector3(0, 0, -4);
+camera.position = new Vector3(0, 0, -1.5);
 
 //Create a D3 color scale that returns a Color4 for our nodes
 const scaleC = d3.scaleOrdinal(anu.ordinalChromatic("d310").toColor4());
