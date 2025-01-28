@@ -14,7 +14,7 @@ import { AdvancedDynamicTexture, Rectangle, TextBlock } from "@babylonjs/gui";
 import { forceSimulation, forceCenter, forceManyBody, forceLink, forceCollide } from "./d3-force-3d/src/index.js"; //External required dependency for force layouts
 import * as d3 from "d3";
 import * as anu from "@jpmorganchase/anu"; //import anu, this project is using a local import of babylon js located at ../babylonjs-anu this may not be the latest version and is used for simplicity.
-import leMis from "./data/miserables.json" assert { type: "json" };
+import leMis from "./data/miserables-trimmed.json" assert { type: "json" };
 import * as BABYLON from "@babylonjs/core";
 
 //Grab DOM element where we will attach our canvas. #app is the id assigned to an empty <div> in our index.html
