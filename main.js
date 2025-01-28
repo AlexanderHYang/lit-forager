@@ -11,7 +11,7 @@ import {
     Engine,
 } from "@babylonjs/core";
 import { AdvancedDynamicTexture, Rectangle, TextBlock } from "@babylonjs/gui";
-import { forceSimulation, forceCenter, forceManyBody, forceLink, forceCollide } from "d3-force-3d"; //External required dependency for force layouts
+import { forceSimulation, forceCenter, forceManyBody, forceLink, forceCollide } from "./d3-force-3d/src/index.js"; //External required dependency for force layouts
 import * as d3 from "d3";
 import * as anu from "@jpmorganchase/anu"; //import anu, this project is using a local import of babylon js located at ../babylonjs-anu this may not be the latest version and is used for simplicity.
 import leMis from "./data/miserables.json" assert { type: "json" };
@@ -47,7 +47,7 @@ const camera = new ArcRotateCamera(
 camera.wheelPrecision = 20;     // Adjust the sensitivity of the mouse wheel's zooming
 camera.minZ = 0;                // Adjust the distance of the camera's near plane
 camera.attachControl(true);     // Allow the camera to respond to user controls
-camera.position = new Vector3(1, 1.5, -4);
+camera.position = new Vector3(0, 0, -4);
 
 //Create a D3 color scale that returns a Color4 for our nodes
 const scaleC = d3.scaleOrdinal(anu.ordinalChromatic("d310").toColor4());
@@ -55,15 +55,15 @@ const scaleC = d3.scaleOrdinal(anu.ordinalChromatic("d310").toColor4());
 //Create a D3 simulation with several forces
 const simulation = forceSimulation(leMis.nodes, 3)
     .force("link", forceLink(leMis.links)
-        .distance(0.3)
-        .strength(1)
+        .distance(0.1)
+        .strength(2)
     )
     .force("charge", forceManyBody()
-        .strength(-0.03)
+        .strength(-0.005)
     )
     .force("collide", forceCollide()
-        .radius(0.1)
-        .strength(0.1)
+        .radius(0.01)
+        .strength(2)
     )
     .force("center", forceCenter(0, 0, 0))
     .on("tick", ticked)
@@ -80,10 +80,10 @@ const highlighter = new BABYLON.HighlightLayer("highlighter", scene);
 //Create a plane mesh that will serve as the basis for our details on demand label
 // const hoverPlane = anu.create('plane', 'hoverPlane', {width: 1, height: 1});
 let hoverPlane = null;
-CoT.bind("plane", { width: 200, height: 200 }, [{}]).run((d, n) => {
+CoT.bind("plane", { width: 0.6, height: 0.6 }, [{}]).run((d, n) => {
     hoverPlane = n; // Get the first created mesh
 });
-console.log("Hover Plane:", hoverPlane); // Should now reference the plane
+// console.log("Hover Plane:", hoverPlane); // Should now reference the plane
 
 hoverPlane.isPickable = false;      //Disable picking so it doesn't get in the way of interactions
 hoverPlane.renderingGroupId = 1;    //Set render id higher so it always renders in front
@@ -119,7 +119,7 @@ hoverPlane.billboardMode = 7;
 //bind(mesh: string, options?: {}, data?: {}, scene?: Scene)
 let nodes = CoT.bind("sphere", {}, leMis.nodes)
     .position((d) => new Vector3(d.x, d.y, d.z))
-    .scaling((d) => new Vector3(0.06, 0.06, 0.06))
+    .scaling((d) => new Vector3(0.02, 0.02, 0.02))
     .material((d) => {
         let mat = new StandardMaterial("mat");
         mat.specularColor = new Color3(0, 0, 0);
@@ -133,7 +133,7 @@ let nodes = CoT.bind("sphere", {}, leMis.nodes)
                 BABYLON.ActionManager.OnPointerOverTrigger, //Action Trigger
                 n, //The Mesh or Node to Change, n in Anu refers to the mesh itself
                 "scaling", //The property to Change
-                new Vector3(0.085, 0.085, 0.085), //The value that the property should be set to
+                new Vector3(0.03, 0.03, 0.03), //The value that the property should be set to
                 100 //The duration in milliseconds that the value is interpolated for
             )
     )
@@ -144,7 +144,7 @@ let nodes = CoT.bind("sphere", {}, leMis.nodes)
                 BABYLON.ActionManager.OnPointerOutTrigger,
                 n,
                 "scaling",
-                new Vector3(0.06, 0.06, 0.06),
+                new Vector3(0.02, 0.02, 0.02),
                 100
             )
     )
@@ -159,7 +159,7 @@ let nodes = CoT.bind("sphere", {}, leMis.nodes)
                 //Show and adjust the label
                 hoverPlane.isVisible = true;
                 label.text = d.name;
-                hoverPlane.position = n.position.add(new Vector3(0, 12, 0)); //Add vertical offset
+                hoverPlane.position = n.position.add(new Vector3(0, 0.04, 0)); //Add vertical offset
                 highlighter.addExcludedMesh(hoverPlane);
             })
     )
@@ -178,7 +178,7 @@ let nodes = CoT.bind("sphere", {}, leMis.nodes)
 // Add SixDofDrag behavior
 nodes.run((d, n, i) => {
     let dragBehavior = new BABYLON.SixDofDragBehavior();
-    dragBehavior.dragDeltaRatio = 1;
+    dragBehavior.dragDeltaRatio = 0.2;
     dragBehavior.rotateDraggedObject = true;
     dragBehavior.detachCameraControls = true;
     dragBehavior.onPositionChangedObservable.add((data) => {
@@ -191,10 +191,13 @@ nodes.run((d, n, i) => {
         d.fy = n.position.y;
         d.fz = n.position.z;
 
-        // simulation.alpha(0.3).restart();
+        hoverPlane.isVisible = true;
+        label.text = d.name;
+        hoverPlane.position = n.position.add(new Vector3(0, 0.04, 0)); //Add vertical offset
     });
     dragBehavior.onDragObservable.add((data) => {
-        simulation.alpha(0.1).restart();
+        let a = simulation.alpha(0.1);
+        // console.log(a);
     });
     dragBehavior.onDragEndObservable.add(() => {
         // Release node from being fixed in place
@@ -203,7 +206,7 @@ nodes.run((d, n, i) => {
         // delete d.fz;
 
         // let the simulation relax
-        simulation.alpha(0.1).restart();
+        simulation.alpha(0.1);
     });
     n.addBehavior(dragBehavior);
 });
@@ -212,7 +215,7 @@ nodes.run((d, n, i) => {
 //lineSystems use one draw call for all line meshes and will be the most performant option
 //This function helps prepare our data for that data structure format.
 let updateLines = (data) => {
-    console.log("updateLines() called");
+    // console.log("updateLines() called");
     let lines = [];
     data.forEach((v, i) => {
         let start = new Vector3(v.source.x, v.source.y, v.source.z);
@@ -225,7 +228,8 @@ let updateLines = (data) => {
 //Create our links using our data and function from above
 let links = CoT.bind("lineSystem", { lines: (d) => updateLines(d), updatable: true }, [leMis.links])
     .prop("color", new Color4(1, 1, 1, 1))
-    .prop("alpha", 0.3);
+    .prop("alpha", 0.3)
+    .prop("isPickable", false);
 
 //Use the run method to access our root node and call normalizeToUnitCube to scale the visualization down to 1x1x1
 // CoT.run((d, n) => {
@@ -252,16 +256,38 @@ const env = scene.createDefaultEnvironment();
 const groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
 
 // Set the transparency
-groundMaterial.alpha = 0; // Adjust this value as needed
+groundMaterial.alpha = 0.0; // Adjust this value as needed
 groundMaterial.transparencyMode = BABYLON.Material.MATERIAL_ALPHABLEND;
 
 // Apply the material to the ground mesh
 env.ground.material = groundMaterial;
+env.ground.setAbsolutePosition(new BABYLON.Vector3(0, -1, 0));
 
 // Enable XR
 const xr = await scene.createDefaultXRExperienceAsync({
     floorMeshes: [env.ground],
     optionalFeatures: true,
+});
+
+const featureManager = xr.baseExperience.featuresManager;
+// featureManager.disableFeature(BABYLON.WebXRFeatureName.TELEPORTATION);
+// featureManager.enableFeature(BABYLON.WebXRFeatureName.MOVEMENT, "latest", {
+//     xrInput: xr.input,
+//     movementOrientationFollowsViewerPose: true, // default true
+//     movementSpeed: 0.2,
+//     rotationSpeed: 0.2,
+// });
+
+xr.baseExperience.sessionManager.onXRFrameObservable.addOnce(() => {
+    xr.baseExperience.camera.position.set(-0.5, 0, 0);
+    xr.baseExperience.camera.setTarget(new BABYLON.Vector3(0, 0, 0));
+})
+
+
+
+// force simulation to step every frame
+scene.onBeforeRenderObservable.add(() => {
+    simulation.step();
 });
 
 //Render the scene we created
