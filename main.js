@@ -16,6 +16,27 @@ import * as d3 from "d3";
 import * as anu from "@jpmorganchase/anu"; //import anu, this project is using a local import of babylon js located at ../babylonjs-anu this may not be the latest version and is used for simplicity.
 import leMis from "./data/miserables-trimmed.json" assert { type: "json" };
 import * as BABYLON from "@babylonjs/core";
+import * as APIUtils from "./api.js"
+import { removeItem } from "./utils.js";
+
+// Initialize graph
+const initialPaperIds = ["f9c602cc436a9ea2f9e7db48c77d924e09ce3c32"]
+const paperData = [
+    {
+    "paperId" : "10",
+    "title" : "a",
+    "references" : [{"paperId" : "11"}]
+    },
+    {
+    "paperId" : "9",
+    "title" : "A",
+    "references" : [{"paperId" : "10"}]
+    },
+];
+// const paperData = await APIUtils.getDetailsForMultiplePapers(initialPaperIds);
+const linkData = [{"source" : 0, "target": 1}];
+
+const selectedIds = [];
 
 //Grab DOM element where we will attach our canvas. #app is the id assigned to an empty <div> in our index.html
 const app = document.querySelector("#app");
@@ -53,8 +74,8 @@ camera.position = new Vector3(0, 0, -1.5);
 const scaleC = d3.scaleOrdinal(anu.ordinalChromatic("d310").toColor4());
 
 //Create a D3 simulation with several forces
-const simulation = forceSimulation(leMis.nodes, 3)
-    .force("link", forceLink(leMis.links)
+const simulation = forceSimulation(paperData, 3)
+    .force("link", forceLink(linkData)
         .distance(0.1)
         .strength(2)
     )
@@ -65,7 +86,7 @@ const simulation = forceSimulation(leMis.nodes, 3)
         .radius(0.01)
         .strength(2)
     )
-    .force("center", forceCenter(0, 0, 0))
+    // .force("center", forceCenter(0, 0, 0))
     .on("tick", ticked)
     .on("end", () => simulation.stop());
 
@@ -117,99 +138,147 @@ hoverPlane.billboardMode = 7;
 
 //Create the spheres for our network and set their properties
 //bind(mesh: string, options?: {}, data?: {}, scene?: Scene)
-let nodes = CoT.bind("sphere", {}, leMis.nodes)
-    .position((d) => new Vector3(d.x, d.y, d.z))
-    .scaling((d) => new Vector3(0.02, 0.02, 0.02))
-    .material((d) => {
-        let mat = new StandardMaterial("mat");
-        mat.specularColor = new Color3(0, 0, 0);
-        mat.diffuseColor = scaleC(d.group);
-        return mat;
-    })
-    //Add an action that will increase the size of the sphere when the pointer is moved over it
-    .action(
-        (d, n, i) =>
-            new BABYLON.InterpolateValueAction( //Type of action, InterpolateValueAction will interpolave a given property's value over a specified period of time
-                BABYLON.ActionManager.OnPointerOverTrigger, //Action Trigger
-                n, //The Mesh or Node to Change, n in Anu refers to the mesh itself
-                "scaling", //The property to Change
-                new Vector3(0.03, 0.03, 0.03), //The value that the property should be set to
-                100 //The duration in milliseconds that the value is interpolated for
-            )
-    )
-    //Add an action that will return the size of the sphere to its original value when the pointer is moved out of it
-    .action(
-        (d, n, i) =>
-            new BABYLON.InterpolateValueAction(
-                BABYLON.ActionManager.OnPointerOutTrigger,
-                n,
-                "scaling",
-                new Vector3(0.02, 0.02, 0.02),
-                100
-            )
-    )
-    //Add an action that will highlight the sphere mesh using the highlight stencil when the pointer is moved over it,
-    //as well as show and properly position the hoverPlane above the sphere mesh
-    .action(
-        (d, n, i) =>
-            new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOverTrigger, () => {
-                //ExecudeCodeAction allows us to execute a given function
-                highlighter.addMesh(n, Color3.White());
-                scene.setRenderingAutoClearDepthStencil(1, true, true, false);
-                //Show and adjust the label
-                hoverPlane.isVisible = true;
-                label.text = d.name;
-                hoverPlane.position = n.position.add(new Vector3(0, 0.04, 0)); //Add vertical offset
-                highlighter.addExcludedMesh(hoverPlane);
-            })
-    )
-    //Add an action that will undo the above when the pointer is moved away from the sphere mesh
-    .action(
-        (d, n, i) =>
-            new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOutTrigger, () => {
-                //Same as above but in reverse
-                highlighter.removeMesh(n);
-                hoverPlane.isVisible = false;
-            })
-    );
+let nodes;
+function createNodes(papers) {
 
+    hoverPlane.isVisible = false;
 
+    // Dispose of existing nodes
+    if (nodes) {
+        ticked();
+        nodes.run((d, n, i) => {
+            n.dispose(); // Remove from Babylon.js scene
+        });
+        nodes = null; // Clear Anu selection
+    }
 
-// Add SixDofDrag behavior
-nodes.run((d, n, i) => {
-    let dragBehavior = new BABYLON.SixDofDragBehavior();
-    dragBehavior.dragDeltaRatio = 0.2;
-    dragBehavior.rotateDraggedObject = true;
-    dragBehavior.detachCameraControls = true;
-    dragBehavior.onPositionChangedObservable.add((data) => {
-        // d.x = n.position.x;
-        // d.y = n.position.y;
-        // d.z = n.position.z;
+    // Remove nodes from force simulation
+    // simulation.nodes([]); // Reset simulation nodes
 
-        // Fix node in place by reducing its velocity in the simulation
-        d.fx = n.position.x;
-        d.fy = n.position.y;
-        d.fz = n.position.z;
+    // console.log("position data from paperData when creating nodes")
+    nodes = CoT.bind("sphere", {}, papers)
+        .position((d) => {
+            // console.log(d.x, d.y, d.z);
+            return new Vector3(d.x, d.y, d.z)
+        })
+        .scaling((d) => new Vector3(0.02, 0.02, 0.02))
+        .material((d) => {
+            let mat = new StandardMaterial("mat");
+            mat.specularColor = new Color3(0, 0, 0);
+            mat.diffuseColor = scaleC(d.group);
+            return mat;
+        })
+        //Add an action that will increase the size of the sphere when the pointer is moved over it
+        .action(
+            (d, n, i) =>
+                new BABYLON.InterpolateValueAction( //Type of action, InterpolateValueAction will interpolave a given property's value over a specified period of time
+                    BABYLON.ActionManager.OnPointerOverTrigger, //Action Trigger
+                    n, //The Mesh or Node to Change, n in Anu refers to the mesh itself
+                    "scaling", //The property to Change
+                    new Vector3(0.03, 0.03, 0.03), //The value that the property should be set to
+                    100 //The duration in milliseconds that the value is interpolated for
+                )
+        )
+        //Add an action that will return the size of the sphere to its original value when the pointer is moved out of it
+        .action(
+            (d, n, i) =>
+                new BABYLON.InterpolateValueAction(
+                    BABYLON.ActionManager.OnPointerOutTrigger,
+                    n,
+                    "scaling",
+                    new Vector3(0.02, 0.02, 0.02),
+                    100
+                )
+        )
+        //Add an action that will highlight the sphere mesh using the highlight stencil when the pointer is moved over it,
+        //as well as show and properly position the hoverPlane above the sphere mesh
+        .action(
+            (d, n, i) =>
+                new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOverTrigger, () => {
+                    //ExecudeCodeAction allows us to execute a given function
+                    highlighter.addMesh(n, Color3.White());
+                    scene.setRenderingAutoClearDepthStencil(1, true, true, false);
+                    //Show and adjust the label
+                    hoverPlane.isVisible = true;
+                    label.text = d.title;
+                    hoverPlane.position = n.position.add(new Vector3(0, 0.04, 0)); //Add vertical offset
+                    highlighter.addExcludedMesh(hoverPlane);
+                })
+        )
+        //Add an action that will undo the above when the pointer is moved away from the sphere mesh
+        .action(
+            (d, n, i) =>
+                new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOutTrigger, () => {
+                    //Same as above but in reverse
+                    if (!selectedIds.includes(d.paperId)) {
+                        highlighter.removeMesh(n);
+                    }
+                    hoverPlane.isVisible = false;
+                })
+        )
+        // on pick down action to select ndoes
+        .action(
+            (d, n, i) =>
+                new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickDownTrigger, () => {
+                    if (!selectedIds.includes(d.paperId)) {
+                        selectedIds.push(d.paperId);
+                    } else {
+                        removeItem(selectedIds, d.paperId);
+                    }
+                })
+        )
+        // on pick up action for selecting nodes
+        .action(
+            (d, n, i) =>
+                new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickUpTrigger, () => {
+                })
+        );
 
-        hoverPlane.isVisible = true;
-        label.text = d.name;
-        hoverPlane.position = n.position.add(new Vector3(0, 0.04, 0)); //Add vertical offset
+    // Add SixDofDrag behavior
+    nodes.run((d, n, i) => {
+        let dragBehavior = new BABYLON.SixDofDragBehavior();
+        dragBehavior.dragDeltaRatio = 0.2;
+        dragBehavior.rotateDraggedObject = true;
+        dragBehavior.detachCameraControls = true;
+        dragBehavior.onPositionChangedObservable.add((data) => {
+            d.x = n.position.x;
+            d.y = n.position.y;
+            d.z = n.position.z;
+
+            // Fix node in place by reducing its velocity in the simulation
+            d.fx = n.position.x;
+            d.fy = n.position.y;
+            d.fz = n.position.z;
+
+            hoverPlane.isVisible = true;
+            label.text = d.title;
+            hoverPlane.position = n.position.add(new Vector3(0, 0.04, 0)); //Add vertical offset
+        });
+        dragBehavior.onDragObservable.add((data) => {
+            simulation.alpha(0.1);
+            console.log("hello");
+        });
+        dragBehavior.onDragEndObservable.add(() => {
+            // Release node from being fixed in place
+            // delete d.fx;
+            // delete d.fy;
+            // delete d.fz;
+
+            // let the simulation relax
+            simulation.alpha(0.1);
+        });
+        n.addBehavior(dragBehavior);
     });
-    dragBehavior.onDragObservable.add((data) => {
-        let a = simulation.alpha(0.1);
-        // console.log(a);
-    });
-    dragBehavior.onDragEndObservable.add(() => {
-        // Release node from being fixed in place
-        // delete d.fx;
-        // delete d.fy;
-        // delete d.fz;
 
-        // let the simulation relax
-        simulation.alpha(0.1);
+    nodes.run((d,n,i) => {
+        if (selectedIds.includes(d.paperId)) {
+            highlighter.addMesh(n, Color3.White());
+            scene.setRenderingAutoClearDepthStencil(1, true, true, false);
+            highlighter.addExcludedMesh(hoverPlane);
+        }
     });
-    n.addBehavior(dragBehavior);
-});
+}
+createNodes(paperData);
 
 //We will be using a lineSystem mesh for our edges which takes a two dimension array and draws a line for each sub array.
 //lineSystems use one draw call for all line meshes and will be the most performant option
@@ -226,20 +295,27 @@ let updateLines = (data) => {
 };
 
 //Create our links using our data and function from above
-let links = CoT.bind("lineSystem", { lines: (d) => updateLines(d), updatable: true }, [leMis.links])
-    .prop("color", new Color4(1, 1, 1, 1))
-    .prop("alpha", 0.3)
-    .prop("isPickable", false);
+let links;
+function createLinks(data) {
+    if (links) {
+        links.run((d,n,i) => {
+            n.dispose();
+        })
+    }
+    links = CoT.bind("lineSystem", { lines: (d) => updateLines(d), updatable: true }, [data])
+        .prop("color", new Color4(1, 1, 1, 1))
+        .prop("alpha", 0.3)
+        .prop("isPickable", false);
+}
+createLinks(linkData);
 
-//Use the run method to access our root node and call normalizeToUnitCube to scale the visualization down to 1x1x1
-// CoT.run((d, n) => {
-//     n.normalizeToUnitCube();
-// });
 
 //Update the position of the nodes and links each time the simulation ticks.
 function ticked() {
+    // console.log("ticked: simulation data from here");
     //For the instanced spheres just set a new position
     nodes.position((d, n) => {
+        // console.log(d.x, d.y, d.z, d.vx, d.vy, d.vz);
         return new Vector3(d.x, d.y, d.z);
     });
 
@@ -284,10 +360,14 @@ xr.baseExperience.sessionManager.onXRFrameObservable.addOnce(() => {
 })
 
 
-
 // force simulation to step every frame
 scene.onBeforeRenderObservable.add(() => {
-    simulation.step();
+    paperData.forEach((d) => {
+        // console.log(d.x, d.y, d.z, d.vx, d.vy, d.vz);
+    })
+    // simulation.step();
+    simulation.tick();
+    ticked();
 });
 
 //Render the scene we created
@@ -310,4 +390,92 @@ window.addEventListener("keydown", (ev) => {
             scene.debugLayer.show();
         }
     }
+
+    if (ev.key === "r") {
+        console.log("r pressed");
+        addPapersToGraph();
+    }
+    if (ev.key === "Backspace") {
+        console.log("backspace pressed");
+        removeNodesFromGraph(selectedIds);
+    }
 });
+
+function addPapersToGraph(papersToAdd) {
+    // paperData.forEach((d) => {console.log(d.x, d.y, d.z)});
+    const newPapers = [
+        {
+            "paperId": "11",
+            "title" : "b",
+            "references": [{"paperId" :"12"}],
+        },
+        {
+            "paperId": "12",
+            "title" : "c",
+            "references": [{"paperId" : "10"}],
+        }
+    ];
+
+    // Update links
+    newPapers.forEach((newPaper) => {
+        const newNodeIndex = paperData.length;
+
+        paperData.forEach((node, i) => {
+            // Create links if references exist
+            //console.log("node:", node);
+            node.references.forEach((ref) => {
+                //console.log("ref:", ref);
+                // console.log(ref.paperId, newPaper.paperId);
+                if (ref.paperId === newPaper.paperId) {
+                    linkData.push({ source: i, target: newNodeIndex });
+                }
+            })
+        });
+
+        newPaper.references.forEach((ref) => {
+            //console.log("ref2:", ref);
+            const refNodeIndex = paperData.findIndex(p => p.paperId === ref.paperId);
+            // console.log("refNodeIndex:", refNodeIndex);
+            if (refNodeIndex !== -1) {
+                linkData.push({ source: newNodeIndex, target: refNodeIndex });
+            } else {
+                console.warn(`Reference paper ${JSON.stringify(ref)} not found in existing nodes.`);
+            }
+        });
+
+        paperData.push(newPaper);
+    });
+
+    paperData.forEach((d) => {
+        d.fx = d.x;
+        d.fy = d.y;
+        d.fz = d.z;
+    });
+    simulation.nodes(paperData);
+    simulation.alpha(0.05);
+    paperData.forEach((d) => {
+        delete d.fx;
+        delete d.fy;
+        delete d.fz;
+    });
+    createNodes(paperData);
+    createLinks(linkData);
+}
+
+function removeNodesFromGraph(idsToRemove) {
+    // Mutate paperData in place
+    for (let i = paperData.length - 1; i >= 0; i--) {
+        if (idsToRemove.includes(paperData[i].paperId)) {
+            paperData.splice(i, 1);  // Remove the element in place
+        }
+    }
+
+    // Mutate linkData in place
+    for (let i = linkData.length - 1; i >= 0; i--) {
+        if (idsToRemove.includes(linkData[i].source.paperId) || idsToRemove.includes(linkData[i].target.paperId)) {
+            linkData.splice(i, 1);  // Remove the element in place
+        }
+    }
+    createNodes(paperData);
+    createLinks(linkData);
+}
