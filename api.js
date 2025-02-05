@@ -46,7 +46,8 @@ export async function fetchRecsFromMultipleIds(positiveIds, negativeIds = [], li
     }
     
     const requestUrl = `${BASE_RECOMMENDATIONS_URL}/papers?limit=${limit}&fields=${fields}`;
-    console.log(requestUrl);
+    // console.log(requestUrl);
+    console.log("requesting recommendations from positiveIds:", positiveIds);
 
     const body = JSON.stringify({
         positivePaperIds: positiveIds,

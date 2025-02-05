@@ -21,20 +21,25 @@ import { removeItem } from "./utils.js";
 
 // Initialize graph
 const initialPaperIds = ["f9c602cc436a9ea2f9e7db48c77d924e09ce3c32"]
-const paperData = [
-    {
-    "paperId" : "10",
-    "title" : "a",
-    "references" : [{"paperId" : "11"}]
-    },
-    {
-    "paperId" : "9",
-    "title" : "A",
-    "references" : [{"paperId" : "10"}]
-    },
-];
-// const paperData = await APIUtils.getDetailsForMultiplePapers(initialPaperIds);
-const linkData = [{"source" : 0, "target": 1}];
+// const paperData = [
+//     {
+//     "paperId" : "10",
+//     "title" : "a",
+//     "references" : [{"paperId" : "11"}]
+//     },
+//     {
+//     "paperId" : "9",
+//     "title" : "A",
+//     "references" : [{"paperId" : "10"}]
+//     },
+// ];
+// const linkData = [{"source" : 0, "target": 1}];
+const paperData = await APIUtils.getDetailsForMultiplePapers(initialPaperIds);
+const citationLinkData = []
+const recommendationLinkData = [];
+
+let useCitationLinks = true;
+
 
 const selectedIds = [];
 
@@ -75,7 +80,7 @@ const scaleC = d3.scaleOrdinal(anu.ordinalChromatic("d310").toColor4());
 
 //Create a D3 simulation with several forces
 const simulation = forceSimulation(paperData, 3)
-    .force("link", forceLink(linkData)
+    .force("link", forceLink(citationLinkData)
         .distance(0.1)
         .strength(2)
     )
@@ -270,6 +275,7 @@ function createNodes(papers) {
         n.addBehavior(dragBehavior);
     });
 
+    // re-add highlight layer to selected nodes
     nodes.run((d,n,i) => {
         if (selectedIds.includes(d.paperId)) {
             highlighter.addMesh(n, Color3.White());
@@ -277,6 +283,13 @@ function createNodes(papers) {
             highlighter.addExcludedMesh(hoverPlane);
         }
     });
+
+    // add list of papers recommended by this one (to be populated later)
+    nodes.run((d,n,i) => {
+        if (!d.recommends) {
+            d.recommends = [];
+        }
+    })
 }
 createNodes(paperData);
 
@@ -302,12 +315,20 @@ function createLinks(data) {
             n.dispose();
         })
     }
-    links = CoT.bind("lineSystem", { lines: (d) => updateLines(d), updatable: true }, [data])
+    links = CoT.bind("lineSystem", { lines: (d) => {
+        let l = updateLines(d);
+        console.log(l);
+        return l;
+        }, updatable: true }, [data])
         .prop("color", new Color4(1, 1, 1, 1))
         .prop("alpha", 0.3)
         .prop("isPickable", false);
+
+    simulation.force("link", forceLink(data)
+    .distance(0.1)
+    .strength(2));
 }
-createLinks(linkData);
+createLinks(citationLinkData);
 
 
 //Update the position of the nodes and links each time the simulation ticks.
@@ -393,57 +414,103 @@ window.addEventListener("keydown", (ev) => {
 
     if (ev.key === "r") {
         console.log("r pressed");
-        addPapersToGraph();
+        APIUtils.fetchRecsFromMultipleIds(selectedIds).then((d) => {
+            const recommendedPapers = d.recommendedPapers.map((a) => a.paperId);
+            paperData.forEach((p) => {
+                if (selectedIds.includes(p.paperId)) {
+                    p.recommends.push(...recommendedPapers);
+                }
+            })
+            APIUtils.getDetailsForMultiplePapers(recommendedPapers).then((r) => {
+                addPapersToGraph(r);
+            })
+        });
     }
     if (ev.key === "Backspace") {
         console.log("backspace pressed");
         removeNodesFromGraph(selectedIds);
-    }
+        selectedIds.length = 0; // clear selected ids
+    };
+    if (ev.key === "l") {
+        console.log("l pressed");
+        useCitationLinks = !useCitationLinks;
+        console.log(useCitationLinks);
+        if (useCitationLinks) {
+            createLinks(citationLinkData);
+        } else {
+            createLinks(recommendationLinkData);
+        }
+    };
 });
 
-function addPapersToGraph(papersToAdd) {
+function addPapersToGraph(newPapers) {
     // paperData.forEach((d) => {console.log(d.x, d.y, d.z)});
-    const newPapers = [
-        {
-            "paperId": "11",
-            "title" : "b",
-            "references": [{"paperId" :"12"}],
-        },
-        {
-            "paperId": "12",
-            "title" : "c",
-            "references": [{"paperId" : "10"}],
-        }
-    ];
+    // const newPapers = [
+    //     {
+    //         "paperId": "11",
+    //         "title" : "b",
+    //         "references": [{"paperId" :"12"}],
+    //     },
+    //     {
+    //         "paperId": "12",
+    //         "title" : "c",
+    //         "references": [{"paperId" : "10"}],
+    //     }
+    // ];
 
     // Update links
     newPapers.forEach((newPaper) => {
-        const newNodeIndex = paperData.length;
-
-        paperData.forEach((node, i) => {
-            // Create links if references exist
-            //console.log("node:", node);
-            node.references.forEach((ref) => {
-                //console.log("ref:", ref);
-                // console.log(ref.paperId, newPaper.paperId);
-                if (ref.paperId === newPaper.paperId) {
-                    linkData.push({ source: i, target: newNodeIndex });
-                }
-            })
-        });
-
-        newPaper.references.forEach((ref) => {
-            //console.log("ref2:", ref);
-            const refNodeIndex = paperData.findIndex(p => p.paperId === ref.paperId);
-            // console.log("refNodeIndex:", refNodeIndex);
-            if (refNodeIndex !== -1) {
-                linkData.push({ source: newNodeIndex, target: refNodeIndex });
-            } else {
-                console.warn(`Reference paper ${JSON.stringify(ref)} not found in existing nodes.`);
+        let paperAlreadyExists = false;
+        paperData.forEach((n) => {
+            if (n.paperId === newPaper.paperId) {
+                paperAlreadyExists = true;
             }
         });
 
-        paperData.push(newPaper);
+        if (!paperAlreadyExists) {
+            
+            newPaper.recommends = [];
+            const newNodeIndex = paperData.length;
+
+            paperData.forEach((node, i) => {
+                // Create links if references exist
+                //console.log("node:", node);
+                node.references.forEach((ref) => {
+                    //console.log("ref:", ref);
+                    // console.log(ref.paperId, newPaper.paperId);
+                    if (ref.paperId === newPaper.paperId) {
+                        citationLinkData.push({ source: i, target: newNodeIndex });
+                    }
+                })
+                node.recommends.forEach((rec) => {
+                    if (rec === newPaper.paperId) {
+                        recommendationLinkData.push({ source: i, target: newNodeIndex });
+                    }
+                })
+            });
+
+            newPaper.references.forEach((ref) => {
+                //console.log("ref2:", ref);
+                const refNodeIndex = paperData.findIndex(p => p.paperId === ref.paperId);
+                // console.log("refNodeIndex:", refNodeIndex);
+                if (refNodeIndex !== -1) {
+                    citationLinkData.push({ source: newNodeIndex, target: refNodeIndex });
+                } else {
+                    console.warn(`Reference paper ${JSON.stringify(ref)} not found in existing nodes.`);
+                }
+            });
+
+            newPaper.recommends.forEach((rec) => {
+                const recNodeIndex = paperData.findIndex(p => p.paperId === rec);
+                if (recNodeIndex !== -1) {
+                    recommendationLinkData.push({ source: newNodeIndex, target: recNodeIndex});
+                } else {
+                    console.warn(`Recommended paper ${rec} not found in existing nodes.`);
+                }
+            });
+
+            paperData.push(newPaper);
+        }
     });
 
     paperData.forEach((d) => {
@@ -459,7 +526,15 @@ function addPapersToGraph(papersToAdd) {
         delete d.fz;
     });
     createNodes(paperData);
-    createLinks(linkData);
+
+    console.log("citation link data:", citationLinkData);
+    console.log("recommendation link data:", recommendationLinkData);
+
+    if (useCitationLinks) {
+        createLinks(citationLinkData);
+    } else {
+        createLinks(recommendationLinkData);
+    }
 }
 
 function removeNodesFromGraph(idsToRemove) {
@@ -471,11 +546,21 @@ function removeNodesFromGraph(idsToRemove) {
     }
 
     // Mutate linkData in place
-    for (let i = linkData.length - 1; i >= 0; i--) {
-        if (idsToRemove.includes(linkData[i].source.paperId) || idsToRemove.includes(linkData[i].target.paperId)) {
-            linkData.splice(i, 1);  // Remove the element in place
+    for (let i = citationLinkData.length - 1; i >= 0; i--) {
+        if (idsToRemove.includes(citationLinkData[i].source.paperId) || idsToRemove.includes(citationLinkData[i].target.paperId)) {
+            citationLinkData.splice(i, 1);  // Remove the element in place
         }
     }
+    for (let i = recommendationLinkData.length - 1; i >= 0; i--) {
+        if (idsToRemove.includes(recommendationLinkData[i].source.paperId) || idsToRemove.includes(recommendationLinkData[i].target.paperId)) {
+            recommendationLinkData.splice(i, 1);  // Remove the element in place
+        }
+    }
+
     createNodes(paperData);
-    createLinks(linkData);
+    if (useCitationLinks) {
+        createLinks(citationLinkData);
+    } else {
+        createLinks(recommendationLinkData);
+    }
 }
