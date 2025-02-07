@@ -418,7 +418,11 @@ window.addEventListener("keydown", (ev) => {
             const recommendedPapers = d.recommendedPapers.map((a) => a.paperId);
             paperData.forEach((p) => {
                 if (selectedIds.includes(p.paperId)) {
-                    p.recommends.push(...recommendedPapers);
+                    recommendedPapers.forEach((rec) => {
+                        if (!p.recommends.includes(rec)) {
+                            p.recommends.push(rec);
+                        }
+                    })
                 }
             })
             APIUtils.getDetailsForMultiplePapers(recommendedPapers).then((r) => {
@@ -458,12 +462,19 @@ function addPapersToGraph(newPapers) {
     //     }
     // ];
 
+
+
     // Update links
     newPapers.forEach((newPaper) => {
+        if (newPaper.paperId === null || newPaper.paperId.length < 10) {
+            console.log("new paper has invalid id:", newPaper.paperId);
+        }
         let paperAlreadyExists = false;
-        paperData.forEach((n) => {
+        let paperAlreadyExistsIndex = -1;
+        paperData.forEach((n,i) => {
             if (n.paperId === newPaper.paperId) {
                 paperAlreadyExists = true;
+                paperAlreadyExistsIndex = i;
             }
         });
 
@@ -519,7 +530,7 @@ function addPapersToGraph(newPapers) {
         d.fz = d.z;
     });
     simulation.nodes(paperData);
-    simulation.alpha(0.05);
+    //simulation.alpha(0.05);
     paperData.forEach((d) => {
         delete d.fx;
         delete d.fy;
