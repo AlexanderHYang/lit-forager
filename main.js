@@ -447,6 +447,28 @@ window.addEventListener("keydown", (ev) => {
     };
 });
 
+function createLinkData(paperData) {
+    citationLinkData.length = 0;
+    recommendationLinkData.length = 0;
+
+    paperData.forEach((d1, i) => {
+        paperData.forEach((d2, j) => {
+            if (d1.paperId !== d2.paperId) {
+                d1.references.forEach((ref) => {
+                    if (ref.paperId === d2.paperId) {
+                        citationLinkData.push({ source: i, target: j });
+                    }
+                });
+                d1.recommends.forEach((rec) => {
+                    if (rec === d2.paperId) {
+                        recommendationLinkData.push({ source: i, target: j });
+                    }
+                });
+            }
+        });
+    });
+}
+
 function addPapersToGraph(newPapers) {
     // paperData.forEach((d) => {console.log(d.x, d.y, d.z)});
     // const newPapers = [
@@ -462,81 +484,35 @@ function addPapersToGraph(newPapers) {
     //     }
     // ];
 
+    // Notes: 
+    // 1) Nodes might need to be locked in place prior to adding to simulation,
+    // since we don't want nodes to move around wildly when adding new ones
+    // 
+    // 2) createNodes() can only be called after nodes are added to simulation since
+    // it relies on the x, y, z positions of the nodes which is initialized by the simulation
 
-
-    // Update links
-    newPapers.forEach((newPaper) => {
-        if (newPaper.paperId === null || newPaper.paperId.length < 10) {
-            console.log("new paper has invalid id:", newPaper.paperId);
-        }
-        let paperAlreadyExists = false;
-        let paperAlreadyExistsIndex = -1;
-        paperData.forEach((n,i) => {
-            if (n.paperId === newPaper.paperId) {
-                paperAlreadyExists = true;
-                paperAlreadyExistsIndex = i;
-            }
-        });
-
-        if (!paperAlreadyExists) {
-            
-            newPaper.recommends = [];
-            const newNodeIndex = paperData.length;
-
-            paperData.forEach((node, i) => {
-                // Create links if references exist
-                //console.log("node:", node);
-                node.references.forEach((ref) => {
-                    //console.log("ref:", ref);
-                    // console.log(ref.paperId, newPaper.paperId);
-                    if (ref.paperId === newPaper.paperId) {
-                        citationLinkData.push({ source: i, target: newNodeIndex });
-                    }
-                })
-                node.recommends.forEach((rec) => {
-                    if (rec === newPaper.paperId) {
-                        recommendationLinkData.push({ source: i, target: newNodeIndex });
-                    }
-                })
-            });
-
-            newPaper.references.forEach((ref) => {
-                //console.log("ref2:", ref);
-                const refNodeIndex = paperData.findIndex(p => p.paperId === ref.paperId);
-                // console.log("refNodeIndex:", refNodeIndex);
-                if (refNodeIndex !== -1) {
-                    citationLinkData.push({ source: newNodeIndex, target: refNodeIndex });
-                } else {
-                    console.warn(`Reference paper ${JSON.stringify(ref)} not found in existing nodes.`);
-                }
-            });
-
-            newPaper.recommends.forEach((rec) => {
-                const recNodeIndex = paperData.findIndex(p => p.paperId === rec);
-                if (recNodeIndex !== -1) {
-                    recommendationLinkData.push({ source: newNodeIndex, target: recNodeIndex});
-                } else {
-                    console.warn(`Recommended paper ${rec} not found in existing nodes.`);
-                }
-            });
-
-            paperData.push(newPaper);
+    // Add new papers to paperData
+    newPapers.forEach((p) => {
+        if (!paperData.find((d) => d.paperId === p.paperId)) { // don't add duplicates
+            paperData.push(p);
         }
     });
 
-    paperData.forEach((d) => {
+    paperData.forEach((d) => { // lock nodes in place before simulation
         d.fx = d.x;
         d.fy = d.y;
         d.fz = d.z;
     });
     simulation.nodes(paperData);
     //simulation.alpha(0.05);
-    paperData.forEach((d) => {
+    paperData.forEach((d) => { // undo lock nodes in place after simulation
         delete d.fx;
         delete d.fy;
         delete d.fz;
     });
+
     createNodes(paperData);
+    createLinkData(paperData);
 
     console.log("citation link data:", citationLinkData);
     console.log("recommendation link data:", recommendationLinkData);
