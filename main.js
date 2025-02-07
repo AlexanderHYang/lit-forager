@@ -145,6 +145,7 @@ label.paddingLeftInPixels = 25;
 label.paddingRightInPixels = 25;
 label.fontSizeInPixels = 50;
 label.resizeToFit = true;
+label.textWrapping = true;
 label.text = " ";
 UIBackground.addControl(label);
 
@@ -225,7 +226,7 @@ function createNodes(papers) {
                     //Show and adjust the label
                     hoverPlane.isVisible = true;
                     label.text = d.title;
-                    hoverPlane.position = n.position.add(new Vector3(0, 0.04, 0)); //Add vertical offset
+                    hoverPlane.position = n.position.add(new Vector3(0, 0.08, 0)); //Add vertical offset
                     highlighter.addExcludedMesh(hoverPlane);
                 })
         )
@@ -276,7 +277,7 @@ function createNodes(papers) {
 
             hoverPlane.isVisible = true;
             label.text = d.title;
-            hoverPlane.position = n.position.add(new Vector3(0, 0.04, 0)); //Add vertical offset
+            hoverPlane.position = n.position.add(new Vector3(0, 0.08, 0)); //Add vertical offset
         });
         dragBehavior.onDragObservable.add((data) => {
             simulation.alpha(0.1);
