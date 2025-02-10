@@ -14,8 +14,10 @@ import { AdvancedDynamicTexture, Rectangle, TextBlock } from "@babylonjs/gui";
 import { forceSimulation, forceCenter, forceManyBody, forceLink, forceCollide } from "./d3-force-3d/src/index.js"; //External required dependency for force layouts
 import * as d3 from "d3";
 import * as anu from "@jpmorganchase/anu"; //import anu, this project is using a local import of babylon js located at ../babylonjs-anu this may not be the latest version and is used for simplicity.
-import leMis from "./data/miserables-trimmed.json" assert { type: "json" };
+// import leMis from "./data/miserables-trimmed.json" assert { type: "json" };
 import * as BABYLON from "@babylonjs/core";
+import * as GUI from "@babylonjs/gui";
+// import * as BJSGUI from '@babylonjs/gui';
 import * as APIUtils from "./api.js"
 import { removeItem } from "./utils.js";
 
@@ -34,7 +36,17 @@ const initialPaperIds = ["f9c602cc436a9ea2f9e7db48c77d924e09ce3c32"]
 //     },
 // ];
 // const linkData = [{"source" : 0, "target": 1}];
-const paperData = await APIUtils.getDetailsForMultiplePapers(initialPaperIds);
+// const paperData = await APIUtils.getDetailsForMultiplePapers(initialPaperIds);
+let paperData;
+try {
+    paperData = await APIUtils.getDetailsForMultiplePapers(initialPaperIds);
+    if (!Array.isArray(paperData)) {
+        paperData = [{"paperId" : "f9c602cc436a9ea2f9e7db48c77d924e09ce3c32"}];
+    }
+} catch (error) {
+    paperData = [{"paperId" : "f9c602cc436a9ea2f9e7db48c77d924e09ce3c32"}];
+}
+
 const citationLinkData = []
 const recommendationLinkData = [];
 
@@ -366,7 +378,7 @@ const xr = await scene.createDefaultXRExperienceAsync({
     optionalFeatures: true,
 });
 
-const featureManager = xr.baseExperience.featuresManager;
+const xrFeatureManager = xr.baseExperience.featuresManager;
 // featureManager.disableFeature(BABYLON.WebXRFeatureName.TELEPORTATION);
 // featureManager.enableFeature(BABYLON.WebXRFeatureName.MOVEMENT, "latest", {
 //     xrInput: xr.input,
@@ -374,11 +386,17 @@ const featureManager = xr.baseExperience.featuresManager;
 //     movementSpeed: 0.2,
 //     rotationSpeed: 0.2,
 // });
+xrFeatureManager.disableFeature(BABYLON.WebXRFeatureName.POINTER_SELECTION);
+xrFeatureManager.disableFeature(BABYLON.WebXRFeatureName.TELEPORTATION);
 
-xr.baseExperience.sessionManager.onXRFrameObservable.addOnce(() => {
+const xrSessionManager = xr.baseExperience.sessionManager;
+
+xrSessionManager.onXRFrameObservable.addOnce(() => {
     xr.baseExperience.camera.position.set(-0.5, 0, 0);
     xr.baseExperience.camera.setTarget(new BABYLON.Vector3(0, 0, 0));
 })
+
+
 
 
 // force simulation to step every frame
@@ -414,26 +432,29 @@ window.addEventListener("keydown", (ev) => {
 
     if (ev.key === "r") {
         console.log("r pressed");
-        APIUtils.fetchRecsFromMultipleIds(selectedIds).then((d) => {
-            const recommendedPapers = d.recommendedPapers.map((a) => a.paperId);
-            paperData.forEach((p) => {
-                if (selectedIds.includes(p.paperId)) {
-                    recommendedPapers.forEach((rec) => {
-                        if (!p.recommends.includes(rec)) {
-                            p.recommends.push(rec);
-                        }
-                    })
-                }
-            })
-            APIUtils.getDetailsForMultiplePapers(recommendedPapers).then((r) => {
-                addPapersToGraph(r);
-            })
-        });
+        // APIUtils.fetchRecsFromMultipleIds(selectedIds).then((d) => {
+        //     const recommendedPapers = d.recommendedPapers.map((a) => a.paperId);
+        //     paperData.forEach((p) => {
+        //         if (selectedIds.includes(p.paperId)) {
+        //             recommendedPapers.forEach((rec) => {
+        //                 if (!p.recommends.includes(rec)) {
+        //                     p.recommends.push(rec);
+        //                 }
+        //             })
+        //         }
+        //     })
+        //     APIUtils.getDetailsForMultiplePapers(recommendedPapers).then((r) => {
+        //         addPapersToGraph(r);
+        //     })
+        // });
+        addRecommendationsFromSelectedPapers();
     }
     if (ev.key === "Backspace") {
         console.log("backspace pressed");
-        removeNodesFromGraph(selectedIds);
-        selectedIds.length = 0; // clear selected ids
+        // removeNodesFromGraph(selectedIds);
+        // selectedIds.length = 0; // clear selected ids
+
+        removeSelectedNodesFromGraph();
     };
     if (ev.key === "l") {
         console.log("l pressed");
@@ -466,6 +487,33 @@ function createLinkData(paperData) {
                 });
             }
         });
+    });
+}
+
+function addRecommendationsFromSelectedPapers() {
+    APIUtils.fetchRecsFromMultipleIds(selectedIds).then((d) => {
+        const recommendedPapers = d.recommendedPapers.map((a) => a.paperId);
+
+        // add data for recommendation links
+        paperData.forEach((p) => {
+            if (selectedIds.includes(p.paperId)) {
+                recommendedPapers.forEach((rec) => {
+                    if (!p.recommends.includes(rec)) {
+                        p.recommends.push(rec);
+                    }
+                })
+            }
+        })
+
+        // make selected ids be the new papers
+        selectedIds.length = 0;
+        recommendedPapers.forEach((p) => {
+            selectedIds.push(p.paperId);
+        });
+
+        APIUtils.getDetailsForMultiplePapers(recommendedPapers).then((r) => {
+            addPapersToGraph(r);
+        })
     });
 }
 
@@ -524,6 +572,11 @@ function addPapersToGraph(newPapers) {
     }
 }
 
+function removeSelectedNodesFromGraph() {
+    removeNodesFromGraph(selectedIds);
+    selectedIds.length = 0; // clear selected ids
+}
+
 function removeNodesFromGraph(idsToRemove) {
     // Mutate paperData in place
     for (let i = paperData.length - 1; i >= 0; i--) {
@@ -551,3 +604,75 @@ function removeNodesFromGraph(idsToRemove) {
         createLinks(recommendationLinkData);
     }
 }
+
+
+const manager = new GUI.GUI3DManager(scene);
+
+// Create a NearMenu
+const near = new GUI.NearMenu("near");
+manager.addControl(near);
+near.backPlateMargin = 0.1;
+
+// Reduce the scale of the NearMenu
+near.scaling = new BABYLON.Vector3(0.05, 0.05, 0.05); // Adjust as needed
+
+// Adjust the follow behavior distance
+near.defaultBehavior.followBehavior.minimumDistance = 0.3; // Closer to the user
+near.defaultBehavior.followBehavior.maximumDistance = 0.5; // Closer to the user
+
+const button1 = new GUI.HolographicButton("button1");
+button1.text = "Recommend";
+near.addButton(button1);
+button1.onPointerClickObservable.add(() => {
+    console.log("recommend button clicked");
+    addRecommendationsFromSelectedPapers();
+});
+
+const button2 = new GUI.HolographicButton("button2");
+button2.text = "Delete";
+near.addButton(button2);
+button2.onPointerClickObservable.add(() => {
+    console.log("delete button clicked");
+    removeSelectedNodesFromGraph();
+});
+
+const button3 = new GUI.HolographicButton("button3");
+button3.text = "Clear selection";
+near.addButton(button3);
+button3.onPointerClickObservable.add(() => {
+    console.log("clear selection button clicked");
+    selectedIds.length = 0;
+    nodes.run((d,n,i) => {
+        highlighter.removeMesh(n);
+    });
+});
+
+const button4 = new GUI.HolographicButton("button4");
+button4.text = "Unpin";
+near.addButton(button4);
+button4.onPointerClickObservable.add(() => {
+    console.log("unpin button clicked");
+    paperData.forEach((d) => {
+        delete d.fx;
+        delete d.fy;
+        delete d.fz;
+    });
+});
+
+const button5 = new GUI.HolographicButton("button5");
+button5.text = "Toggle links";
+near.addButton(button5);
+button5.onPointerClickObservable.add(() => {
+    console.log("toggle links button clicked");
+    useCitationLinks = !useCitationLinks;
+    if (useCitationLinks) {
+        createLinks(citationLinkData);
+    } else {
+        createLinks(recommendationLinkData);
+    }
+});
+
+button1.backMaterial.albedoColor = new BABYLON.Color3(0.2, 0.2, 1.0); // Red
+
+
+
