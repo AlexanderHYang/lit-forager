@@ -189,8 +189,8 @@ function createNodes(papers) {
         .scaling((d) => new Vector3(0.02, 0.02, 0.02))
         .material((d) => {
             let mat = new StandardMaterial("mat");
-            mat.specularColor = new Color3(0, 0, 0);
-            mat.diffuseColor = scaleC(d.group);
+            mat.specularColor = scaleC(d.color);
+            mat.diffuseColor = scaleC(d.color);
             return mat;
         })
         //Add an action that will increase the size of the sphere when the pointer is moved over it
@@ -557,7 +557,7 @@ function addPapersToGraph(newPapers) {
         d.fz = d.z;
     });
     simulation.nodes(paperData);
-    //simulation.alpha(0.05);
+    simulation.alpha(0.05);
     paperData.forEach((d) => { // undo lock nodes in place after simulation
         delete d.fx;
         delete d.fy;
@@ -628,7 +628,7 @@ near.defaultBehavior.followBehavior.maximumDistance = 0.5; // Closer to the user
 
 // Function to Create a Styled Button
 const createStyledButton = (name, text, color) => {
-    const button = new GUI.HolographicButton(name);
+    const button = new GUI.TouchHolographicButton(name);
     button.text = text;
 
     return button;
@@ -685,13 +685,7 @@ button5.onPointerClickObservable.add(() => {
     }
 });
 
-button1.backMaterial.albedoColor = new BABYLON.Color3(0.2, 0.2, 1.0); // Red
-
-
-
-
-
-
+button1.backMaterial.albedoColor = new BABYLON.Color3(0.2, 0.2, 1.0); // blue
 
 
 
