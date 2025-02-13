@@ -172,6 +172,13 @@ function createNodes(papers) {
     // Remove nodes from force simulation
     // simulation.nodes([]); // Reset simulation nodes
 
+    // ensure data has all the necessary fields
+    papers.forEach((d) => {
+        if (!d.recommends) {
+            d.recommends = [];
+        }
+    });
+
     // console.log("position data from paperData when creating nodes")
     nodes = CoT.bind("sphere", {}, papers)
         .position((d) => {
@@ -295,15 +302,8 @@ function createNodes(papers) {
             highlighter.addExcludedMesh(hoverPlane);
         }
     });
-
-    // add list of papers recommended by this one (to be populated later)
-    nodes.run((d,n,i) => {
-        if (!d.recommends) {
-            d.recommends = [];
-        }
-    })
 }
-createNodes(paperData);
+// createNodes(paperData);
 
 //We will be using a lineSystem mesh for our edges which takes a two dimension array and draws a line for each sub array.
 //lineSystems use one draw call for all line meshes and will be the most performant option
@@ -506,10 +506,12 @@ function addRecommendationsFromSelectedPapers() {
         })
 
         // make selected ids be the new papers
+        console.log("selectedIds before:", selectedIds);
         selectedIds.length = 0;
         recommendedPapers.forEach((p) => {
-            selectedIds.push(p.paperId);
+            selectedIds.push(p);
         });
+        console.log("selectedIds after:", selectedIds);
 
         APIUtils.getDetailsForMultiplePapers(recommendedPapers).then((r) => {
             addPapersToGraph(r);
@@ -540,8 +542,10 @@ function addPapersToGraph(newPapers) {
     // it relies on the x, y, z positions of the nodes which is initialized by the simulation
 
     // Add new papers to paperData
+    const newColor = BABYLON.Color3.Random();
     newPapers.forEach((p) => {
         if (!paperData.find((d) => d.paperId === p.paperId)) { // don't add duplicates
+            p.color = newColor;
             paperData.push(p);
         }
     });
@@ -606,6 +610,7 @@ function removeNodesFromGraph(idsToRemove) {
 }
 
 
+
 const manager = new GUI.GUI3DManager(scene);
 
 // Create a NearMenu
@@ -614,31 +619,44 @@ manager.addControl(near);
 near.backPlateMargin = 0.1;
 
 // Reduce the scale of the NearMenu
-near.scaling = new BABYLON.Vector3(0.05, 0.05, 0.05); // Adjust as needed
+near.scaling = new BABYLON.Vector3(0.08, 0.08, 0.08); // Adjust for better size
 
 // Adjust the follow behavior distance
 near.defaultBehavior.followBehavior.minimumDistance = 0.3; // Closer to the user
 near.defaultBehavior.followBehavior.maximumDistance = 0.5; // Closer to the user
 
-const button1 = new GUI.HolographicButton("button1");
-button1.text = "Recommend";
+// Function to Create a Styled Button
+const createStyledButton = (name, text, color) => {
+    const button = new GUI.HolographicButton(name);
+    button.text = text;
+
+    return button;
+};
+
+// Create Buttons with Better Styling
+const button1 = createStyledButton("button1", "Recommend", new BABYLON.Color3(0.2, 0.2, 1.0)); // Blue
+const button2 = createStyledButton("button2", "Delete", new BABYLON.Color3(1, 0.2, 0.2)); // Red
+const button3 = createStyledButton("button3", "Clear Selection", new BABYLON.Color3(0.2, 1, 0.2)); // Green
+const button4 = createStyledButton("button4", "Unpin", new BABYLON.Color3(1, 1, 0.2)); // Yellow
+const button5 = createStyledButton("button5", "Toggle Links", new BABYLON.Color3(1, 0.2, 1)); // Purple
+
 near.addButton(button1);
+near.addButton(button2);
+near.addButton(button3);
+near.addButton(button4);
+near.addButton(button5);
+
+
 button1.onPointerClickObservable.add(() => {
     console.log("recommend button clicked");
     addRecommendationsFromSelectedPapers();
 });
 
-const button2 = new GUI.HolographicButton("button2");
-button2.text = "Delete";
-near.addButton(button2);
 button2.onPointerClickObservable.add(() => {
     console.log("delete button clicked");
     removeSelectedNodesFromGraph();
 });
 
-const button3 = new GUI.HolographicButton("button3");
-button3.text = "Clear selection";
-near.addButton(button3);
 button3.onPointerClickObservable.add(() => {
     console.log("clear selection button clicked");
     selectedIds.length = 0;
@@ -647,9 +665,6 @@ button3.onPointerClickObservable.add(() => {
     });
 });
 
-const button4 = new GUI.HolographicButton("button4");
-button4.text = "Unpin";
-near.addButton(button4);
 button4.onPointerClickObservable.add(() => {
     console.log("unpin button clicked");
     paperData.forEach((d) => {
@@ -659,9 +674,6 @@ button4.onPointerClickObservable.add(() => {
     });
 });
 
-const button5 = new GUI.HolographicButton("button5");
-button5.text = "Toggle links";
-near.addButton(button5);
 button5.onPointerClickObservable.add(() => {
     console.log("toggle links button clicked");
     useCitationLinks = !useCitationLinks;
@@ -676,3 +688,11 @@ button1.backMaterial.albedoColor = new BABYLON.Color3(0.2, 0.2, 1.0); // Red
 
 
 
+
+
+
+
+
+
+// Setup initial graph
+addPapersToGraph(paperData);
