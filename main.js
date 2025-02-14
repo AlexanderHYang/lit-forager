@@ -222,7 +222,7 @@ function createNodes(papers) {
                 new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOverTrigger, () => {
                     //ExecudeCodeAction allows us to execute a given function
                     highlighter.addMesh(n, Color3.White());
-                    scene.setRenderingAutoClearDepthStencil(1, true, true, false);
+                    scene.setRenderingAutoClearDepthStencil(1, false, false);
                     //Show and adjust the label
                     hoverPlane.isVisible = true;
                     label.text = d.title;
@@ -299,7 +299,7 @@ function createNodes(papers) {
     nodes.run((d,n,i) => {
         if (selectedIds.includes(d.paperId)) {
             highlighter.addMesh(n, Color3.White());
-            scene.setRenderingAutoClearDepthStencil(1, true, true, false);
+            scene.setRenderingAutoClearDepthStencil(1, false, false);
             highlighter.addExcludedMesh(hoverPlane);
         }
     });
