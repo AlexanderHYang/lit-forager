@@ -11,18 +11,24 @@ import {
     Engine,
 } from "@babylonjs/core";
 import { AdvancedDynamicTexture, Rectangle, TextBlock } from "@babylonjs/gui";
-import { forceSimulation, forceCenter, forceManyBody, forceLink, forceCollide } from "./d3-force-3d/src/index.js"; //External required dependency for force layouts
+import {
+    forceSimulation,
+    forceCenter,
+    forceManyBody,
+    forceLink,
+    forceCollide,
+} from "./d3-force-3d/src/index.js"; //External required dependency for force layouts
 import * as d3 from "d3";
 import * as anu from "@jpmorganchase/anu"; //import anu, this project is using a local import of babylon js located at ../babylonjs-anu this may not be the latest version and is used for simplicity.
 // import leMis from "./data/miserables-trimmed.json" assert { type: "json" };
 import * as BABYLON from "@babylonjs/core";
 import * as GUI from "@babylonjs/gui";
 // import * as BJSGUI from '@babylonjs/gui';
-import * as APIUtils from "./api.js"
+import * as APIUtils from "./api.js";
 import { removeItem } from "./utils.js";
 
 // Initialize graph
-const initialPaperIds = ["f9c602cc436a9ea2f9e7db48c77d924e09ce3c32"]
+const initialPaperIds = ["f9c602cc436a9ea2f9e7db48c77d924e09ce3c32"];
 // const paperData = [
 //     {
 //     "paperId" : "10",
@@ -41,17 +47,16 @@ let paperData;
 try {
     paperData = await APIUtils.getDetailsForMultiplePapers(initialPaperIds);
     if (!Array.isArray(paperData)) {
-        paperData = [{"paperId" : "f9c602cc436a9ea2f9e7db48c77d924e09ce3c32"}];
+        paperData = [{ paperId: "f9c602cc436a9ea2f9e7db48c77d924e09ce3c32" }];
     }
 } catch (error) {
-    paperData = [{"paperId" : "f9c602cc436a9ea2f9e7db48c77d924e09ce3c32"}];
+    paperData = [{ paperId: "f9c602cc436a9ea2f9e7db48c77d924e09ce3c32" }];
 }
 
-const citationLinkData = []
+const citationLinkData = [];
 const recommendationLinkData = [];
 
 let useCitationLinks = true;
-
 
 const selectedIds = [];
 
@@ -82,9 +87,9 @@ const camera = new ArcRotateCamera(
     new Vector3(0, 0, 0),
     scene
 );
-camera.wheelPrecision = 20;     // Adjust the sensitivity of the mouse wheel's zooming
-camera.minZ = 0;                // Adjust the distance of the camera's near plane
-camera.attachControl(true);     // Allow the camera to respond to user controls
+camera.wheelPrecision = 20; // Adjust the sensitivity of the mouse wheel's zooming
+camera.minZ = 0; // Adjust the distance of the camera's near plane
+camera.attachControl(true); // Allow the camera to respond to user controls
 camera.position = new Vector3(0, 0, -1.5);
 
 //Create a D3 color scale that returns a Color4 for our nodes
@@ -92,17 +97,9 @@ const scaleC = d3.scaleOrdinal(anu.ordinalChromatic("d310").toColor4());
 
 //Create a D3 simulation with several forces
 const simulation = forceSimulation(paperData, 3)
-    .force("link", forceLink(citationLinkData)
-        .distance(0.1)
-        .strength(2)
-    )
-    .force("charge", forceManyBody()
-        .strength(-0.005)
-    )
-    .force("collide", forceCollide()
-        .radius(0.01)
-        .strength(2)
-    )
+    .force("link", forceLink(citationLinkData).distance(0.1).strength(2))
+    .force("charge", forceManyBody().strength(-0.005))
+    .force("collide", forceCollide().radius(0.01).strength(2))
     // .force("center", forceCenter(0, 0, 0))
     .on("tick", ticked)
     .on("end", () => simulation.stop());
@@ -110,7 +107,6 @@ const simulation = forceSimulation(paperData, 3)
 //Create a Center of Transform TransformNode using create() that serves the parent node for all our meshes that make up our network
 const CoT_babylon = anu.create("cot", "cot");
 const CoT = anu.selectName("cot", scene);
-
 
 //Create a Babylon HighlightLayer that will allow us to add a highlight stencil to meshes
 const highlighter = new BABYLON.HighlightLayer("highlighter", scene);
@@ -123,8 +119,8 @@ CoT.bind("plane", { width: 0.6, height: 0.6 }, [{}]).run((d, n) => {
 });
 // console.log("Hover Plane:", hoverPlane); // Should now reference the plane
 
-hoverPlane.isPickable = false;      //Disable picking so it doesn't get in the way of interactions
-hoverPlane.renderingGroupId = 1;    //Set render id higher so it always renders in front
+hoverPlane.isPickable = false; //Disable picking so it doesn't get in the way of interactions
+hoverPlane.renderingGroupId = 1; //Set render id higher so it always renders in front
 
 //Use the Babylon GUI system to create an AdvancedDynamicTexture that will the updated with our label content
 let advancedTexture = AdvancedDynamicTexture.CreateForMesh(hoverPlane);
@@ -158,7 +154,6 @@ hoverPlane.billboardMode = 7;
 //bind(mesh: string, options?: {}, data?: {}, scene?: Scene)
 let nodes;
 function createNodes(papers) {
-
     hoverPlane.isVisible = false;
 
     // Dispose of existing nodes
@@ -184,7 +179,7 @@ function createNodes(papers) {
     nodes = CoT.bind("sphere", {}, papers)
         .position((d) => {
             // console.log(d.x, d.y, d.z);
-            return new Vector3(d.x, d.y, d.z)
+            return new Vector3(d.x, d.y, d.z);
         })
         .scaling((d) => new Vector3(0.02, 0.02, 0.02))
         .material((d) => {
@@ -255,8 +250,7 @@ function createNodes(papers) {
         // on pick up action for selecting nodes
         .action(
             (d, n, i) =>
-                new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickUpTrigger, () => {
-                })
+                new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickUpTrigger, () => {})
         );
 
     // Add SixDofDrag behavior
@@ -296,7 +290,7 @@ function createNodes(papers) {
     });
 
     // re-add highlight layer to selected nodes
-    nodes.run((d,n,i) => {
+    nodes.run((d, n, i) => {
         if (selectedIds.includes(d.paperId)) {
             highlighter.addMesh(n, Color3.White());
             scene.setRenderingAutoClearDepthStencil(1, false, false);
@@ -324,25 +318,29 @@ let updateLines = (data) => {
 let links;
 function createLinks(data) {
     if (links) {
-        links.run((d,n,i) => {
+        links.run((d, n, i) => {
             n.dispose();
-        })
+        });
     }
-    links = CoT.bind("lineSystem", { lines: (d) => {
-        let l = updateLines(d);
-        console.log(l);
-        return l;
-        }, updatable: true }, [data])
+    links = CoT.bind(
+        "lineSystem",
+        {
+            lines: (d) => {
+                let l = updateLines(d);
+                console.log(l);
+                return l;
+            },
+            updatable: true,
+        },
+        [data]
+    )
         .prop("color", new Color4(1, 1, 1, 1))
         .prop("alpha", 0.3)
         .prop("isPickable", false);
 
-    simulation.force("link", forceLink(data)
-    .distance(0.1)
-    .strength(2));
+    simulation.force("link", forceLink(data).distance(0.1).strength(2));
 }
 createLinks(citationLinkData);
-
 
 //Update the position of the nodes and links each time the simulation ticks.
 function ticked() {
@@ -395,16 +393,13 @@ const xrSessionManager = xr.baseExperience.sessionManager;
 xrSessionManager.onXRFrameObservable.addOnce(() => {
     xr.baseExperience.camera.position.set(-0.5, 0, 0);
     xr.baseExperience.camera.setTarget(new BABYLON.Vector3(0, 0, 0));
-})
-
-
-
+});
 
 // force simulation to step every frame
 scene.onBeforeRenderObservable.add(() => {
     paperData.forEach((d) => {
         // console.log(d.x, d.y, d.z, d.vx, d.vy, d.vz);
-    })
+    });
     // simulation.step();
     simulation.tick();
     ticked();
@@ -456,7 +451,7 @@ window.addEventListener("keydown", (ev) => {
         // selectedIds.length = 0; // clear selected ids
 
         removeSelectedNodesFromGraph();
-    };
+    }
     if (ev.key === "l") {
         console.log("l pressed");
         useCitationLinks = !useCitationLinks;
@@ -466,7 +461,7 @@ window.addEventListener("keydown", (ev) => {
         } else {
             createLinks(recommendationLinkData);
         }
-    };
+    }
 });
 
 function createLinkData(paperData) {
@@ -502,9 +497,9 @@ function addRecommendationsFromSelectedPapers() {
                     if (!p.recommends.includes(rec)) {
                         p.recommends.push(rec);
                     }
-                })
+                });
             }
-        })
+        });
 
         // make selected ids be the new papers
         console.log("selectedIds before:", selectedIds);
@@ -516,7 +511,7 @@ function addRecommendationsFromSelectedPapers() {
 
         APIUtils.getDetailsForMultiplePapers(recommendedPapers).then((r) => {
             addPapersToGraph(r);
-        })
+        });
     });
 }
 
@@ -535,30 +530,33 @@ function addPapersToGraph(newPapers) {
     //     }
     // ];
 
-    // Notes: 
+    // Notes:
     // 1) Nodes might need to be locked in place prior to adding to simulation,
     // since we don't want nodes to move around wildly when adding new ones
-    // 
+    //
     // 2) createNodes() can only be called after nodes are added to simulation since
     // it relies on the x, y, z positions of the nodes which is initialized by the simulation
 
     // Add new papers to paperData
     const newColor = BABYLON.Color3.Random();
     newPapers.forEach((p) => {
-        if (!paperData.find((d) => d.paperId === p.paperId)) { // don't add duplicates
+        if (!paperData.find((d) => d.paperId === p.paperId)) {
+            // don't add duplicates
             p.color = newColor;
             paperData.push(p);
         }
     });
 
-    paperData.forEach((d) => { // lock nodes in place before simulation
+    paperData.forEach((d) => {
+        // lock nodes in place before simulation
         d.fx = d.x;
         d.fy = d.y;
         d.fz = d.z;
     });
     simulation.nodes(paperData);
     simulation.alpha(0.05);
-    paperData.forEach((d) => { // undo lock nodes in place after simulation
+    paperData.forEach((d) => {
+        // undo lock nodes in place after simulation
         delete d.fx;
         delete d.fy;
         delete d.fz;
@@ -586,19 +584,25 @@ function removeNodesFromGraph(idsToRemove) {
     // Mutate paperData in place
     for (let i = paperData.length - 1; i >= 0; i--) {
         if (idsToRemove.includes(paperData[i].paperId)) {
-            paperData.splice(i, 1);  // Remove the element in place
+            paperData.splice(i, 1); // Remove the element in place
         }
     }
 
     // Mutate linkData in place
     for (let i = citationLinkData.length - 1; i >= 0; i--) {
-        if (idsToRemove.includes(citationLinkData[i].source.paperId) || idsToRemove.includes(citationLinkData[i].target.paperId)) {
-            citationLinkData.splice(i, 1);  // Remove the element in place
+        if (
+            idsToRemove.includes(citationLinkData[i].source.paperId) ||
+            idsToRemove.includes(citationLinkData[i].target.paperId)
+        ) {
+            citationLinkData.splice(i, 1); // Remove the element in place
         }
     }
     for (let i = recommendationLinkData.length - 1; i >= 0; i--) {
-        if (idsToRemove.includes(recommendationLinkData[i].source.paperId) || idsToRemove.includes(recommendationLinkData[i].target.paperId)) {
-            recommendationLinkData.splice(i, 1);  // Remove the element in place
+        if (
+            idsToRemove.includes(recommendationLinkData[i].source.paperId) ||
+            idsToRemove.includes(recommendationLinkData[i].target.paperId)
+        ) {
+            recommendationLinkData.splice(i, 1); // Remove the element in place
         }
     }
 
@@ -609,8 +613,6 @@ function removeNodesFromGraph(idsToRemove) {
         createLinks(recommendationLinkData);
     }
 }
-
-
 
 const manager = new GUI.GUI3DManager(scene);
 
@@ -647,7 +649,6 @@ near.addButton(button3);
 near.addButton(button4);
 near.addButton(button5);
 
-
 button1.onPointerClickObservable.add(() => {
     console.log("recommend button clicked");
     addRecommendationsFromSelectedPapers();
@@ -661,7 +662,7 @@ button2.onPointerClickObservable.add(() => {
 button3.onPointerClickObservable.add(() => {
     console.log("clear selection button clicked");
     selectedIds.length = 0;
-    nodes.run((d,n,i) => {
+    nodes.run((d, n, i) => {
         highlighter.removeMesh(n);
     });
 });
@@ -686,8 +687,6 @@ button5.onPointerClickObservable.add(() => {
 });
 
 button1.backMaterial.albedoColor = new BABYLON.Color3(0.2, 0.2, 1.0); // blue
-
-
 
 // Setup initial graph
 addPapersToGraph(paperData);
