@@ -6,7 +6,7 @@ import {
     toggleLinksButton,
     clearSelectionButton,
     unpinNodesButton,
-} from "./graphics.js";
+} from "./src/graphics.js";
 import { 
     fetchInitialPapers, 
     initializeSimulation, 
@@ -17,7 +17,7 @@ import {
     startSimulationRendering,
     clearNodeSelection,
     unpinNodes,
-} from "./graph.js";
+} from "./src/graph.js";
 
 // Fetch initial paper data and initialize the graph
 async function initializeApp() {

@@ -1,5 +1,5 @@
 import { Vector3, Color3, Color4, StandardMaterial } from "@babylonjs/core";
-import { forceSimulation, forceManyBody, forceLink, forceCollide, forceCenter } from "./d3-force-3d/src/index.js";
+import { forceSimulation, forceManyBody, forceLink, forceCollide, forceCenter } from "../d3-force-3d/src/index.js";
 import * as d3 from "d3";
 import * as anu from "@jpmorganchase/anu";
 import * as BABYLON from "@babylonjs/core";
