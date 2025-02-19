@@ -9,6 +9,7 @@ import {
     HighlightLayer,
 } from "@babylonjs/core";
 import { AdvancedDynamicTexture, Rectangle, TextBlock } from "@babylonjs/gui";
+import * as BABYLON from "@babylonjs/core";
 import * as GUI from "@babylonjs/gui";
 import "@babylonjs/loaders/glTF";
 import * as anu from "@jpmorganchase/anu";
@@ -42,6 +43,34 @@ light.groundColor = new Color3(1, 1, 1);
 // Create the CoT and get the hover plane
 export const CoT_babylon = anu.create("cot", "cot");
 export const CoT = anu.selectName("cot", scene);
+
+export const env = scene.createDefaultEnvironment();
+
+// Assuming 'env.ground' is your ground mesh
+const groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
+groundMaterial.alpha = 0.0;
+groundMaterial.transparencyMode = BABYLON.Material.MATERIAL_ALPHABLEND;
+
+// Apply the material to the ground mesh
+env.ground.material = groundMaterial;
+env.ground.setAbsolutePosition(new BABYLON.Vector3(0, -1, 0));
+
+// Enable XR
+export const xr = await scene.createDefaultXRExperienceAsync({
+    floorMeshes: [env.ground],
+    optionalFeatures: true,
+});
+
+const xrFeatureManager = xr.baseExperience.featuresManager;
+xrFeatureManager.disableFeature(BABYLON.WebXRFeatureName.POINTER_SELECTION);
+xrFeatureManager.disableFeature(BABYLON.WebXRFeatureName.TELEPORTATION);
+
+const xrSessionManager = xr.baseExperience.sessionManager;
+
+xrSessionManager.onXRFrameObservable.addOnce(() => {
+    xr.baseExperience.camera.position.set(-0.5, 0, 0);
+    xr.baseExperience.camera.setTarget(new BABYLON.Vector3(0, 0, 0));
+});
 
 // Highlight Layer and hover plane
 export const highlighter = new HighlightLayer("highlighter", scene);
