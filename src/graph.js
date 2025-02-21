@@ -46,7 +46,7 @@ export function initializeSimulation() {
         .on("tick", ticked)
         .on("end", () => simulation.stop());
     console.log("Simulation initialized");
-    console.log(simulation.nodes());
+    // console.log(simulation.nodes());
 }
 
 export function startSimulationRendering() {
@@ -276,6 +276,7 @@ export function ticked() {
 }
 
 export function clearNodeSelection() {
+    console.log("clearNodeSelection() called");
     selectedIds.length = 0;
     nodes.run((d, n, i) => {
         highlighter.removeMesh(n);
@@ -283,6 +284,7 @@ export function clearNodeSelection() {
 }
 
 export function unpinNodes() {
+    console.log("unpinNodes() called");
     paperData.forEach((d) => {
         delete d.fx;
         delete d.fy;
@@ -404,6 +406,7 @@ export function removeNodesFromGraph(idsToRemove) {
  * Toggles between citation and recommendation links.
  */
 export function toggleLinkType() {
+    console.log("toggleLinkType() called");
     useCitationLinks = !useCitationLinks;
     createLinks(useCitationLinks ? citationLinkData : recommendationLinkData);
     // ticked();

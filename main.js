@@ -49,6 +49,14 @@ window.addEventListener("keydown", (ev) => {
         console.log("L pressed - Toggling links");
         toggleLinkType();
     }
+    if (ev.key === "c") {
+        console.log("C pressed - Clearing node selection");
+        clearNodeSelection();
+    }
+    if (ev.key === "u") {
+        console.log("U pressed - Unpinning nodes");
+        unpinNodes();
+    }
 });
 
 // Start application initialization

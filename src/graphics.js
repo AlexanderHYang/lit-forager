@@ -113,14 +113,17 @@ export function updateHoverPlaneText(text) {
 
 // UI Manager and NearMenu
 export const guiManager = new GUI.GUI3DManager(scene);
-export const nearMenu = new GUI.NearMenu("near");
+export const handMenu = new GUI.HandMenu(xr.baseExperience, "menu");
 
-guiManager.addControl(nearMenu);
-nearMenu.backPlateMargin = 0.1;
-nearMenu.scaling = new Vector3(0.08, 0.08, 0.08);
-nearMenu.defaultBehavior.followBehavior.minimumDistance = 0.3;
-nearMenu.defaultBehavior.followBehavior.maximumDistance = 0.5;
+const handConstraintBehavior = handMenu.handConstraintBehavior;
+handConstraintBehavior.gazeProximityRadius = 0.5;
+handConstraintBehavior.palmUpStrictness = 0.5;
 
+guiManager.addControl(handMenu);
+handMenu.backPlateMargin = 0.1;
+handMenu.scaling = new Vector3(0.08, 0.08, 0.08);
+// nearMenu.defaultBehavior.followBehavior.minimumDistance = 0.3;
+// nearMenu.defaultBehavior.followBehavior.maximumDistance = 0.5;
 // Helper function to create UI buttons
 const createButton = (name, text, onClick) => {
     const button = new GUI.TouchHolographicButton(name);
@@ -136,11 +139,11 @@ export const clearSelectionButton = createButton("clearSelection", "Clear Select
 export const unpinNodesButton = createButton("unpinNodes", "Unpin Nodes", () => console.log("Unpin Nodes Clicked"));
 export const toggleLinksButton = createButton("toggleLinks", "Toggle Links", () => console.log("Toggle Links Clicked"));
 
-nearMenu.addButton(recommendButton);
-nearMenu.addButton(deleteButton);
-nearMenu.addButton(clearSelectionButton);
-nearMenu.addButton(unpinNodesButton);
-nearMenu.addButton(toggleLinksButton);
+handMenu.addButton(recommendButton);
+handMenu.addButton(deleteButton);
+handMenu.addButton(clearSelectionButton);
+handMenu.addButton(unpinNodesButton);
+handMenu.addButton(toggleLinksButton);
 
 // Start render loop
 engine.runRenderLoop(() => {
