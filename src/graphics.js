@@ -117,11 +117,16 @@ export const handMenu = new GUI.HandMenu(xr.baseExperience, "menu");
 
 const handConstraintBehavior = handMenu.handConstraintBehavior;
 handConstraintBehavior.gazeProximityRadius = 0.5;
-handConstraintBehavior.palmUpStrictness = 0.5;
+handConstraintBehavior.palmUpStrictness = 0.9;
+handConstraintBehavior.handConstraintVisibility = BABYLON.HandConstraintVisibility.PALM_UP;
+handConstraintBehavior.targetZone = BABYLON.HandConstraintZone.ULNAR_SIDE;
+handConstraintBehavior.nodeOrientationMode = BABYLON.HandConstraintOrientation.HAND_ROTATION;
+handConstraintBehavior.targetOffset = 0.15;
+handMenu.columns = 2;
 
 guiManager.addControl(handMenu);
 handMenu.backPlateMargin = 0.1;
-handMenu.scaling = new Vector3(0.08, 0.08, 0.08);
+handMenu.scaling = new Vector3(0.06, 0.06, 0.06);
 // nearMenu.defaultBehavior.followBehavior.minimumDistance = 0.3;
 // nearMenu.defaultBehavior.followBehavior.maximumDistance = 0.5;
 // Helper function to create UI buttons
@@ -133,11 +138,19 @@ const createButton = (name, text, onClick) => {
 };
 
 // Exported UI buttons
-export const recommendButton = createButton("recommend", "Recommend", () => console.log("Recommend Clicked"));
+export const recommendButton = createButton("recommend", "Recommend", () =>
+    console.log("Recommend Clicked")
+);
 export const deleteButton = createButton("delete", "Delete", () => console.log("Delete Clicked"));
-export const clearSelectionButton = createButton("clearSelection", "Clear Selection", () => console.log("Clear Selection Clicked"));
-export const unpinNodesButton = createButton("unpinNodes", "Unpin Nodes", () => console.log("Unpin Nodes Clicked"));
-export const toggleLinksButton = createButton("toggleLinks", "Toggle Links", () => console.log("Toggle Links Clicked"));
+export const clearSelectionButton = createButton("clearSelection", "Clear Selection", () =>
+    console.log("Clear Selection Clicked")
+);
+export const unpinNodesButton = createButton("unpinNodes", "Unpin Nodes", () =>
+    console.log("Unpin Nodes Clicked")
+);
+export const toggleLinksButton = createButton("toggleLinks", "Toggle Links", () =>
+    console.log("Toggle Links Clicked")
+);
 
 handMenu.addButton(recommendButton);
 handMenu.addButton(deleteButton);
