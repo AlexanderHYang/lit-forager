@@ -37,6 +37,15 @@ toggleLinksButton.onPointerClickObservable.add(() => toggleLinkType());
 
 // Add Keybinds for Graph Interaction
 window.addEventListener("keydown", (ev) => {
+    // Add debug layer
+    if (ev.shiftKey && ev.ctrlKey && ev.altKey && ev.keyCode === 73) {
+        if (scene.debugLayer.isVisible()) {
+            scene.debugLayer.hide();
+        } else {
+            scene.debugLayer.show();
+        }
+    }
+    
     if (ev.key === "r") {
         console.log("r pressed - Adding recommendations");
         addRecommendationsFromSelectedPapers();

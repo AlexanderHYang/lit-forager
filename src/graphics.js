@@ -8,6 +8,7 @@ import {
     StandardMaterial,
     HighlightLayer,
     MeshBuilder,
+    DebugLayer
 } from "@babylonjs/core";
 import { AdvancedDynamicTexture, Rectangle, TextBlock, StackPanel, ScrollViewer } from "@babylonjs/gui";
 import * as BABYLON from "@babylonjs/core";
@@ -15,7 +16,7 @@ import * as GUI from "@babylonjs/gui";
 import "@babylonjs/loaders/glTF";
 import * as anu from "@jpmorganchase/anu";
 import { nodes } from "./graph";
-
+import "@babylonjs/inspector";
 // Create the Babylon.js engine and scene
 const app = document.querySelector("#app");
 const canvas = document.createElement("canvas");

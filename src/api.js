@@ -15,7 +15,7 @@ export async function getDetailsForMultiplePapers(paperIds) {
     });
 
     let attempts = 0;
-    const maxAttempts = 10;
+    const maxAttempts = 20;
     let lastError;
 
     while (attempts < maxAttempts) {
@@ -74,7 +74,7 @@ export async function fetchRecsFromMultipleIds(
     });
 
     let attempts = 0;
-    const maxAttempts = 10;
+    const maxAttempts = 20;
     let lastError;
 
     while (attempts < maxAttempts) {
