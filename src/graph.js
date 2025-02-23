@@ -5,7 +5,7 @@ import * as anu from "@jpmorganchase/anu";
 import * as BABYLON from "@babylonjs/core";
 import * as APIUtils from "./api.js";
 import { removeItem } from "./utils.js";
-import { scene, CoT, CoT_babylon, highlighter, hoverPlane, updateHoverPlaneText } from "./graphics.js"; // Import shared scene from graphics.js
+import { scene, CoT, CoT_babylon, highlighter, hoverPlane, updateHoverPlaneText, setHoverPlaneToNode, updatePaperPanelToNode, updatePaperPanelOnDrag } from "./graphics.js"; // Import shared scene from graphics.js
 
 // Shared graph data
 export const paperData = [];
@@ -142,10 +142,11 @@ export function createNodes() {
                     highlighter.addMesh(n, Color3.White());
                     scene.setRenderingAutoClearDepthStencil(1, false, false);
                     //Show and adjust the label
-                    hoverPlane.isVisible = true;
-                    updateHoverPlaneText(d.title);
-                    hoverPlane.position = n.position.add(new Vector3(0, 0.08, 0)); //Add vertical offset
-                    highlighter.addExcludedMesh(hoverPlane);
+                    // hoverPlane.isVisible = true;
+                    // updateHoverPlaneText(d.title);
+                    // hoverPlane.position = n.position.add(new Vector3(0, 0.08, 0)); //Add vertical offset
+                    // highlighter.addExcludedMesh(hoverPlane);
+                    setHoverPlaneToNode(d, n);
                 })
         )
         //Add an action that will undo the above when the pointer is moved away from the sphere mesh
@@ -156,7 +157,7 @@ export function createNodes() {
                     if (!selectedIds.includes(d.paperId)) {
                         highlighter.removeMesh(n);
                     }
-                    hoverPlane.isVisible = false;
+                    setHoverPlaneToNode(null, null);
                 })
         )
         // on pick down action to select ndoes
@@ -174,6 +175,13 @@ export function createNodes() {
         .action(
             (d, n, i) =>
                 new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickUpTrigger, () => {})
+        )
+        .action(
+            (d,n,i) => 
+                new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnDoublePickTrigger, () => {
+                    console.log("double click");
+                    updatePaperPanelToNode(d,n);
+                })
         );
 
     // Add SixDofDrag behavior
@@ -192,9 +200,8 @@ export function createNodes() {
             d.fy = n.position.y;
             d.fz = n.position.z;
 
-            hoverPlane.isVisible = true;
-            updateHoverPlaneText(d.title);
-            hoverPlane.position = n.position.add(new Vector3(0, 0.08, 0)); //Add vertical offset
+            updatePaperPanelOnDrag(d, n);
+            setHoverPlaneToNode(d, n);
         });
         dragBehavior.onDragObservable.add((data) => {
             simulation.alpha(0.1);

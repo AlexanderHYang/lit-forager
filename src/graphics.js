@@ -7,12 +7,14 @@ import {
     Engine,
     StandardMaterial,
     HighlightLayer,
+    MeshBuilder,
 } from "@babylonjs/core";
-import { AdvancedDynamicTexture, Rectangle, TextBlock } from "@babylonjs/gui";
+import { AdvancedDynamicTexture, Rectangle, TextBlock, StackPanel, ScrollViewer } from "@babylonjs/gui";
 import * as BABYLON from "@babylonjs/core";
 import * as GUI from "@babylonjs/gui";
 import "@babylonjs/loaders/glTF";
 import * as anu from "@jpmorganchase/anu";
+import { nodes } from "./graph";
 
 // Create the Babylon.js engine and scene
 const app = document.querySelector("#app");
@@ -21,6 +23,7 @@ app.appendChild(canvas);
 
 export const engine = new Engine(canvas, true, { stencil: true });
 export const scene = new Scene(engine);
+Scene.DoubleClickDelay = 500;
 export const camera = new ArcRotateCamera(
     "Camera",
     -(Math.PI / 4) * 3,
@@ -74,13 +77,13 @@ xrSessionManager.onXRFrameObservable.addOnce(() => {
 
 // Highlight Layer and hover plane
 export const highlighter = new HighlightLayer("highlighter", scene);
-export let hoverPlane = null;
-CoT.bind("plane", { width: 0.6, height: 0.6 }, [{}]).run((d, n) => {
-    hoverPlane = n; // Get the first created mesh
-});
+
+export const hoverPlane = BABYLON.MeshBuilder.CreatePlane("hoverPlane", { width: 0.6, height: 0.6 }, scene);
+let hoverPlaneId = null;
+highlighter.addExcludedMesh(hoverPlane);
 
 //Use the Babylon GUI system to create an AdvancedDynamicTexture that will the updated with our label content
-let advancedTexture = AdvancedDynamicTexture.CreateForMesh(hoverPlane);
+const advancedTexture = AdvancedDynamicTexture.CreateForMesh(hoverPlane);
 
 //Create a rectangle for the background
 let UIBackground = new Rectangle();
@@ -107,8 +110,32 @@ hoverPlane.billboardMode = 7; //Set billboard mode to always face camera
 hoverPlane.isPickable = false; //Disable picking so it doesn't get in the way of interactions
 hoverPlane.renderingGroupId = 1; //Set render id higher so it always renders in front
 
+scene.onBeforeRenderObservable.add(() => {
+    if (nodes) {
+        nodes.run((d, n) => {
+            if (d.paperId === hoverPlaneId) {
+                hoverPlane.position = n.position.add(new Vector3(0, 0.08, 0)); // Add vertical offset
+            }
+        })
+    }
+});
+
 export function updateHoverPlaneText(text) {
     label.text = text;
+}
+export function setHoverPlaneToNode(d, n) {
+    if (n === null || d === null) {
+        hoverPlane.isVisible = false;
+        hoverPlaneId = null;
+    } else {
+        hoverPlaneId = d.paperId;
+        label.text = d.title
+        hoverPlane.position = n.position.add(new Vector3(0, 0.08, 0)); // Add vertical offset
+        
+        if (hoverPlaneId !== paperDetailsPanelId) {
+            hoverPlane.isVisible = true;
+        }
+    }
 }
 
 // UI Manager and NearMenu
@@ -157,6 +184,147 @@ handMenu.addButton(deleteButton);
 handMenu.addButton(clearSelectionButton);
 handMenu.addButton(unpinNodesButton);
 handMenu.addButton(toggleLinksButton);
+
+
+// Make panel for paper details
+// Create a floating plane for the paper details panel
+export const paperDetailsPanel = MeshBuilder.CreatePlane("paperDetailsPanel", { width: 0.6, height: 0.6 }, scene);
+// paperDetailsPanel.position = new Vector3(0, 1, -2); // Adjust position in VR space
+// paperDetailsPanel.isVisible = false; // Initially hidden
+paperDetailsPanel.adaptHeightToChildren = true;
+paperDetailsPanel.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
+paperDetailsPanel.isPickable = false;
+paperDetailsPanel.renderingGroupId = 1; // Ensure it renders in front
+export let paperDetailsPanelId = null
+
+highlighter.addExcludedMesh(paperDetailsPanel);
+
+// Apply a transparent material
+const panelMaterial = new StandardMaterial("panelMaterial", scene);
+panelMaterial.diffuseColor = new Color3(1, 1, 1);
+panelMaterial.alpha = 0; // Transparent background
+paperDetailsPanel.material = panelMaterial;
+
+// Create an AdvancedDynamicTexture for the panel
+const panelTexture = AdvancedDynamicTexture.CreateForMesh(paperDetailsPanel);
+
+// Create a background rectangle
+const panelBackground = new Rectangle("paperDatailPanelBackground");
+// panelBackground.adaptWidthToChildren = true;
+panelBackground.adaptHeightToChildren = true;
+panelBackground.cornerRadius = 20;
+panelBackground.color = "Black";
+panelBackground.thickness = 2;
+panelBackground.background = "White";
+panelTexture.addControl(panelBackground);
+
+// StackPanel to hold multiple text sections
+const textPanel = new StackPanel("paperDetailStackPanel");
+textPanel.isVertical = true;
+textPanel.width = "90%"; // Ensure it fills the panel
+textPanel.adaptHeightToChildren = true;
+panelBackground.addControl(textPanel);
+
+// Title Text Block
+const titleBlock = new TextBlock("titleBlock");
+titleBlock.text = "Paper Title";
+titleBlock.color = "black";
+titleBlock.fontSize = 60;
+titleBlock.textHorizontalAlignment = TextBlock.HORIZONTAL_ALIGNMENT_CENTER;
+// titleBlock.height = "100px";
+titleBlock.textWrapping = true;
+titleBlock.resizeToFit = true;
+titleBlock.paddingTop = "20px"; // Add margin at the top
+textPanel.addControl(titleBlock);
+
+// Metadata Text Block
+const metadataBlock = new TextBlock("metadataTextBlock");
+metadataBlock.text = "Authors: John Doe, Jane Smith\nCitations: 1234\nReferences: 56";
+metadataBlock.color = "black";
+metadataBlock.fontSize = 30;
+metadataBlock.textWrapping = true;
+metadataBlock.textHorizontalAlignment = TextBlock.HORIZONTAL_ALIGNMENT_LEFT;
+// metadataBlock.height = "120px";
+metadataBlock.resizeToFit = true;
+metadataBlock.paddingTop = "10px"; // Add spacing between sections
+textPanel.addControl(metadataBlock);
+
+// Abstract Title Block
+const abstractTitleBlock = new TextBlock("abstractTitleTextBlock");
+abstractTitleBlock.text = "Abstract";
+abstractTitleBlock.color = "black";
+abstractTitleBlock.fontSize = 40;
+abstractTitleBlock.textHorizontalAlignment = TextBlock.HORIZONTAL_ALIGNMENT_CENTER;
+// abstractTitleBlock.height = "80px";
+abstractTitleBlock.textWrapping = true;
+abstractTitleBlock.resizeToFit = true;
+abstractTitleBlock.paddingTop = "15px"; // Space before the abstract title
+textPanel.addControl(abstractTitleBlock);
+
+// Abstract Text Block
+const abstractBlock = new TextBlock("abstractTextBlock");
+abstractBlock.text = "This is the abstract content explaining the research...";
+abstractBlock.color = "black";
+abstractBlock.fontSize = 30;
+abstractBlock.textHorizontalAlignment = TextBlock.HORIZONTAL_ALIGNMENT_LEFT;
+// abstractBlock.height = "200px";
+abstractBlock.textWrapping = true;
+abstractBlock.resizeToFit = true;
+abstractBlock.paddingTop = "10px"; // Space before abstract content
+abstractBlock.paddingBottom = "20px"; // Space at bottom of panel
+textPanel.addControl(abstractBlock);
+
+scene.onBeforeRenderObservable.add(() => {
+    if (nodes) {
+        nodes.run((d, n) => {
+            if (d.paperId === paperDetailsPanelId) {
+                hoverPlane.position = n.position.add(new Vector3(0, 0.00, 0)); // Add vertical offset
+            }
+        })
+    }
+});
+
+// Function to update paper details
+export function updatePaperPanelToNode(d,n) {
+    if (d === null || n === null) {
+        paperDetailsPanel.isVisible = false;
+        paperDetailsPanelId = null;
+    } else {
+
+        if (paperDetailsPanelId === d.paperId) {
+            updatePaperPanelToNode(null, null); // Hide panel if it's already visible
+            setHoverPlaneToNode(d, n); // Show hover plane instead
+            return;
+        }
+
+        setHoverPlaneToNode(null, null); // Hide hover plane if it's visible
+
+        paperDetailsPanelId = d.paperId;
+        const metadata = `Authors: ${d.authors.map(a => a.name).join(", ")}\nCitations: ${d.citationCount}\nReferences: ${d.referenceCount}`;
+        const abstractText = d.abstract;
+
+        titleBlock.text = d.title;
+        metadataBlock.text = metadata;
+        abstractBlock.text = abstractText;
+
+        const panelHeightPixels = panelBackground.heightInPixels; // Get UI height in pixels
+        console.log(panelBackground.height);
+        const worldHeight = (panelHeightPixels / 1000) * paperDetailsPanel.scaling.y; // Convert to world units
+
+        // console.log("Panel UI Height (px):", panelHeightPixels);
+        console.log("Panel World Height:", worldHeight);
+
+        paperDetailsPanel.isVisible = true;
+        paperDetailsPanel.position = n.position.add(new Vector3(0, 0.00, 0)); // Adjust position
+        // console.log("Updated Panel Position:", paperDetailsPanel.position);
+    }
+}
+
+export function updatePaperPanelOnDrag(d, n) {
+    if (d.paperId === paperDetailsPanelId) {
+        paperDetailsPanel.position = n.position.add(new Vector3(0, 0.00, 0)); // Adjust position
+    }
+}
 
 // Start render loop
 engine.runRenderLoop(() => {
