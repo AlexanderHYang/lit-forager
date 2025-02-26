@@ -189,7 +189,7 @@ handMenu.addButton(toggleLinksButton);
 
 // Make panel for paper details
 // Create a floating plane for the paper details panel
-export const paperDetailsPanel = MeshBuilder.CreatePlane("paperDetailsPanel", { width: 0.6, height: 0.6 }, scene);
+export const paperDetailsPanel = MeshBuilder.CreatePlane("paperDetailsPanel", { width: 0.6, height: 1.2}, scene);
 // paperDetailsPanel.position = new Vector3(0, 1, -2); // Adjust position in VR space
 paperDetailsPanel.isVisible = false; // Initially hidden
 paperDetailsPanel.adaptHeightToChildren = true;
@@ -207,7 +207,7 @@ panelMaterial.alpha = 0; // Transparent background
 paperDetailsPanel.material = panelMaterial;
 
 // Create an AdvancedDynamicTexture for the panel
-const panelTexture = AdvancedDynamicTexture.CreateForMesh(paperDetailsPanel);
+const panelTexture = AdvancedDynamicTexture.CreateForMesh(paperDetailsPanel,1024, 2048);
 
 // Create a background rectangle
 const panelBackground = new Rectangle("paperDatailPanelBackground");
