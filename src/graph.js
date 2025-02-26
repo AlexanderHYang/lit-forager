@@ -11,10 +11,12 @@ import { scene, CoT, CoT_babylon, highlighter, hoverPlane, updateHoverPlaneText,
 export const paperData = [];
 export const citationLinkData = [];
 export const recommendationLinkData = [];
-export let useCitationLinks = true;
+export let useCitationLinks = false;
 export const selectedIds = [];
 export let nodes = null;
 export let links = null;
+const pickStartTime = {};
+const shouldDrag = {}
 
 // Initialize force simulation
 export let simulation;
@@ -139,8 +141,8 @@ export function createNodes() {
             (d, n, i) =>
                 new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOverTrigger, () => {
                     //ExecudeCodeAction allows us to execute a given function
-                    highlighter.addMesh(n, Color3.White());
-                    scene.setRenderingAutoClearDepthStencil(1, false, false);
+                    // highlighter.addMesh(n, Color3.White());
+                    // scene.setRenderingAutoClearDepthStencil(1, false, false);
                     //Show and adjust the label
                     // hoverPlane.isVisible = true;
                     // updateHoverPlaneText(d.title);
@@ -154,9 +156,9 @@ export function createNodes() {
             (d, n, i) =>
                 new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOutTrigger, () => {
                     //Same as above but in reverse
-                    if (!selectedIds.includes(d.paperId)) {
-                        highlighter.removeMesh(n);
-                    }
+                    // if (!selectedIds.includes(d.paperId)) {
+                    //     highlighter.removeMesh(n);
+                    // }
                     setHoverPlaneToNode(null, null);
                 })
         )
@@ -164,57 +166,87 @@ export function createNodes() {
         .action(
             (d, n, i) =>
                 new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickDownTrigger, () => {
-                    if (!selectedIds.includes(d.paperId)) {
-                        selectedIds.push(d.paperId);
-                    } else {
-                        removeItem(selectedIds, d.paperId);
-                    }
+                    pickStartTime[d.paperId] = performance.now();
+                    shouldDrag[d.paperId] = false;
                 })
         )
         // on pick up action for selecting nodes
         .action(
             (d, n, i) =>
-                new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickUpTrigger, () => {})
-        )
-        .action(
-            (d,n,i) => 
-                new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnDoublePickTrigger, () => {
-                    console.log("double click");
-                    updatePaperPanelToNode(d,n);
+                new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickUpTrigger, () => {
+
+                    if (!shouldDrag[d.paperId]) {
+                        const pickDuration = performance.now() - pickStartTime[d.paperId];
+
+                        if (pickDuration < 250) { // only process click if it is short
+                            if (!selectedIds.includes(d.paperId)) {
+                                selectedIds.push(d.paperId);
+                                highlighter.addMesh(n, Color3.White());
+                                scene.setRenderingAutoClearDepthStencil(1, false, false);
+                            } else {
+                                removeItem(selectedIds, d.paperId);
+                                highlighter.removeMesh(n);
+                            }
+                        } else if (pickDuration > 250) {
+                            // if long click, update paper panel
+                            updatePaperPanelToNode(d,n);
+                        }
+                    }
                 })
         );
 
     // Add SixDofDrag behavior
     nodes.run((d, n, i) => {
         let dragBehavior = new BABYLON.SixDofDragBehavior();
-        dragBehavior.dragDeltaRatio = 0.2;
+
+        let initialPosition = null;
+        shouldDrag[d.paperId]  = false;
+        
+        dragBehavior.dragDeltaRatio = 0.5;
         dragBehavior.rotateDraggedObject = true;
         dragBehavior.detachCameraControls = true;
+
+        dragBehavior.onDragStartObservable.add((data) => {
+            initialPosition = n.position.clone();
+        });
         dragBehavior.onPositionChangedObservable.add((data) => {
-            d.x = n.position.x;
-            d.y = n.position.y;
-            d.z = n.position.z;
 
-            // Fix node in place by reducing its velocity in the simulation
-            d.fx = n.position.x;
-            d.fy = n.position.y;
-            d.fz = n.position.z;
+            let delta = n.position.subtract(initialPosition);
+            if (delta.length() > 0.02) {
+                shouldDrag[d.paperId] = true;
+            }
+            
+            if (shouldDrag[d.paperId]) {
+                d.x = n.position.x;
+                d.y = n.position.y;
+                d.z = n.position.z;
 
-            updatePaperPanelOnDrag(d, n);
-            setHoverPlaneToNode(d, n);
+                // Fix node in place by reducing its velocity in the simulation
+                d.fx = n.position.x;
+                d.fy = n.position.y;
+                d.fz = n.position.z;
+
+                updatePaperPanelOnDrag(d, n);
+                setHoverPlaneToNode(d, n);
+            }
         });
         dragBehavior.onDragObservable.add((data) => {
-            simulation.alpha(0.1);
-            console.log("hello");
+            if (shouldDrag[d.paperId]) {
+                simulation.alpha(0.1);
+            }
         });
         dragBehavior.onDragEndObservable.add(() => {
+            // Reset node position when drag ended
+            initialPosition = null;
+            shouldDrag[d.paperId] = false;
+
             // Release node from being fixed in place
-            // delete d.fx;
-            // delete d.fy;
-            // delete d.fz;
+            delete d.fx;
+            delete d.fy;
+            delete d.fz;
 
             // let the simulation relax
-            simulation.alpha(0.1);
+            // simulation.alpha(0.1);
         });
         n.addBehavior(dragBehavior);
     });
@@ -370,6 +402,8 @@ export function addPapersToGraph(newPapers) {
     createLinkData(paperData);
 
     createLinks(useCitationLinks ? citationLinkData : recommendationLinkData);
+
+    simulation.alpha(0.2);
 }
 
 /**

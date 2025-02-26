@@ -24,6 +24,7 @@ export async function getDetailsForMultiplePapers(paperIds) {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    "x-api-key": import.meta.env.VITE_SS_API_KEY,
                 },
                 body: body,
             });
@@ -83,6 +84,7 @@ export async function fetchRecsFromMultipleIds(
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    "x-api-key": import.meta.env.VITE_SS_API_KEY,
                 },
                 body: body,
             });

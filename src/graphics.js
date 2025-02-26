@@ -191,7 +191,7 @@ handMenu.addButton(toggleLinksButton);
 // Create a floating plane for the paper details panel
 export const paperDetailsPanel = MeshBuilder.CreatePlane("paperDetailsPanel", { width: 0.6, height: 0.6 }, scene);
 // paperDetailsPanel.position = new Vector3(0, 1, -2); // Adjust position in VR space
-// paperDetailsPanel.isVisible = false; // Initially hidden
+paperDetailsPanel.isVisible = false; // Initially hidden
 paperDetailsPanel.adaptHeightToChildren = true;
 paperDetailsPanel.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
 paperDetailsPanel.isPickable = false;
