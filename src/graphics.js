@@ -64,6 +64,7 @@ export const xr = await scene.createDefaultXRExperienceAsync({
     floorMeshes: [env.ground],
     optionalFeatures: true,
 });
+let currentlyInXr = false;
 
 const xrFeatureManager = xr.baseExperience.featuresManager;
 xrFeatureManager.disableFeature(BABYLON.WebXRFeatureName.POINTER_SELECTION);
@@ -74,6 +75,14 @@ const xrSessionManager = xr.baseExperience.sessionManager;
 xrSessionManager.onXRFrameObservable.addOnce(() => {
     xr.baseExperience.camera.position.set(-0.5, 0, 0);
     xr.baseExperience.camera.setTarget(new BABYLON.Vector3(0, 0, 0));
+});
+xrSessionManager.onXRSessionInit.add(() => {
+    currentlyInXr = true;
+    console.log("XR Session Initialized");
+});
+xrSessionManager.onXRSessionEnded.add(() => {
+    currentlyInXr = false;
+    console.log("XR Session Ended");
 });
 
 // Highlight Layer and hover plane
@@ -279,7 +288,8 @@ scene.onBeforeRenderObservable.add(() => {
     if (nodes) {
         nodes.run((d, n) => {
             if (d.paperId === paperDetailsPanelId) {
-                const cameraRight = BABYLON.Vector3.Cross(camera.getForwardRay().direction, BABYLON.Vector3.Up()).normalize();
+                const currCam = currentlyInXr ? xr.baseExperience.camera : camera;
+                const cameraRight = BABYLON.Vector3.Cross(currCam.getForwardRay().direction, BABYLON.Vector3.Up()).normalize();
                 const offset = cameraRight.scale(-0.35);
                 paperDetailsPanel.position = n.position.add(offset);
             }
