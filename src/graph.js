@@ -5,7 +5,7 @@ import * as anu from "@jpmorganchase/anu";
 import * as BABYLON from "@babylonjs/core";
 import * as APIUtils from "./api.js";
 import { removeItem } from "./utils.js";
-import { scene, CoT, CoT_babylon, highlighter, hoverPlane, updateHoverPlaneText, setHoverPlaneToNode, updatePaperPanelToNode, updatePaperPanelOnDrag } from "./graphics.js"; // Import shared scene from graphics.js
+import { scene, CoT, CoT_babylon, highlighter, glowLayer, hoverPlane, updateHoverPlaneText, setHoverPlaneToNode, updatePaperPanelToNode, updatePaperPanelOnDrag } from "./graphics.js"; // Import shared scene from graphics.js
 
 // Shared graph data
 export const paperData = [];
@@ -16,7 +16,10 @@ export const selectedIds = [];
 export let nodes = null;
 export let links = null;
 const pickStartTime = {};
-const shouldDrag = {}
+const unpickTime = {};
+const shouldDrag = {};
+const CLICK_DELAY_THRESHOLD = 400; // milliseconds
+export let waitingForAPI = false;
 
 // Initialize force simulation
 export let simulation;
@@ -25,6 +28,7 @@ export let simulation;
  * Fetches the initial set of papers.
  */
 export async function fetchInitialPapers() {
+    waitingForAPI = true;
     try {
         let data = await APIUtils.getDetailsForMultiplePapers(["f9c602cc436a9ea2f9e7db48c77d924e09ce3c32"]);
         if (!Array.isArray(data)) {
@@ -35,6 +39,7 @@ export async function fetchInitialPapers() {
         console.error("Failed to fetch initial papers", error);
         paperData.push({ paperId: "f9c602cc436a9ea2f9e7db48c77d924e09ce3c32", references: [], recommends: [] });
     }
+    waitingForAPI = false;
 }
 
 /**
@@ -159,7 +164,9 @@ export function createNodes() {
                     // if (!selectedIds.includes(d.paperId)) {
                     //     highlighter.removeMesh(n);
                     // }
-                    setHoverPlaneToNode(null, null);
+                    if (!(d.paperId in pickStartTime)) {
+                        setHoverPlaneToNode(null, null);
+                    }
                 })
         )
         // on pick down action to select ndoes
@@ -168,6 +175,11 @@ export function createNodes() {
                 new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickDownTrigger, () => {
                     pickStartTime[d.paperId] = performance.now();
                     shouldDrag[d.paperId] = false;
+                    setTimeout(() => {
+                        if (((!(d.paperId in unpickTime) || unpickTime[d.paperId] > pickStartTime[d.paperId])) && !shouldDrag[d.paperId]) {
+                            updatePaperPanelToNode(d,n);
+                        }
+                    }, CLICK_DELAY_THRESHOLD);
                 })
         )
         // on pick up action for selecting nodes
@@ -175,22 +187,27 @@ export function createNodes() {
             (d, n, i) =>
                 new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickUpTrigger, () => {
 
+                    console.log("pick up");
+
                     if (!shouldDrag[d.paperId]) {
                         const pickDuration = performance.now() - pickStartTime[d.paperId];
 
-                        if (pickDuration < 250) { // only process click if it is short
+                        if (pickDuration < CLICK_DELAY_THRESHOLD) { // only process click if it is short
                             if (!selectedIds.includes(d.paperId)) {
                                 selectedIds.push(d.paperId);
-                                highlighter.addMesh(n, Color3.White());
-                                scene.setRenderingAutoClearDepthStencil(1, false, false);
+                                // highlighter.addMesh(n, Color3.White());
+                                glowLayer.addIncludedOnlyMesh(n);
+                                // scene.setRenderingAutoClearDepthStencil(1, false, false);
                             } else {
                                 removeItem(selectedIds, d.paperId);
-                                highlighter.removeMesh(n);
+                                // highlighter.removeMesh(n);
+                                glowLayer.removeIncludedOnlyMesh(n);
                             }
-                        } else if (pickDuration > 250) {
-                            // if long click, update paper panel
-                            updatePaperPanelToNode(d,n);
                         }
+                        // else if (pickDuration > CLICK_DELAY_THRESHOLD) {
+                        //     // if long click, update paper panel
+                        //     updatePaperPanelToNode(d,n);
+                        // }
                     }
                 })
         );
@@ -215,20 +232,14 @@ export function createNodes() {
             if (delta.length() > 0.02) {
                 shouldDrag[d.paperId] = true;
             }
-            
-            if (shouldDrag[d.paperId]) {
-                d.x = n.position.x;
-                d.y = n.position.y;
-                d.z = n.position.z;
+            d.x = n.position.x;
+            d.y = n.position.y;
+            d.z = n.position.z;
 
-                // Fix node in place by reducing its velocity in the simulation
-                d.fx = n.position.x;
-                d.fy = n.position.y;
-                d.fz = n.position.z;
-
-                updatePaperPanelOnDrag(d, n);
-                setHoverPlaneToNode(d, n);
-            }
+            // Fix node in place by reducing its velocity in the simulation
+            d.fx = n.position.x;
+            d.fy = n.position.y;
+            d.fz = n.position.z;
         });
         dragBehavior.onDragObservable.add((data) => {
             if (shouldDrag[d.paperId]) {
@@ -239,6 +250,9 @@ export function createNodes() {
             // Reset node position when drag ended
             initialPosition = null;
             shouldDrag[d.paperId] = false;
+            console.log("drag end");
+            unpickTime[d.paperId] = performance.now();
+            setHoverPlaneToNode(null, null);
 
             // Release node from being fixed in place
             delete d.fx;
@@ -254,9 +268,10 @@ export function createNodes() {
     // re-add highlight layer to selected nodes
     nodes.run((d, n, i) => {
         if (selectedIds.includes(d.paperId)) {
-            highlighter.addMesh(n, Color3.White());
-            scene.setRenderingAutoClearDepthStencil(1, false, false);
-            highlighter.addExcludedMesh(hoverPlane);
+            // highlighter.addMesh(n, Color3.White());
+            // scene.setRenderingAutoClearDepthStencil(1, false, false);
+            // highlighter.addExcludedMesh(hoverPlane);
+            glowLayer.addIncludedOnlyMesh(n);
         }
     });
 }
@@ -318,7 +333,8 @@ export function clearNodeSelection() {
     console.log("clearNodeSelection() called");
     selectedIds.length = 0;
     nodes.run((d, n, i) => {
-        highlighter.removeMesh(n);
+        // highlighter.removeMesh(n);
+        glowLayer.removeIncludedOnlyMesh(n);
     });
 }
 
@@ -335,7 +351,11 @@ export function unpinNodes() {
  * Fetches recommendations and adds new nodes.
  */
 export async function addRecommendationsFromSelectedPapers() {
-
+    if (waitingForAPI) {
+        console.log("not requesting, already waiting for API");
+        return;
+    }
+    waitingForAPI = true;
     try {
         const d = await APIUtils.fetchRecsFromMultipleIds(selectedIds);
         const recommendedPapers = d.recommendedPapers.map((a) => a.paperId);
@@ -358,6 +378,7 @@ export async function addRecommendationsFromSelectedPapers() {
     } catch (error) {
         console.error("addRecommendationsFromSelectedPapers() failed with error:", error);
     }
+    waitingForAPI = false;
 }
 
 /**

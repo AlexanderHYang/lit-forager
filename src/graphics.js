@@ -7,6 +7,7 @@ import {
     Engine,
     StandardMaterial,
     HighlightLayer,
+    GlowLayer,
     MeshBuilder,
     DebugLayer
 } from "@babylonjs/core";
@@ -15,7 +16,7 @@ import * as BABYLON from "@babylonjs/core";
 import * as GUI from "@babylonjs/gui";
 import "@babylonjs/loaders/glTF";
 import * as anu from "@jpmorganchase/anu";
-import { nodes } from "./graph";
+import { nodes, waitingForAPI } from "./graph";
 import "@babylonjs/inspector";
 // Create the Babylon.js engine and scene
 const app = document.querySelector("#app");
@@ -79,9 +80,25 @@ xrSessionManager.onXRFrameObservable.addOnce(() => {
 // Highlight Layer and hover plane
 export const highlighter = new HighlightLayer("highlighter", scene);
 
+export const glowLayer = new GlowLayer("glow");
+glowLayer.neutralColor = new BABYLON.Color4(1, 1, 1, 0);
+glowLayer.intensity = 0.7;
+glowLayer.addIncludedOnlyMesh(env.ground);
+
+export const yellowGlowLayer = new GlowLayer("yellowGlow");
+yellowGlowLayer.neutralColor = new BABYLON.Color4(1, 1, 0, 0);
+yellowGlowLayer.intensity = 0.7;
+yellowGlowLayer.addIncludedOnlyMesh(env.ground);
+
+export const greenGlowLayer = new GlowLayer("greenGlow");
+greenGlowLayer.neutralColor = new BABYLON.Color4(0, 1, 0, 0);
+greenGlowLayer.intensity = 0.7;
+greenGlowLayer.addIncludedOnlyMesh(env.ground);
+
 export const hoverPlane = BABYLON.MeshBuilder.CreatePlane("hoverPlane", { width: 0.6, height: 0.6 }, scene);
 let hoverPlaneId = null;
-highlighter.addExcludedMesh(hoverPlane);
+// highlighter.addExcludedMesh(hoverPlane);
+glowLayer.addExcludedMesh(hoverPlane);
 
 //Use the Babylon GUI system to create an AdvancedDynamicTexture that will the updated with our label content
 const advancedTexture = AdvancedDynamicTexture.CreateForMesh(hoverPlane);
@@ -198,7 +215,8 @@ paperDetailsPanel.isPickable = false;
 paperDetailsPanel.renderingGroupId = 1; // Ensure it renders in front
 export let paperDetailsPanelId = null
 
-highlighter.addExcludedMesh(paperDetailsPanel);
+// highlighter.addExcludedMesh(paperDetailsPanel);
+glowLayer.addExcludedMesh(paperDetailsPanel);
 
 // Apply a transparent material
 const panelMaterial = new StandardMaterial("panelMaterial", scene);
@@ -279,7 +297,9 @@ scene.onBeforeRenderObservable.add(() => {
     if (nodes) {
         nodes.run((d, n) => {
             if (d.paperId === paperDetailsPanelId) {
-                hoverPlane.position = n.position.add(new Vector3(0, 0.00, 0)); // Add vertical offset
+                const cameraRight = BABYLON.Vector3.Cross(camera.getForwardRay().direction, BABYLON.Vector3.Up()).normalize();
+                const offset = cameraRight.scale(-0.35);
+                paperDetailsPanel.position = n.position.add(offset);
             }
         })
     }
@@ -301,23 +321,14 @@ export function updatePaperPanelToNode(d,n) {
         setHoverPlaneToNode(null, null); // Hide hover plane if it's visible
 
         paperDetailsPanelId = d.paperId;
-        const metadata = `Authors: ${d.authors.map(a => a.name).join(", ")}\nCitations: ${d.citationCount}\nReferences: ${d.referenceCount}`;
+        const metadata = `${d.authors.map(a => a.name).join(", ")}\nCitations: ${d.citationCount}\nReferences: ${d.referenceCount}`;
         const abstractText = d.abstract;
 
         titleBlock.text = d.title;
         metadataBlock.text = metadata;
         abstractBlock.text = abstractText;
 
-        const panelHeightPixels = panelBackground.heightInPixels; // Get UI height in pixels
-        console.log(panelBackground.height);
-        const worldHeight = (panelHeightPixels / 1000) * paperDetailsPanel.scaling.y; // Convert to world units
-
-        // console.log("Panel UI Height (px):", panelHeightPixels);
-        console.log("Panel World Height:", worldHeight);
-
         paperDetailsPanel.isVisible = true;
-        paperDetailsPanel.position = n.position.add(new Vector3(0, 0.00, 0)); // Adjust position
-        // console.log("Updated Panel Position:", paperDetailsPanel.position);
     }
 }
 
