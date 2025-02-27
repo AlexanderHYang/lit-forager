@@ -110,7 +110,7 @@ export function createNodes() {
         }
     });
 
-    nodes = CoT.bind("sphere", {}, paperData)
+    nodes = CoT.bind("sphere", {segments: 16}, paperData)
         .position((d) => new Vector3(d.x, d.y, d.z))
         .scaling(() => new Vector3(0.02, 0.02, 0.02))
         .material((d) => {
