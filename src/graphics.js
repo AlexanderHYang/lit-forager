@@ -7,7 +7,6 @@ import {
     Engine,
     StandardMaterial,
     HighlightLayer,
-    GlowLayer,
     MeshBuilder,
     DebugLayer
 } from "@babylonjs/core";
@@ -80,25 +79,9 @@ xrSessionManager.onXRFrameObservable.addOnce(() => {
 // Highlight Layer and hover plane
 export const highlighter = new HighlightLayer("highlighter", scene);
 
-export const glowLayer = new GlowLayer("glow");
-glowLayer.neutralColor = new BABYLON.Color4(1, 1, 1, 0);
-glowLayer.intensity = 0.7;
-glowLayer.addIncludedOnlyMesh(env.ground);
-
-export const yellowGlowLayer = new GlowLayer("yellowGlow");
-yellowGlowLayer.neutralColor = new BABYLON.Color4(1, 1, 0, 0);
-yellowGlowLayer.intensity = 0.7;
-yellowGlowLayer.addIncludedOnlyMesh(env.ground);
-
-export const greenGlowLayer = new GlowLayer("greenGlow");
-greenGlowLayer.neutralColor = new BABYLON.Color4(0, 1, 0, 0);
-greenGlowLayer.intensity = 0.7;
-greenGlowLayer.addIncludedOnlyMesh(env.ground);
-
 export const hoverPlane = BABYLON.MeshBuilder.CreatePlane("hoverPlane", { width: 0.6, height: 0.6 }, scene);
 let hoverPlaneId = null;
-// highlighter.addExcludedMesh(hoverPlane);
-glowLayer.addExcludedMesh(hoverPlane);
+highlighter.addExcludedMesh(hoverPlane);
 
 //Use the Babylon GUI system to create an AdvancedDynamicTexture that will the updated with our label content
 const advancedTexture = AdvancedDynamicTexture.CreateForMesh(hoverPlane);
@@ -215,8 +198,7 @@ paperDetailsPanel.isPickable = false;
 paperDetailsPanel.renderingGroupId = 1; // Ensure it renders in front
 export let paperDetailsPanelId = null
 
-// highlighter.addExcludedMesh(paperDetailsPanel);
-glowLayer.addExcludedMesh(paperDetailsPanel);
+highlighter.addExcludedMesh(paperDetailsPanel);
 
 // Apply a transparent material
 const panelMaterial = new StandardMaterial("panelMaterial", scene);

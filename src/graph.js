@@ -5,7 +5,7 @@ import * as anu from "@jpmorganchase/anu";
 import * as BABYLON from "@babylonjs/core";
 import * as APIUtils from "./api.js";
 import { removeItem } from "./utils.js";
-import { scene, CoT, CoT_babylon, highlighter, glowLayer, hoverPlane, updateHoverPlaneText, setHoverPlaneToNode, updatePaperPanelToNode, updatePaperPanelOnDrag } from "./graphics.js"; // Import shared scene from graphics.js
+import { scene, CoT, CoT_babylon, highlighter, hoverPlane, updateHoverPlaneText, setHoverPlaneToNode, updatePaperPanelToNode, updatePaperPanelOnDrag } from "./graphics.js"; // Import shared scene from graphics.js
 
 // Shared graph data
 export const paperData = [];
@@ -18,6 +18,7 @@ export let links = null;
 const pickStartTime = {};
 const unpickTime = {};
 const shouldDrag = {};
+const isDragging = {};
 const CLICK_DELAY_THRESHOLD = 400; // milliseconds
 export let waitingForAPI = false;
 
@@ -146,13 +147,6 @@ export function createNodes() {
             (d, n, i) =>
                 new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOverTrigger, () => {
                     //ExecudeCodeAction allows us to execute a given function
-                    // highlighter.addMesh(n, Color3.White());
-                    // scene.setRenderingAutoClearDepthStencil(1, false, false);
-                    //Show and adjust the label
-                    // hoverPlane.isVisible = true;
-                    // updateHoverPlaneText(d.title);
-                    // hoverPlane.position = n.position.add(new Vector3(0, 0.08, 0)); //Add vertical offset
-                    // highlighter.addExcludedMesh(hoverPlane);
                     setHoverPlaneToNode(d, n);
                 })
         )
@@ -161,10 +155,7 @@ export function createNodes() {
             (d, n, i) =>
                 new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOutTrigger, () => {
                     //Same as above but in reverse
-                    // if (!selectedIds.includes(d.paperId)) {
-                    //     highlighter.removeMesh(n);
-                    // }
-                    if (!(d.paperId in pickStartTime)) {
+                    if (!isDragging[d.paperId]) {
                         setHoverPlaneToNode(null, null);
                     }
                 })
@@ -176,7 +167,7 @@ export function createNodes() {
                     pickStartTime[d.paperId] = performance.now();
                     shouldDrag[d.paperId] = false;
                     setTimeout(() => {
-                        if (((!(d.paperId in unpickTime) || unpickTime[d.paperId] > pickStartTime[d.paperId])) && !shouldDrag[d.paperId]) {
+                        if (isDragging[d.paperId] && !shouldDrag[d.paperId]) {
                             updatePaperPanelToNode(d,n);
                         }
                     }, CLICK_DELAY_THRESHOLD);
@@ -195,13 +186,11 @@ export function createNodes() {
                         if (pickDuration < CLICK_DELAY_THRESHOLD) { // only process click if it is short
                             if (!selectedIds.includes(d.paperId)) {
                                 selectedIds.push(d.paperId);
-                                // highlighter.addMesh(n, Color3.White());
-                                glowLayer.addIncludedOnlyMesh(n);
-                                // scene.setRenderingAutoClearDepthStencil(1, false, false);
+                                highlighter.addMesh(n, Color3.White());
+                                scene.setRenderingAutoClearDepthStencil(1, false, false);
                             } else {
                                 removeItem(selectedIds, d.paperId);
-                                // highlighter.removeMesh(n);
-                                glowLayer.removeIncludedOnlyMesh(n);
+                                highlighter.removeMesh(n);
                             }
                         }
                         // else if (pickDuration > CLICK_DELAY_THRESHOLD) {
@@ -224,6 +213,7 @@ export function createNodes() {
         dragBehavior.detachCameraControls = true;
 
         dragBehavior.onDragStartObservable.add((data) => {
+            isDragging[d.paperId] = true;
             initialPosition = n.position.clone();
         });
         dragBehavior.onPositionChangedObservable.add((data) => {
@@ -248,9 +238,10 @@ export function createNodes() {
         });
         dragBehavior.onDragEndObservable.add(() => {
             // Reset node position when drag ended
+            console.log("drag end")
             initialPosition = null;
-            shouldDrag[d.paperId] = false;
-            console.log("drag end");
+            isDragging[d.paperId] = false;
+            shouldDrag[d.paperId] = false;;
             unpickTime[d.paperId] = performance.now();
             setHoverPlaneToNode(null, null);
 
@@ -268,10 +259,8 @@ export function createNodes() {
     // re-add highlight layer to selected nodes
     nodes.run((d, n, i) => {
         if (selectedIds.includes(d.paperId)) {
-            // highlighter.addMesh(n, Color3.White());
-            // scene.setRenderingAutoClearDepthStencil(1, false, false);
-            // highlighter.addExcludedMesh(hoverPlane);
-            glowLayer.addIncludedOnlyMesh(n);
+            highlighter.addMesh(n, Color3.White());
+            scene.setRenderingAutoClearDepthStencil(1, false, false);
         }
     });
 }
@@ -333,8 +322,7 @@ export function clearNodeSelection() {
     console.log("clearNodeSelection() called");
     selectedIds.length = 0;
     nodes.run((d, n, i) => {
-        // highlighter.removeMesh(n);
-        glowLayer.removeIncludedOnlyMesh(n);
+        highlighter.removeMesh(n);
     });
 }
 
@@ -356,6 +344,17 @@ export async function addRecommendationsFromSelectedPapers() {
         return;
     }
     waitingForAPI = true;
+    const recommendationSourceIds = selectedIds.splice();
+
+    // adjust glow layers
+    nodes.run((d, n, i) => {
+        if (selectedIds.includes(d.paperId)) {
+            highlighter.removeMesh(n);
+            highlighter.addMesh(n, Color3.Yellow());
+            scene.setRenderingAutoClearDepthStencil(1, false, false);
+        }
+    });
+
     try {
         const d = await APIUtils.fetchRecsFromMultipleIds(selectedIds);
         const recommendedPapers = d.recommendedPapers.map((a) => a.paperId);
@@ -372,13 +371,21 @@ export async function addRecommendationsFromSelectedPapers() {
         });
     
         selectedIds.length = 0;
-        recommendedPapers.forEach((p) => selectedIds.push(p));
+        // recommendedPapers.forEach((p) => selectedIds.push(p));
     
         addPapersToGraph(newPapers);
     } catch (error) {
         console.error("addRecommendationsFromSelectedPapers() failed with error:", error);
     }
     waitingForAPI = false;
+
+    nodes.run((d, n, i) => {
+        if (recommendationSourceIds.includes(d.paperId)) {
+            highlighter.removeMesh(n);
+            scene.setRenderingAutoClearDepthStencil(1, false, false);
+        }
+    });
+
 }
 
 /**
@@ -396,11 +403,13 @@ export function addPapersToGraph(newPapers) {
 
     // Add new papers to paperData
     const newColor = BABYLON.Color3.Random();
+    const newPaperIds = [];
     newPapers.forEach((p) => {
         if (!paperData.find((d) => d.paperId === p.paperId)) {
             // don't add duplicates
             p.color = newColor;
             paperData.push(p);
+            newPaperIds.push(p.paperId);
         }
     });
 
@@ -423,6 +432,21 @@ export function addPapersToGraph(newPapers) {
     createLinkData(paperData);
 
     createLinks(useCitationLinks ? citationLinkData : recommendationLinkData);
+
+    nodes.run((d, n, i) => {
+        if (newPaperIds.includes(d.paperId)) {
+            highlighter.addMesh(n, Color3.Green());
+        }
+    });
+    scene.setRenderingAutoClearDepthStencil(1, false, false);
+    setTimeout(() => {
+        nodes.run((d, n, i) => {
+            if (newPaperIds.includes(d.paperId)) {
+                highlighter.removeMesh(n);
+            }
+        });
+        scene.setRenderingAutoClearDepthStencil(1, false, false);
+    }, 3000);
 
     simulation.alpha(0.2);
 }
