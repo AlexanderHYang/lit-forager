@@ -17,6 +17,7 @@ import "@babylonjs/loaders/glTF";
 import * as anu from "@jpmorganchase/anu";
 import { nodes, waitingForAPI } from "./graph";
 import "@babylonjs/inspector";
+import { timeout } from "d3";
 // Create the Babylon.js engine and scene
 const app = document.querySelector("#app");
 const canvas = document.createElement("canvas");
@@ -24,6 +25,7 @@ app.appendChild(canvas);
 
 export const engine = new Engine(canvas, true, { stencil: true });
 export const scene = new Scene(engine);
+scene.useRightHandedSystem = true;
 Scene.DoubleClickDelay = 500;
 export const camera = new ArcRotateCamera(
     "Camera",
@@ -71,6 +73,7 @@ xrFeatureManager.disableFeature(BABYLON.WebXRFeatureName.POINTER_SELECTION);
 xrFeatureManager.disableFeature(BABYLON.WebXRFeatureName.TELEPORTATION);
 
 const xrSessionManager = xr.baseExperience.sessionManager;
+let currCam = camera;
 
 xrSessionManager.onXRFrameObservable.addOnce(() => {
     xr.baseExperience.camera.position.set(-0.5, 0, 0);
@@ -78,17 +81,19 @@ xrSessionManager.onXRFrameObservable.addOnce(() => {
 });
 xrSessionManager.onXRSessionInit.add(() => {
     currentlyInXr = true;
+    currCam = xr.baseExperience.camera;
     console.log("XR Session Initialized");
 });
 xrSessionManager.onXRSessionEnded.add(() => {
     currentlyInXr = false;
+    currCam = camera;
     console.log("XR Session Ended");
 });
 
 // Highlight Layer and hover plane
 export const highlighter = new HighlightLayer("highlighter", scene);
 
-export const hoverPlane = BABYLON.MeshBuilder.CreatePlane("hoverPlane", { width: 0.6, height: 0.6 }, scene);
+export const hoverPlane = BABYLON.MeshBuilder.CreatePlane("hoverPlane", { width: 0.4, height: 0.4 }, scene);
 let hoverPlaneId = null;
 highlighter.addExcludedMesh(hoverPlane);
 
@@ -116,9 +121,9 @@ label.text = " ";
 UIBackground.addControl(label);
 
 hoverPlane.isVisible = false; //Hide the plane until it is needed
-hoverPlane.billboardMode = 7; //Set billboard mode to always face camera
+// hoverPlane.billboardMode = 7; //Set billboard mode to always face camera
 hoverPlane.isPickable = false; //Disable picking so it doesn't get in the way of interactions
-hoverPlane.renderingGroupId = 1; //Set render id higher so it always renders in front
+hoverPlane.renderingGroupId = 2; //Set render id higher so it always renders in front
 
 scene.onBeforeRenderObservable.add(() => {
     if (nodes) {
@@ -128,6 +133,7 @@ scene.onBeforeRenderObservable.add(() => {
             }
         })
     }
+    hoverPlane.lookAt(currCam.position);
 });
 
 export function updateHoverPlaneText(text) {
@@ -198,13 +204,13 @@ handMenu.addButton(toggleLinksButton);
 
 // Make panel for paper details
 // Create a floating plane for the paper details panel
-export const paperDetailsPanel = MeshBuilder.CreatePlane("paperDetailsPanel", { width: 0.6, height: 1.2}, scene);
+export const paperDetailsPanel = MeshBuilder.CreatePlane("paperDetailsPanel", { width: 0.4, height: 0.8}, scene);
 // paperDetailsPanel.position = new Vector3(0, 1, -2); // Adjust position in VR space
 paperDetailsPanel.isVisible = false; // Initially hidden
 paperDetailsPanel.adaptHeightToChildren = true;
-paperDetailsPanel.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
+// paperDetailsPanel.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
 paperDetailsPanel.isPickable = false;
-paperDetailsPanel.renderingGroupId = 1; // Ensure it renders in front
+paperDetailsPanel.renderingGroupId = 2; // Ensure it renders in front
 export let paperDetailsPanelId = null
 
 highlighter.addExcludedMesh(paperDetailsPanel);
@@ -288,17 +294,25 @@ scene.onBeforeRenderObservable.add(() => {
     if (nodes) {
         nodes.run((d, n) => {
             if (d.paperId === paperDetailsPanelId) {
-                const currCam = currentlyInXr ? xr.baseExperience.camera : camera;
                 const cameraRight = BABYLON.Vector3.Cross(currCam.getForwardRay().direction, BABYLON.Vector3.Up()).normalize();
-                const offset = cameraRight.scale(-0.35);
+                const offset = cameraRight.scale(0.25);
                 paperDetailsPanel.position = n.position.add(offset);
             }
         })
     }
+    paperDetailsPanel.lookAt(currCam.position);
 });
 
 // Function to update paper details
 export function updatePaperPanelToNode(d,n) {
+    if (paperDetailsPanelId !== null) {
+        nodes.run((d, n) => {
+            if (d.paperId === paperDetailsPanelId) {
+                highlighter.removeMesh(n);
+            }
+        });
+    }
+
     if (d === null || n === null) {
         paperDetailsPanel.isVisible = false;
         paperDetailsPanelId = null;
@@ -306,6 +320,7 @@ export function updatePaperPanelToNode(d,n) {
 
         if (paperDetailsPanelId === d.paperId) {
             updatePaperPanelToNode(null, null); // Hide panel if it's already visible
+            highlighter.removeMesh(n);
             setHoverPlaneToNode(d, n); // Show hover plane instead
             return;
         }
@@ -321,13 +336,46 @@ export function updatePaperPanelToNode(d,n) {
         abstractBlock.text = abstractText;
 
         paperDetailsPanel.isVisible = true;
+        highlighter.addMesh(n, Color3.Blue());
+        scene.setRenderingAutoClearDepthStencil(1, false, false);
     }
 }
 
-export function updatePaperPanelOnDrag(d, n) {
-    if (d.paperId === paperDetailsPanelId) {
-        paperDetailsPanel.position = n.position.add(new Vector3(0, 0.00, 0)); // Adjust position
+
+// emulating full screen ui
+const fullscreenUIPlane = MeshBuilder.CreatePlane("fullscreenUIPlane", { width: 0.4, height: 0.4 }, scene);
+const fullscreenUITexture = AdvancedDynamicTexture.CreateForMesh(fullscreenUIPlane);
+const fullScreenUIBackground = new Rectangle();
+const fullscreenUITextBlock = new TextBlock();
+
+fullscreenUITexture.addControl(fullScreenUIBackground);
+fullScreenUIBackground.addControl(fullscreenUITextBlock);
+
+fullScreenUIBackground.thickness = 0;
+fullscreenUITextBlock.text = "Full Screen UI";
+fullscreenUITextBlock.color = "black";
+fullscreenUITextBlock.fontSize = 50;
+
+fullscreenUIPlane.isVisible = false;
+
+scene.onBeforeRenderObservable.add(() => {
+    if (fullscreenUIPlane.isVisible) {
+        fullscreenUIPlane.position = currCam.getFrontPosition(1.5);
+        fullscreenUIPlane.lookAt(currCam.position);
     }
+});
+
+let timeoutTime = null;
+export function setFullScreenUIText(text) {
+    console.log(text);
+    fullscreenUIPlane.isVisible = true;
+    fullscreenUITextBlock.text = text;
+    timeoutTime = performance.now() + 2900;
+    setTimeout(() => {
+        if (performance.now() > timeoutTime) {
+            fullscreenUIPlane.isVisible = false;
+        }
+    }, 3000);
 }
 
 // Start render loop

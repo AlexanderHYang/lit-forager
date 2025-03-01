@@ -5,13 +5,17 @@ import * as anu from "@jpmorganchase/anu";
 import * as BABYLON from "@babylonjs/core";
 import * as APIUtils from "./api.js";
 import { removeItem } from "./utils.js";
-import { scene, CoT, CoT_babylon, highlighter, hoverPlane, updateHoverPlaneText, setHoverPlaneToNode, updatePaperPanelToNode, updatePaperPanelOnDrag } from "./graphics.js"; // Import shared scene from graphics.js
+import { scene, CoT, CoT_babylon, highlighter, hoverPlane, setHoverPlaneToNode, updatePaperPanelToNode, setFullScreenUIText } from "./graphics.js"; // Import shared scene from graphics.js
 
 // Shared graph data
 export const paperData = [];
 export const citationLinkData = [];
 export const recommendationLinkData = [];
+export const authorLinkData = [];
+export const userLinkData = [];
+export const userConnections = [];
 export let useCitationLinks = false;
+export let linkType = "recommendation";
 export const selectedIds = [];
 export let nodes = null;
 export let links = null;
@@ -19,8 +23,14 @@ const pickStartTime = {};
 const unpickTime = {};
 const shouldDrag = {};
 const isDragging = {};
+const isPointerOver = {};
 const CLICK_DELAY_THRESHOLD = 400; // milliseconds
 export let waitingForAPI = false;
+const linkColorMap = {
+    "citation": Color3.Magenta(),
+    "recommendation": Color3.White(),
+    "author" : Color3.Yellow(),
+};
 
 // Initialize force simulation
 export let simulation;
@@ -69,7 +79,7 @@ export function startSimulationRendering() {
 /**
  * Creates link data from paperData.
  */
-export function createLinkData() {
+export function generateLinkData() {
     citationLinkData.length = 0;
     recommendationLinkData.length = 0;
     paperData.forEach((d1, i) => {
@@ -85,6 +95,18 @@ export function createLinkData() {
                         recommendationLinkData.push({ source: i, target: j });
                     }
                 });
+            }
+            if (i < j) {
+                d1.authors.forEach((author1) => {
+                    d2.authors.forEach((author2) => {
+                        if (author1.authorId === author2.authorId) {
+                            authorLinkData.push({ source: i, target: j });
+                        }
+                    });
+                });
+                if (userConnections.some(([a, b]) => (a === paperId1 && b === paperId2) || (a === paperId2 && b === paperId1))) {
+                    userLinkData.push({ source: i, target: j });
+                }
             }
         });
     });
@@ -148,6 +170,7 @@ export function createNodes() {
                 new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOverTrigger, () => {
                     //ExecudeCodeAction allows us to execute a given function
                     setHoverPlaneToNode(d, n);
+                    isPointerOver[d.paperId] = true;
                 })
         )
         //Add an action that will undo the above when the pointer is moved away from the sphere mesh
@@ -155,6 +178,7 @@ export function createNodes() {
             (d, n, i) =>
                 new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOutTrigger, () => {
                     //Same as above but in reverse
+                    isPointerOver[d.paperId] = false;
                     if (!isDragging[d.paperId]) {
                         setHoverPlaneToNode(null, null);
                     }
@@ -167,7 +191,7 @@ export function createNodes() {
                     pickStartTime[d.paperId] = performance.now();
                     shouldDrag[d.paperId] = false;
                     setTimeout(() => {
-                        if (isDragging[d.paperId] && !shouldDrag[d.paperId]) {
+                        if (isDragging[d.paperId] && !shouldDrag[d.paperId]) { 
                             updatePaperPanelToNode(d,n);
                         }
                     }, CLICK_DELAY_THRESHOLD);
@@ -193,10 +217,6 @@ export function createNodes() {
                                 highlighter.removeMesh(n);
                             }
                         }
-                        // else if (pickDuration > CLICK_DELAY_THRESHOLD) {
-                        //     // if long click, update paper panel
-                        //     updatePaperPanelToNode(d,n);
-                        // }
                     }
                 })
         );
@@ -243,12 +263,14 @@ export function createNodes() {
             isDragging[d.paperId] = false;
             shouldDrag[d.paperId] = false;;
             unpickTime[d.paperId] = performance.now();
-            setHoverPlaneToNode(null, null);
+            if (!isPointerOver[d.paperId]) {
+                setHoverPlaneToNode(null, null);
+            }
 
             // Release node from being fixed in place
-            delete d.fx;
-            delete d.fy;
-            delete d.fz;
+            // delete d.fx;
+            // delete d.fy;
+            // delete d.fz;
 
             // let the simulation relax
             // simulation.alpha(0.1);
@@ -282,7 +304,7 @@ let updateLines = (data) => {
 };
 
 
-function createLinks(data) {
+function createLinksFromData(data, color) {
     if (links) {
         links.run((d, n, i) => {
             n.dispose();
@@ -299,11 +321,22 @@ function createLinks(data) {
         },
         [data]
     )
-        .prop("color", new Color4(1, 1, 1, 0.3))
+        .prop("color", color)
         //.prop("alpha", 0.3)
         .prop("isPickable", false);
 
     simulation.force("link", forceLink(data).distance(0.1).strength(2));
+}
+function createLinks() {
+    if (linkType === "recommendation") {
+        createLinksFromData(recommendationLinkData, linkColorMap[linkType]);
+    } else if (linkType === "citation") {
+        createLinksFromData(citationLinkData, linkColorMap[linkType]);
+    } else if (linkType === "author") {
+        createLinksFromData(authorLinkData, linkColorMap[linkType]);
+    } else {
+        console.error("Invalid link type:", linkType);
+    }
 }
 
 /**
@@ -380,7 +413,7 @@ export async function addRecommendationsFromSelectedPapers() {
     waitingForAPI = false;
 
     nodes.run((d, n, i) => {
-        if (recommendationSourceIds.includes(d.paperId)) {
+        if (recommendationSourceIds.includes(d.paperId) && !selectedIds.includes(d.paperId)) {
             highlighter.removeMesh(n);
             scene.setRenderingAutoClearDepthStencil(1, false, false);
         }
@@ -429,9 +462,10 @@ export function addPapersToGraph(newPapers) {
     });
 
     createNodes(paperData);
-    createLinkData(paperData);
+    generateLinkData(paperData);
 
-    createLinks(useCitationLinks ? citationLinkData : recommendationLinkData);
+    // createLinksFromData(useCitationLinks ? citationLinkData : recommendationLinkData);
+    createLinks();
 
     nodes.run((d, n, i) => {
         if (newPaperIds.includes(d.paperId)) {
@@ -441,7 +475,7 @@ export function addPapersToGraph(newPapers) {
     scene.setRenderingAutoClearDepthStencil(1, false, false);
     setTimeout(() => {
         nodes.run((d, n, i) => {
-            if (newPaperIds.includes(d.paperId)) {
+            if (newPaperIds.includes(d.paperId) && !selectedIds.includes(d.paperId)) {
                 highlighter.removeMesh(n);
             }
         });
@@ -485,7 +519,8 @@ export function removeNodesFromGraph(idsToRemove) {
     console.log("paperData", paperData);
 
     createNodes();
-    createLinks(useCitationLinks ? citationLinkData : recommendationLinkData);
+    // createLinksFromData(useCitationLinks ? citationLinkData : recommendationLinkData);
+    createLinks();
 }
 
 /**
@@ -493,7 +528,29 @@ export function removeNodesFromGraph(idsToRemove) {
  */
 export function toggleLinkType() {
     console.log("toggleLinkType() called");
-    useCitationLinks = !useCitationLinks;
-    createLinks(useCitationLinks ? citationLinkData : recommendationLinkData);
-    // ticked();
+    // useCitationLinks = !useCitationLinks;
+    // createLinksFromData(useCitationLinks ? citationLinkData : recommendationLinkData);
+    // // ticked();
+
+    if (linkType === "recommendation") {
+        linkType = "citation";
+    } else if (linkType === "citation") {
+        linkType = "author";
+    } else if (linkType === "author") {
+        linkType = "recommendation";
+    } else {
+        console.error("Invalid link type:", linkType);
+    }
+    setFullScreenUIText(`Link Type ${linkType}`);
+    createLinks();
+}
+
+export function setLinkType(type) {
+    if (type !== "recommendation" || type !== "citation" || type !== "author") {
+        console.error("Invalid link type:", type);
+        return;
+    }
+    linkType = type;
+    setFullScreenUIText(`Link Type ${linkType}`);
+    createLinks();
 }
