@@ -73,7 +73,7 @@ xrFeatureManager.disableFeature(BABYLON.WebXRFeatureName.TELEPORTATION);
 const xrSessionManager = xr.baseExperience.sessionManager;
 
 xrSessionManager.onXRFrameObservable.addOnce(() => {
-    xr.baseExperience.camera.position.set(-0.5, 0, 0);
+    xr.baseExperience.camera.position.set(-0.5, 0.5, 0);
     xr.baseExperience.camera.setTarget(new BABYLON.Vector3(0, 0, 0));
 });
 xrSessionManager.onXRSessionInit.add(() => {
@@ -87,6 +87,9 @@ xrSessionManager.onXRSessionEnded.add(() => {
 
 // Highlight Layer and hover plane
 export const highlighter = new HighlightLayer("highlighter", scene);
+scene.setRenderingAutoClearDepthStencil(1, false);
+highlighter.blurHorizontalSize = 0.8;
+highlighter.blurVerticalSize = 0.8;
 
 export const hoverPlane = BABYLON.MeshBuilder.CreatePlane("hoverPlane", { width: 0.6, height: 0.6 }, scene);
 let hoverPlaneId = null;

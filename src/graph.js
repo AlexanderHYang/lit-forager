@@ -1,11 +1,27 @@
 import { Vector3, Color3, Color4, StandardMaterial } from "@babylonjs/core";
-import { forceSimulation, forceManyBody, forceLink, forceCollide, forceCenter } from "../d3-force-3d/src/index.js";
+import {
+    forceSimulation,
+    forceManyBody,
+    forceLink,
+    forceCollide,
+    forceCenter,
+} from "../d3-force-3d/src/index.js";
 import * as d3 from "d3";
 import * as anu from "@jpmorganchase/anu";
 import * as BABYLON from "@babylonjs/core";
 import * as APIUtils from "./api.js";
 import { removeItem } from "./utils.js";
-import { scene, CoT, CoT_babylon, highlighter, hoverPlane, updateHoverPlaneText, setHoverPlaneToNode, updatePaperPanelToNode, updatePaperPanelOnDrag } from "./graphics.js"; // Import shared scene from graphics.js
+import {
+    scene,
+    CoT,
+    CoT_babylon,
+    highlighter,
+    hoverPlane,
+    updateHoverPlaneText,
+    setHoverPlaneToNode,
+    updatePaperPanelToNode,
+    updatePaperPanelOnDrag,
+} from "./graphics.js"; // Import shared scene from graphics.js
 
 // Shared graph data
 export const paperData = [];
@@ -31,14 +47,26 @@ export let simulation;
 export async function fetchInitialPapers() {
     waitingForAPI = true;
     try {
-        let data = await APIUtils.getDetailsForMultiplePapers(["f9c602cc436a9ea2f9e7db48c77d924e09ce3c32"]);
+        let data = await APIUtils.getDetailsForMultiplePapers([
+            "f9c602cc436a9ea2f9e7db48c77d924e09ce3c32",
+        ]);
         if (!Array.isArray(data)) {
-            data = [{ paperId: "f9c602cc436a9ea2f9e7db48c77d924e09ce3c32", references: [], recommends: [] }];
+            data = [
+                {
+                    paperId: "f9c602cc436a9ea2f9e7db48c77d924e09ce3c32",
+                    references: [],
+                    recommends: [],
+                },
+            ];
         }
         paperData.push(...data);
     } catch (error) {
         console.error("Failed to fetch initial papers", error);
-        paperData.push({ paperId: "f9c602cc436a9ea2f9e7db48c77d924e09ce3c32", references: [], recommends: [] });
+        paperData.push({
+            paperId: "f9c602cc436a9ea2f9e7db48c77d924e09ce3c32",
+            references: [],
+            recommends: [],
+        });
     }
     waitingForAPI = false;
 }
@@ -110,7 +138,7 @@ export function createNodes() {
         }
     });
 
-    nodes = CoT.bind("sphere", {segments: 16}, paperData)
+    nodes = CoT.bind("sphere", { segments: 12 }, paperData)
         .position((d) => new Vector3(d.x, d.y, d.z))
         .scaling(() => new Vector3(0.02, 0.02, 0.02))
         .material((d) => {
@@ -168,7 +196,7 @@ export function createNodes() {
                     shouldDrag[d.paperId] = false;
                     setTimeout(() => {
                         if (isDragging[d.paperId] && !shouldDrag[d.paperId]) {
-                            updatePaperPanelToNode(d,n);
+                            updatePaperPanelToNode(d, n);
                         }
                     }, CLICK_DELAY_THRESHOLD);
                 })
@@ -177,17 +205,16 @@ export function createNodes() {
         .action(
             (d, n, i) =>
                 new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickUpTrigger, () => {
-
                     console.log("pick up");
 
                     if (!shouldDrag[d.paperId]) {
                         const pickDuration = performance.now() - pickStartTime[d.paperId];
 
-                        if (pickDuration < CLICK_DELAY_THRESHOLD) { // only process click if it is short
+                        if (pickDuration < CLICK_DELAY_THRESHOLD) {
+                            // only process click if it is short
                             if (!selectedIds.includes(d.paperId)) {
                                 selectedIds.push(d.paperId);
                                 highlighter.addMesh(n, Color3.White());
-                                scene.setRenderingAutoClearDepthStencil(1, false, false);
                             } else {
                                 removeItem(selectedIds, d.paperId);
                                 highlighter.removeMesh(n);
@@ -206,8 +233,8 @@ export function createNodes() {
         let dragBehavior = new BABYLON.SixDofDragBehavior();
 
         let initialPosition = null;
-        shouldDrag[d.paperId]  = false;
-        
+        shouldDrag[d.paperId] = false;
+
         dragBehavior.dragDeltaRatio = 0.5;
         dragBehavior.rotateDraggedObject = true;
         dragBehavior.detachCameraControls = true;
@@ -217,7 +244,6 @@ export function createNodes() {
             initialPosition = n.position.clone();
         });
         dragBehavior.onPositionChangedObservable.add((data) => {
-
             let delta = n.position.subtract(initialPosition);
             if (delta.length() > 0.02) {
                 shouldDrag[d.paperId] = true;
@@ -238,10 +264,10 @@ export function createNodes() {
         });
         dragBehavior.onDragEndObservable.add(() => {
             // Reset node position when drag ended
-            console.log("drag end")
+            console.log("drag end");
             initialPosition = null;
             isDragging[d.paperId] = false;
-            shouldDrag[d.paperId] = false;;
+            shouldDrag[d.paperId] = false;
             unpickTime[d.paperId] = performance.now();
             setHoverPlaneToNode(null, null);
 
@@ -260,7 +286,6 @@ export function createNodes() {
     nodes.run((d, n, i) => {
         if (selectedIds.includes(d.paperId)) {
             highlighter.addMesh(n, Color3.White());
-            scene.setRenderingAutoClearDepthStencil(1, false, false);
         }
     });
 }
@@ -269,7 +294,7 @@ export function createNodes() {
  * Updates the lines in the graph.
  * @param {Array} data - The data to update the lines with.
  * @returns {Array} - The updated lines.
-*/
+ */
 let updateLines = (data) => {
     // console.log("updateLines() called");
     let lines = [];
@@ -280,7 +305,6 @@ let updateLines = (data) => {
     });
     return lines;
 };
-
 
 function createLinks(data) {
     if (links) {
@@ -314,7 +338,14 @@ export function ticked() {
         nodes.position((d) => new Vector3(d.x, d.y, d.z));
     }
     if (links) {
-        links.run((d, n) => anu.create("lineSystem", "edge", { lines: updateLines(d), instance: n, updatable: true }, d));
+        links.run((d, n) =>
+            anu.create(
+                "lineSystem",
+                "edge",
+                { lines: updateLines(d), instance: n, updatable: true },
+                d
+            )
+        );
     }
 }
 
@@ -351,7 +382,6 @@ export async function addRecommendationsFromSelectedPapers() {
         if (selectedIds.includes(d.paperId)) {
             highlighter.removeMesh(n);
             highlighter.addMesh(n, Color3.Yellow());
-            scene.setRenderingAutoClearDepthStencil(1, false, false);
         }
     });
 
@@ -369,10 +399,10 @@ export async function addRecommendationsFromSelectedPapers() {
                 });
             }
         });
-    
+
         selectedIds.length = 0;
         // recommendedPapers.forEach((p) => selectedIds.push(p));
-    
+
         addPapersToGraph(newPapers);
     } catch (error) {
         console.error("addRecommendationsFromSelectedPapers() failed with error:", error);
@@ -382,10 +412,8 @@ export async function addRecommendationsFromSelectedPapers() {
     nodes.run((d, n, i) => {
         if (recommendationSourceIds.includes(d.paperId)) {
             highlighter.removeMesh(n);
-            scene.setRenderingAutoClearDepthStencil(1, false, false);
         }
     });
-
 }
 
 /**
@@ -435,17 +463,16 @@ export function addPapersToGraph(newPapers) {
 
     nodes.run((d, n, i) => {
         if (newPaperIds.includes(d.paperId)) {
-            highlighter.addMesh(n, Color3.Green());
+            highlighter.addMesh(n, Color3.FromHexString("#7CFC00"));
         }
     });
-    scene.setRenderingAutoClearDepthStencil(1, false, false);
+
     setTimeout(() => {
         nodes.run((d, n, i) => {
             if (newPaperIds.includes(d.paperId)) {
                 highlighter.removeMesh(n);
             }
         });
-        scene.setRenderingAutoClearDepthStencil(1, false, false);
     }, 3000);
 
     simulation.alpha(0.2);
@@ -467,8 +494,14 @@ export function removeNodesFromGraph(idsToRemove) {
     console.log("idsToRemove", idsToRemove);
     console.log("paperData", paperData);
     const newPaperData = paperData.filter((p) => !idsToRemove.includes(p.paperId));
-    const newCitationLinkData = citationLinkData.filter((link) => !idsToRemove.includes(link.source.paperId) && !idsToRemove.includes(link.target.paperId));
-    const newRecommendationLinkData = recommendationLinkData.filter((link) => !idsToRemove.includes(link.source.paperId) && !idsToRemove.includes(link.target.paperId));
+    const newCitationLinkData = citationLinkData.filter(
+        (link) =>
+            !idsToRemove.includes(link.source.paperId) && !idsToRemove.includes(link.target.paperId)
+    );
+    const newRecommendationLinkData = recommendationLinkData.filter(
+        (link) =>
+            !idsToRemove.includes(link.source.paperId) && !idsToRemove.includes(link.target.paperId)
+    );
 
     paperData.length = 0;
     citationLinkData.length = 0;
