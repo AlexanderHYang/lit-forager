@@ -92,7 +92,7 @@ xrSessionManager.onXRSessionEnded.add(() => {
 
 // Highlight Layer and hover plane
 export const highlighter = new HighlightLayer("highlighter", scene);
-scene.setRenderingAutoClearDepthStencil(1, false);
+scene.setRenderingAutoClearDepthStencil(2, false);
 highlighter.blurHorizontalSize = 0.8;
 highlighter.blurVerticalSize = 0.8;
 
@@ -340,7 +340,7 @@ export function updatePaperPanelToNode(d,n) {
 
         paperDetailsPanel.isVisible = true;
         highlighter.addMesh(n, Color3.Blue());
-        scene.setRenderingAutoClearDepthStencil(1, false, false);
+
     }
 }
 
