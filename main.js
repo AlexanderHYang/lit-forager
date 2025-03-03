@@ -17,7 +17,11 @@ import {
     startSimulationRendering,
     clearNodeSelection,
     unpinNodes,
+    addCitationsFromSelectedPaper,
+    addReferencesFromSelectedPaper,
+    addPapersFromAuthor,
 } from "./src/graph.js";
+import { getAuthorsPapers, getCitationsForPaper, getReferencesForPaper } from "./src/api.js";
 
 // Fetch initial paper data and initialize the graph
 async function initializeApp() {
@@ -65,6 +69,21 @@ window.addEventListener("keydown", (ev) => {
     if (ev.key === "u") {
         console.log("U pressed - Unpinning nodes");
         unpinNodes();
+    }
+    if (ev.key === "1") {
+        console.log("1 pressed - Fetching paper citations");
+        // console.log(getCitationsForPaper("f9c602cc436a9ea2f9e7db48c77d924e09ce3c32"));
+        addCitationsFromSelectedPaper();
+    }
+    if (ev.key === "2") {
+        console.log("2 pressed - Fetching paper references");
+        // console.log(getReferencesForPaper("f9c602cc436a9ea2f9e7db48c77d924e09ce3c32"));
+        addReferencesFromSelectedPaper();
+    }
+    if (ev.key === "3") {
+        console.log("3 pressed - Fetching author's papers");
+        // console.log(getAuthorsPapers("145642373"));
+        addPapersFromAuthor("145642373");
     }
 });
 

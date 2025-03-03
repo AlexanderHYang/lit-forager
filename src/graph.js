@@ -24,6 +24,7 @@ import {
 
 // Shared graph data
 export const paperData = [];
+export const paperIds = [];
 export const citationLinkData = [];
 export const recommendationLinkData = [];
 export const authorLinkData = [];
@@ -32,6 +33,7 @@ export const userConnections = [];
 export let useCitationLinks = false;
 export let linkType = "recommendation";
 export const selectedIds = [];
+export const removedPaperIds = [];
 export let nodes = null;
 export let links = null;
 const pickStartTime = {};
@@ -77,6 +79,7 @@ export async function fetchInitialPapers() {
             recommends: [],
         });
     }
+    paperIds.push("f9c602cc436a9ea2f9e7db48c77d924e09ce3c32");
     waitingForAPI = false;
 }
 
@@ -419,12 +422,11 @@ export async function addRecommendationsFromSelectedPapers() {
 
     try {
         const d = await APIUtils.fetchRecsFromMultipleIds(selectedIds);
-        const recommendedPapers = d.recommendedPapers.map((a) => a.paperId);
-        const newPapers = await APIUtils.getDetailsForMultiplePapers(recommendedPapers);
+        const recommendedPaperIds = d.recommendedPapers.map((a) => a.paperId);
 
         paperData.forEach((p) => {
             if (selectedIds.includes(p.paperId)) {
-                recommendedPapers.forEach((rec) => {
+                recommendedPaperIds.forEach((rec) => {
                     if (!p.recommends.includes(rec)) {
                         p.recommends.push(rec);
                     }
@@ -432,10 +434,14 @@ export async function addRecommendationsFromSelectedPapers() {
             }
         });
 
+        const filteredRecommendedPaperIds = recommendedPaperIds.filter((id) => !paperIds.includes(id) && !removedPaperIds.includes(id));
+        const newPapers = await APIUtils.getDetailsForMultiplePapers(filteredRecommendedPaperIds.slice(0,5));
+
         selectedIds.length = 0;
         // recommendedPapers.forEach((p) => selectedIds.push(p));
 
         addPapersToGraph(newPapers);
+        setLinkType("recommendation");
     } catch (error) {
         console.error("addRecommendationsFromSelectedPapers() failed with error:", error);
     }
@@ -469,6 +475,7 @@ export function addPapersToGraph(newPapers) {
             // don't add duplicates
             p.color = newColor;
             paperData.push(p);
+            paperIds.push(p.paperId);
             newPaperIds.push(p.paperId);
         }
     });
@@ -516,6 +523,7 @@ export function addPapersToGraph(newPapers) {
  */
 export function removeSelectedNodesFromGraph() {
     removeNodesFromGraph(selectedIds);
+    removedPaperIds.push(...selectedIds);
     selectedIds.length = 0;
 }
 
@@ -527,6 +535,7 @@ export function removeNodesFromGraph(idsToRemove) {
     console.log("idsToRemove", idsToRemove);
     console.log("paperData", paperData);
     const newPaperData = paperData.filter((p) => !idsToRemove.includes(p.paperId));
+    const newPaperIds = paperIds.filter((id) => !idsToRemove.includes(id));
     const newCitationLinkData = citationLinkData.filter(
         (link) =>
             !idsToRemove.includes(link.source.paperId) && !idsToRemove.includes(link.target.paperId)
@@ -537,10 +546,12 @@ export function removeNodesFromGraph(idsToRemove) {
     );
 
     paperData.length = 0;
+    paperIds.length = 0;
     citationLinkData.length = 0;
     recommendationLinkData.length = 0;
 
     paperData.push(...newPaperData);
+    paperIds.push(...newPaperIds);
     citationLinkData.push(...newCitationLinkData);
     recommendationLinkData.push(...newRecommendationLinkData);
 
@@ -578,11 +589,142 @@ export function toggleLinkType() {
 }
 
 export function setLinkType(type) {
-    if (type !== "recommendation" || type !== "citation" || type !== "author") {
+    if (type !== "recommendation" && type !== "citation" && type !== "author") {
         console.error("Invalid link type:", type);
         return;
     }
     linkType = type;
     setFullScreenUIText(`Link Type ${linkType}`);
     createLinks();
+}
+
+export async function addCitationsFromSelectedPaper() {
+    if (selectedIds.length !== 1) {
+        console.error("Error: Must select exactly one paper to fetch citations for.");
+        return;
+    }
+
+    if (waitingForAPI) {
+        console.log("not requesting, already waiting for API");
+        return;
+    }
+    waitingForAPI = true;
+
+    const recommendationSourceIds = [selectedIds[0]];
+
+    // adjust glow layers
+    nodes.run((d, n, i) => {
+        if (selectedIds.includes(d.paperId)) {
+            highlighter.removeMesh(n);
+            highlighter.addMesh(n, Color3.Yellow());
+        }
+    });
+
+    try {
+        const paperId = selectedIds[0];
+        selectedIds.length = 0;
+        const citationsResponse = await APIUtils.getCitationsForPaper(paperId);
+        const citationIds = citationsResponse.data.map((d) => d.citingPaper.paperId);
+        const filteredCitationsIds = citationIds.filter((id) => !paperIds.includes(id) && !removedPaperIds.includes(id));
+        const newPapers = await APIUtils.getDetailsForMultiplePapers(filteredCitationsIds.slice(0,5));
+
+        addPapersToGraph(newPapers);
+        setLinkType("citation");
+    } catch (error) {
+        console.error("addCitationsFromSelectedPaper() failed with error:", error);
+    }
+    waitingForAPI = false;
+
+    nodes.run((d, n, i) => {
+        if (recommendationSourceIds.includes(d.paperId) && !selectedIds.includes(d.paperId)) {
+            highlighter.removeMesh(n);
+        }
+    });
+}
+
+export async function addReferencesFromSelectedPaper() {
+    if (selectedIds.length !== 1) {
+        console.error("Error: Must select exactly one paper to fetch references for.");
+        return;
+    }
+
+    if (waitingForAPI) {
+        console.log("not requesting, already waiting for API");
+        return;
+    }
+    waitingForAPI = true;
+
+    const recommendationSourceIds = [selectedIds[0]];
+
+    // adjust glow layers
+    nodes.run((d, n, i) => {
+        if (selectedIds.includes(d.paperId)) {
+            highlighter.removeMesh(n);
+            highlighter.addMesh(n, Color3.Yellow());
+        }
+    });
+
+    try {
+        const paperId = selectedIds[0];
+        selectedIds.length = 0;
+        const referencesResponse = await APIUtils.getReferencesForPaper(paperId);
+        const referenceIds = referencesResponse.data.map((d) => d.citedPaper.paperId);
+        const filteredReferenceIds = referenceIds.filter((id) => !paperIds.includes(id) && !removedPaperIds.includes(id));
+        console.log("filteredReferenceIds", filteredReferenceIds);
+        const newPapers = await APIUtils.getDetailsForMultiplePapers(filteredReferenceIds.slice(0,5));
+
+        addPapersToGraph(newPapers);
+        setLinkType("citation");
+    } catch (error) {
+        console.error("addReferencesFromSelectedPaper() failed with error:", error);
+    }
+    waitingForAPI = false;
+
+    nodes.run((d, n, i) => {
+        if (recommendationSourceIds.includes(d.paperId) && !selectedIds.includes(d.paperId)) {
+            highlighter.removeMesh(n);
+        }
+    });
+}
+
+export async function addPapersFromAuthor(authorId) {
+    if (!authorId) {
+        console.error("Error: authorId must be a non-empty string.");
+        return;
+    }
+
+    if (waitingForAPI) {
+        console.log("not requesting, already waiting for API");
+        return;
+    }
+    waitingForAPI = true;
+
+    const recommendationSourceIds = paperData.filter((d) => d.authors.some((a) => a.authorId === authorId)).map((d) => d.paperId);
+
+    // adjust glow layers
+    nodes.run((d, n, i) => {
+        if (recommendationSourceIds.includes(d.paperId)) {
+            highlighter.removeMesh(n);
+            highlighter.addMesh(n, Color3.Yellow());
+        }
+    });
+
+    try {
+        const authorResponse = await APIUtils.getAuthorsPapers(authorId);
+        const authorPaperIds = authorResponse.data.map((d) => d.paperId);
+        const filteredAuthorPaperIds = authorPaperIds.filter((id) => !paperIds.includes(id) && !removedPaperIds.includes(id));
+        const newPapers = await APIUtils.getDetailsForMultiplePapers(filteredAuthorPaperIds.slice(0,5));
+
+        addPapersToGraph(newPapers);
+        setLinkType("author");
+    } catch (error) {
+        console.error("addReferencesFromSelectedPaper() failed with error:", error);
+    }
+    waitingForAPI = false;
+
+    nodes.run((d, n, i) => {
+        if (recommendationSourceIds.includes(d.paperId) && !selectedIds.includes(d.paperId)) {
+            highlighter.removeMesh(n);
+        }
+    });
 }

@@ -360,6 +360,7 @@ fullscreenUITextBlock.color = "black";
 fullscreenUITextBlock.fontSize = 50;
 
 fullscreenUIPlane.isVisible = false;
+fullscreenUIPlane.isPickable = false;
 
 scene.onBeforeRenderObservable.add(() => {
     if (fullscreenUIPlane.isVisible) {
