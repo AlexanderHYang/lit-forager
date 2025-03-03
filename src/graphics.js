@@ -225,73 +225,18 @@ panelMaterial.alpha = 0; // Transparent background
 paperDetailsPanel.material = panelMaterial;
 
 // Create an AdvancedDynamicTexture for the panel
-const panelTexture = AdvancedDynamicTexture.CreateForMesh(paperDetailsPanel,1024, 2048);
+const panelTexture = AdvancedDynamicTexture.CreateForMesh(paperDetailsPanel, 1024, 2048);
+let loadedGUI = await panelTexture.parseFromSnippetAsync("#R4A2E9#5");
 
-// Create a background rectangle
-const panelBackground = new Rectangle("paperDatailPanelBackground");
-// panelBackground.adaptWidthToChildren = true;
-panelBackground.adaptHeightToChildren = true;
-panelBackground.cornerRadius = 20;
-panelBackground.color = "Black";
-panelBackground.thickness = 2;
-panelBackground.background = "White";
-panelTexture.addControl(panelBackground);
+let paperDetailPanelBackground = panelTexture.getControlByName("paperDetailPanelBackground");
+let paperDetailStackPanel = paperDetailPanelBackground.getChildByName("paperDetailStackPanel");
+let titleBlock = paperDetailStackPanel.getChildByName("titleBlock");
+let metadataTextBlock = paperDetailStackPanel.getChildByName("metadataTextBlock");
 
-// StackPanel to hold multiple text sections
-const textPanel = new StackPanel("paperDetailStackPanel");
-textPanel.isVertical = true;
-textPanel.width = "90%"; // Ensure it fills the panel
-textPanel.adaptHeightToChildren = true;
-panelBackground.addControl(textPanel);
-
-// Title Text Block
-const titleBlock = new TextBlock("titleBlock");
-titleBlock.text = "Paper Title";
-titleBlock.color = "black";
-titleBlock.fontSize = 60;
-titleBlock.textHorizontalAlignment = TextBlock.HORIZONTAL_ALIGNMENT_CENTER;
-// titleBlock.height = "100px";
-titleBlock.textWrapping = true;
-titleBlock.resizeToFit = true;
-titleBlock.paddingTop = "20px"; // Add margin at the top
-textPanel.addControl(titleBlock);
-
-// Metadata Text Block
-const metadataBlock = new TextBlock("metadataTextBlock");
-metadataBlock.text = "Authors: John Doe, Jane Smith\nCitations: 1234\nReferences: 56";
-metadataBlock.color = "black";
-metadataBlock.fontSize = 30;
-metadataBlock.textWrapping = true;
-metadataBlock.textHorizontalAlignment = TextBlock.HORIZONTAL_ALIGNMENT_LEFT;
-// metadataBlock.height = "120px";
-metadataBlock.resizeToFit = true;
-metadataBlock.paddingTop = "10px"; // Add spacing between sections
-textPanel.addControl(metadataBlock);
-
-// Abstract Title Block
-const abstractTitleBlock = new TextBlock("abstractTitleTextBlock");
-abstractTitleBlock.text = "Abstract";
-abstractTitleBlock.color = "black";
-abstractTitleBlock.fontSize = 40;
-abstractTitleBlock.textHorizontalAlignment = TextBlock.HORIZONTAL_ALIGNMENT_CENTER;
-// abstractTitleBlock.height = "80px";
-abstractTitleBlock.textWrapping = true;
-abstractTitleBlock.resizeToFit = true;
-abstractTitleBlock.paddingTop = "15px"; // Space before the abstract title
-textPanel.addControl(abstractTitleBlock);
-
-// Abstract Text Block
-const abstractBlock = new TextBlock("abstractTextBlock");
-abstractBlock.text = "This is the abstract content explaining the research...";
-abstractBlock.color = "black";
-abstractBlock.fontSize = 30;
-abstractBlock.textHorizontalAlignment = TextBlock.HORIZONTAL_ALIGNMENT_LEFT;
-// abstractBlock.height = "200px";
-abstractBlock.textWrapping = true;
-abstractBlock.resizeToFit = true;
-abstractBlock.paddingTop = "10px"; // Space before abstract content
-abstractBlock.paddingBottom = "20px"; // Space at bottom of panel
-textPanel.addControl(abstractBlock);
+let abstractPanelBackground = panelTexture.getControlByName("abstractPanelBackground");
+let abstractPanelStackPanel = abstractPanelBackground.getChildByName("abstractPanelStackPanel");
+let abstractTitleTextBlock = abstractPanelStackPanel.getChildByName("abstractTitleTextBlock");
+let abstractTextBlock = abstractPanelStackPanel.getChildByName("abstractTextBlock");
 
 scene.onBeforeRenderObservable.add(() => {
     if (nodes) {
@@ -335,8 +280,8 @@ export function updatePaperPanelToNode(d,n) {
         const abstractText = d.abstract;
 
         titleBlock.text = d.title;
-        metadataBlock.text = metadata;
-        abstractBlock.text = abstractText;
+        metadataTextBlock.text = metadata;
+        abstractTextBlock.text = abstractText;
 
         paperDetailsPanel.isVisible = true;
         highlighter.addMesh(n, Color3.Blue());
