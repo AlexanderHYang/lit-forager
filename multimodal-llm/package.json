@@ -1,0 +1,19 @@
+{
+  "name": "google-stt-test",
+  "version": "1.0.0",
+  "main": "multimodal-llm.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@google-cloud/speech": "^6.7.1",
+    "@google/generative-ai": "^0.22.0",
+    "chalk": "^4.1.2",
+    "express": "^4.21.2",
+    "node-record-lpcm16": "^1.0.1",
+    "socket.io": "^4.8.1"
+  }
+}

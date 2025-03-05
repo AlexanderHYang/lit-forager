@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Gemini Response Updates</title>
+  </head>
+  <body>
+    <h1>Gemini Response Updates</h1>
+    <div id="response">Waiting for updates...</div>
+    <!-- Load Socket.io client library -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      // Connect to the WebSocket server
+      const socket = io();
+      // Listen for geminiUpdate events and update the page
+      socket.on("geminiUpdate", function (data) {
+        document.getElementById("response").innerText = data.geminiResponse;
+      });
+    </script>
+  </body>
+</html>

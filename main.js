@@ -89,3 +89,16 @@ window.addEventListener("keydown", (ev) => {
 
 // Start application initialization
 initializeApp();
+
+// --- Socket.IO Connection and Event Listener ---
+// Connect to a Socket.IO server running on port 3000
+const socket = io("http://localhost:3000");
+
+// Listen for an event named "socketEvent" from the server.
+// Replace "socketEvent" with the actual event name your server emits.
+socket.on("socketEvent", (data) => {
+    console.log("Received socket.io event:", data);
+    // Process the received data here. For example:
+    // updateGraphWithNewData(data);
+    
+});
