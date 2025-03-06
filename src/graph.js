@@ -34,6 +34,7 @@ export let useCitationLinks = false;
 export let linkType = "recommendation";
 export const selectedIds = [];
 export const removedPaperIds = [];
+const pinnedNodeIds = [];
 export let nodes = null;
 export let links = null;
 const pickStartTime = {};
@@ -278,6 +279,10 @@ export function createNodes() {
             d.fx = n.position.x;
             d.fy = n.position.y;
             d.fz = n.position.z;
+
+            if (!pinnedNodeIds.includes(d.paperId)) {
+                pinnedNodeIds.push(d.paperId);
+            }
         });
         dragBehavior.onDragObservable.add((data) => {
             if (shouldDrag[d.paperId]) {
@@ -306,10 +311,16 @@ export function createNodes() {
         n.addBehavior(dragBehavior);
     });
 
-    // re-add highlight layer to selected nodes
     nodes.run((d, n, i) => {
+        // re-add highlight layer to selected nodes
         if (selectedIds.includes(d.paperId)) {
             highlighter.addMesh(n, Color3.White());
+        }
+        // re-pin nodes
+        if (pinnedNodeIds.includes(d.paperId)) {
+            d.fx = d.x;
+            d.fy = d.y;
+            d.fz = d.z;
         }
     });
 }
@@ -394,6 +405,7 @@ export function clearNodeSelection() {
 
 export function unpinNodes() {
     console.log("unpinNodes() called");
+    pinnedNodeIds.length = 0;
     paperData.forEach((d) => {
         delete d.fx;
         delete d.fy;
@@ -490,9 +502,11 @@ export function addPapersToGraph(newPapers) {
     simulation.alpha(0.1);
     paperData.forEach((d) => {
         // undo lock nodes in place after simulation
-        delete d.fx;
-        delete d.fy;
-        delete d.fz;
+        if (!pinnedNodeIds.includes(d.paperId)) {
+            delete d.fx;
+            delete d.fy;
+            delete d.fz;
+        }
     });
 
     createNodes(paperData);
@@ -554,6 +568,12 @@ export function removeNodesFromGraph(idsToRemove) {
     paperIds.push(...newPaperIds);
     citationLinkData.push(...newCitationLinkData);
     recommendationLinkData.push(...newRecommendationLinkData);
+
+    idsToRemove.forEach((id) => {
+        if (pinnedNodeIds.includes(id)) {
+            removeItem(pinnedNodeIds, id);
+        }
+    });
 
     // paperData = paperData.filter((p) => !idsToRemove.includes(p.paperId));
     // citationLinkData = citationLinkData.filter((link) => !idsToRemove.includes(link.source.paperId) && !idsToRemove.includes(link.target.paperId));
@@ -727,4 +747,20 @@ export async function addPapersFromAuthor(authorId) {
             highlighter.removeMesh(n);
         }
     });
+}
+
+export async function restoreDeletedPapers() {
+    if (waitingForAPI) {
+        console.log("not requesting, already waiting for API");
+        return;
+    }
+    waitingForAPI = true;
+    try {
+        const deletedPapers = await APIUtils.getDetailsForMultiplePapers(removedPaperIds);
+        addPapersToGraph(deletedPapers);
+        removedPaperIds.length = 0;
+    } catch (error) {
+        console.error("restoreDeletedPapers() failed with error:", error);
+    }
+    waitingForAPI = false;
 }
