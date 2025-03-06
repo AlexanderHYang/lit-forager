@@ -20,6 +20,7 @@ import {
     addCitationsFromSelectedPaper,
     addReferencesFromSelectedPaper,
     addPapersFromAuthor,
+    restoreDeletedPapers,
 } from "./src/graph.js";
 import { getAuthorsPapers, getCitationsForPaper, getReferencesForPaper } from "./src/api.js";
 import { io } from "socket.io-client";
@@ -85,6 +86,10 @@ window.addEventListener("keydown", (ev) => {
         console.log("3 pressed - Fetching author's papers");
         // console.log(getAuthorsPapers("145642373"));
         addPapersFromAuthor("145642373");
+    }
+    if (ev.key === "4") {
+        console.log("4 pressed - Restoring deleted papers");
+        restoreDeletedPapers();
     }
 });
 
