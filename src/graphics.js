@@ -25,7 +25,6 @@ app.appendChild(canvas);
 
 export const engine = new Engine(canvas, true, { stencil: true });
 export const scene = new Scene(engine);
-scene.useRightHandedSystem = true;
 Scene.DoubleClickDelay = 500;
 export const camera = new ArcRotateCamera(
     "Camera",
@@ -162,8 +161,7 @@ export const guiManager = new GUI.GUI3DManager(scene);
 export const handMenu = new GUI.HandMenu(xr.baseExperience, "menu");
 
 const handConstraintBehavior = handMenu.handConstraintBehavior;
-handConstraintBehavior.gazeProximityRadius = 0.5;
-handConstraintBehavior.palmUpStrictness = 0.9;
+handConstraintBehavior.palmUpStrictness = 0.8;
 handConstraintBehavior.handConstraintVisibility = BABYLON.HandConstraintVisibility.PALM_UP;
 handConstraintBehavior.targetZone = BABYLON.HandConstraintZone.ULNAR_SIDE;
 handConstraintBehavior.nodeOrientationMode = BABYLON.HandConstraintOrientation.HAND_ROTATION;
