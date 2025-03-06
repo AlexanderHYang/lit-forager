@@ -135,7 +135,9 @@ scene.onBeforeRenderObservable.add(() => {
             }
         })
     }
-    hoverPlane.lookAt(currCam.position);
+    const reversePos = hoverPlane.position.add(hoverPlane.position.subtract(currCam.position));
+    hoverPlane.lookAt(reversePos);
+    // hoverPlane.lookAt(currCam.position);
 });
 
 export function updateHoverPlaneText(text) {
@@ -246,7 +248,9 @@ scene.onBeforeRenderObservable.add(() => {
             }
         })
     }
-    paperDetailsPanel.lookAt(currCam.position);
+    // paperDetailsPanel.lookAt(currCam.position);
+    const reversePos = paperDetailsPanel.position.add(paperDetailsPanel.position.subtract(currCam.position));
+    paperDetailsPanel.lookAt(reversePos);
 });
 
 // Function to update paper details
@@ -309,6 +313,7 @@ scene.onBeforeRenderObservable.add(() => {
     if (fullscreenUIPlane.isVisible) {
         fullscreenUIPlane.position = currCam.getFrontPosition(1.5);
         fullscreenUIPlane.lookAt(currCam.position);
+        fullscreenUIPlane.rotate(new Vector3(0, 1, 0), Math.PI);
     }
 });
 
