@@ -12,9 +12,11 @@
     <script>
       // Connect to the WebSocket server
       const socket = io();
-      // Listen for geminiUpdate events and update the page
-      socket.on("geminiUpdate", function (data) {
-        document.getElementById("response").innerText = data.geminiResponse;
+
+      // Listen for all events emitted from the server
+      socket.onAny((event, data) => {
+        document.getElementById("response").innerText =
+          `Event: ${event}\nResponse: ${data.info ? data.info : JSON.stringify(data)}`;
       });
     </script>
   </body>
