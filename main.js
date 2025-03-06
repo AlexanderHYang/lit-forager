@@ -1,308 +1,48 @@
-import "@babylonjs/core/Debug/debugLayer";
-import "@babylonjs/inspector";
-import {
-    Scene,
-    HemisphericLight,
-    ArcRotateCamera,
-    StandardMaterial,
-    Vector3,
-    Color3,
-    Color4,
-    Engine,
-} from "@babylonjs/core";
-import { AdvancedDynamicTexture, Rectangle, TextBlock } from "@babylonjs/gui";
-import { forceSimulation, forceCenter, forceManyBody, forceLink, forceCollide } from "./d3-force-3d/src/index.js"; //External required dependency for force layouts
-import * as d3 from "d3";
-import * as anu from "@jpmorganchase/anu"; //import anu, this project is using a local import of babylon js located at ../babylonjs-anu this may not be the latest version and is used for simplicity.
-import leMis from "./data/miserables-trimmed.json" assert { type: "json" };
-import * as BABYLON from "@babylonjs/core";
+import { 
+    engine, 
+    scene, 
+    recommendButton, 
+    deleteButton, 
+    toggleLinksButton,
+    clearSelectionButton,
+    unpinNodesButton,
+} from "./src/graphics.js";
+import { 
+    fetchInitialPapers, 
+    initializeSimulation, 
+    createNodes, 
+    toggleLinkType, 
+    removeSelectedNodesFromGraph, 
+    addRecommendationsFromSelectedPapers,
+    startSimulationRendering,
+    clearNodeSelection,
+    unpinNodes,
+    addCitationsFromSelectedPaper,
+    addReferencesFromSelectedPaper,
+    addPapersFromAuthor,
+} from "./src/graph.js";
+import { getAuthorsPapers, getCitationsForPaper, getReferencesForPaper } from "./src/api.js";
+import { io } from "socket.io-client";
 
-//Grab DOM element where we will attach our canvas. #app is the id assigned to an empty <div> in our index.html
-const app = document.querySelector("#app");
-//Create a canvas element and append it to #app div
-const canvas = document.createElement("canvas");
-app.appendChild(canvas);
-
-//initialize babylon engine, passing in our target canvas element, and create a new scene
-const babylonEngine = new Engine(canvas, true, { stencil: true });
-
-//create a scene object using our engine
-const scene = new Scene(babylonEngine);
-
-//Add lights and a camera
-let light = new HemisphericLight("light1", new Vector3(0, 10, 0), scene);
-light.diffuse = new Color3(1, 1, 1);
-light.specular = new Color3(1, 1, 1);
-light.groundColor = new Color3(1, 1, 1);
-
-//Add a camera that rotates around the origin and adjust its properties
-const camera = new ArcRotateCamera(
-    "Camera",
-    -(Math.PI / 4) * 3,
-    Math.PI / 4,
-    10,
-    new Vector3(0, 0, 0),
-    scene
-);
-camera.wheelPrecision = 20;     // Adjust the sensitivity of the mouse wheel's zooming
-camera.minZ = 0;                // Adjust the distance of the camera's near plane
-camera.attachControl(true);     // Allow the camera to respond to user controls
-camera.position = new Vector3(0, 0, -1.5);
-
-//Create a D3 color scale that returns a Color4 for our nodes
-const scaleC = d3.scaleOrdinal(anu.ordinalChromatic("d310").toColor4());
-
-//Create a D3 simulation with several forces
-const simulation = forceSimulation(leMis.nodes, 3)
-    .force("link", forceLink(leMis.links)
-        .distance(0.1)
-        .strength(2)
-    )
-    .force("charge", forceManyBody()
-        .strength(-0.005)
-    )
-    .force("collide", forceCollide()
-        .radius(0.01)
-        .strength(2)
-    )
-    .force("center", forceCenter(0, 0, 0))
-    .on("tick", ticked)
-    .on("end", () => simulation.stop());
-
-//Create a Center of Transform TransformNode using create() that serves the parent node for all our meshes that make up our network
-const CoT_babylon = anu.create("cot", "cot");
-const CoT = anu.selectName("cot", scene);
-
-
-//Create a Babylon HighlightLayer that will allow us to add a highlight stencil to meshes
-const highlighter = new BABYLON.HighlightLayer("highlighter", scene);
-
-//Create a plane mesh that will serve as the basis for our details on demand label
-// const hoverPlane = anu.create('plane', 'hoverPlane', {width: 1, height: 1});
-let hoverPlane = null;
-CoT.bind("plane", { width: 0.6, height: 0.6 }, [{}]).run((d, n) => {
-    hoverPlane = n; // Get the first created mesh
-});
-// console.log("Hover Plane:", hoverPlane); // Should now reference the plane
-
-hoverPlane.isPickable = false;      //Disable picking so it doesn't get in the way of interactions
-hoverPlane.renderingGroupId = 1;    //Set render id higher so it always renders in front
-
-//Use the Babylon GUI system to create an AdvancedDynamicTexture that will the updated with our label content
-let advancedTexture = AdvancedDynamicTexture.CreateForMesh(hoverPlane);
-
-//Create a rectangle for the background
-let UIBackground = new Rectangle();
-UIBackground.adaptWidthToChildren = true;
-UIBackground.adaptHeightToChildren = true;
-UIBackground.cornerRadius = 20;
-UIBackground.color = "Black";
-UIBackground.thickness = 2;
-UIBackground.background = "White";
-advancedTexture.addControl(UIBackground);
-
-//Create an empty text block
-let label = new TextBlock();
-label.paddingLeftInPixels = 25;
-label.paddingRightInPixels = 25;
-label.fontSizeInPixels = 50;
-label.resizeToFit = true;
-label.text = " ";
-UIBackground.addControl(label);
-
-//Hide the plane until it is needed
-hoverPlane.isVisible = false;
-//Set billboard mode to always face camera
-hoverPlane.billboardMode = 7;
-
-//Create the spheres for our network and set their properties
-//bind(mesh: string, options?: {}, data?: {}, scene?: Scene)
-let nodes = CoT.bind("sphere", {}, leMis.nodes)
-    .position((d) => new Vector3(d.x, d.y, d.z))
-    .scaling((d) => new Vector3(0.02, 0.02, 0.02))
-    .material((d) => {
-        let mat = new StandardMaterial("mat");
-        mat.specularColor = new Color3(0, 0, 0);
-        mat.diffuseColor = scaleC(d.group);
-        return mat;
-    })
-    //Add an action that will increase the size of the sphere when the pointer is moved over it
-    .action(
-        (d, n, i) =>
-            new BABYLON.InterpolateValueAction( //Type of action, InterpolateValueAction will interpolave a given property's value over a specified period of time
-                BABYLON.ActionManager.OnPointerOverTrigger, //Action Trigger
-                n, //The Mesh or Node to Change, n in Anu refers to the mesh itself
-                "scaling", //The property to Change
-                new Vector3(0.03, 0.03, 0.03), //The value that the property should be set to
-                100 //The duration in milliseconds that the value is interpolated for
-            )
-    )
-    //Add an action that will return the size of the sphere to its original value when the pointer is moved out of it
-    .action(
-        (d, n, i) =>
-            new BABYLON.InterpolateValueAction(
-                BABYLON.ActionManager.OnPointerOutTrigger,
-                n,
-                "scaling",
-                new Vector3(0.02, 0.02, 0.02),
-                100
-            )
-    )
-    //Add an action that will highlight the sphere mesh using the highlight stencil when the pointer is moved over it,
-    //as well as show and properly position the hoverPlane above the sphere mesh
-    .action(
-        (d, n, i) =>
-            new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOverTrigger, () => {
-                //ExecudeCodeAction allows us to execute a given function
-                highlighter.addMesh(n, Color3.White());
-                scene.setRenderingAutoClearDepthStencil(1, true, true, false);
-                //Show and adjust the label
-                hoverPlane.isVisible = true;
-                label.text = d.name;
-                hoverPlane.position = n.position.add(new Vector3(0, 0.04, 0)); //Add vertical offset
-                highlighter.addExcludedMesh(hoverPlane);
-            })
-    )
-    //Add an action that will undo the above when the pointer is moved away from the sphere mesh
-    .action(
-        (d, n, i) =>
-            new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOutTrigger, () => {
-                //Same as above but in reverse
-                highlighter.removeMesh(n);
-                hoverPlane.isVisible = false;
-            })
-    );
-
-
-
-// Add SixDofDrag behavior
-nodes.run((d, n, i) => {
-    let dragBehavior = new BABYLON.SixDofDragBehavior();
-    dragBehavior.dragDeltaRatio = 0.2;
-    dragBehavior.rotateDraggedObject = true;
-    dragBehavior.detachCameraControls = true;
-    dragBehavior.onPositionChangedObservable.add((data) => {
-        // d.x = n.position.x;
-        // d.y = n.position.y;
-        // d.z = n.position.z;
-
-        // Fix node in place by reducing its velocity in the simulation
-        d.fx = n.position.x;
-        d.fy = n.position.y;
-        d.fz = n.position.z;
-
-        hoverPlane.isVisible = true;
-        label.text = d.name;
-        hoverPlane.position = n.position.add(new Vector3(0, 0.04, 0)); //Add vertical offset
-    });
-    dragBehavior.onDragObservable.add((data) => {
-        let a = simulation.alpha(0.1);
-        // console.log(a);
-    });
-    dragBehavior.onDragEndObservable.add(() => {
-        // Release node from being fixed in place
-        // delete d.fx;
-        // delete d.fy;
-        // delete d.fz;
-
-        // let the simulation relax
-        simulation.alpha(0.1);
-    });
-    n.addBehavior(dragBehavior);
-});
-
-//We will be using a lineSystem mesh for our edges which takes a two dimension array and draws a line for each sub array.
-//lineSystems use one draw call for all line meshes and will be the most performant option
-//This function helps prepare our data for that data structure format.
-let updateLines = (data) => {
-    // console.log("updateLines() called");
-    let lines = [];
-    data.forEach((v, i) => {
-        let start = new Vector3(v.source.x, v.source.y, v.source.z);
-        let end = new Vector3(v.target.x, v.target.y, v.target.z);
-        lines.push([start, end]);
-    });
-    return lines;
-};
-
-//Create our links using our data and function from above
-let links = CoT.bind("lineSystem", { lines: (d) => updateLines(d), updatable: true }, [leMis.links])
-    .prop("color", new Color4(1, 1, 1, 1))
-    .prop("alpha", 0.3)
-    .prop("isPickable", false);
-
-//Use the run method to access our root node and call normalizeToUnitCube to scale the visualization down to 1x1x1
-// CoT.run((d, n) => {
-//     n.normalizeToUnitCube();
-// });
-
-//Update the position of the nodes and links each time the simulation ticks.
-function ticked() {
-    //For the instanced spheres just set a new position
-    nodes.position((d, n) => {
-        return new Vector3(d.x, d.y, d.z);
-    });
-
-    //For the links use the run method to replace the lineSystem mesh with a new one.
-    //The option instance takes the old mesh and replaces it with a new mesh.
-    links.run((d, n, i) =>
-        anu.create("lineSystem", "edge", { lines: updateLines(d), instance: n, updatable: true }, d)
-    );
+// Fetch initial paper data and initialize the graph
+async function initializeApp() {
+    await fetchInitialPapers();  // Fetch initial paper data
+    initializeSimulation();      // Initialize force simulation
+    createNodes();               // Create the initial set of nodes
+    startSimulationRendering();  // Start rendering the simulation
 }
 
-const env = scene.createDefaultEnvironment();
 
-// Assuming 'env.ground' is your ground mesh
-const groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
+// Attach UI button behaviors
+recommendButton.onPointerClickObservable.add(() => addRecommendationsFromSelectedPapers());
+deleteButton.onPointerClickObservable.add(() => removeSelectedNodesFromGraph());
+clearSelectionButton.onPointerClickObservable.add(() => clearNodeSelection());
+unpinNodesButton.onPointerClickObservable.add(() => unpinNodes());
+toggleLinksButton.onPointerClickObservable.add(() => toggleLinkType());
 
-// Set the transparency
-groundMaterial.alpha = 0.0; // Adjust this value as needed
-groundMaterial.transparencyMode = BABYLON.Material.MATERIAL_ALPHABLEND;
-
-// Apply the material to the ground mesh
-env.ground.material = groundMaterial;
-env.ground.setAbsolutePosition(new BABYLON.Vector3(0, -1, 0));
-
-// Enable XR
-const xr = await scene.createDefaultXRExperienceAsync({
-    floorMeshes: [env.ground],
-    optionalFeatures: true,
-});
-
-const featureManager = xr.baseExperience.featuresManager;
-// featureManager.disableFeature(BABYLON.WebXRFeatureName.TELEPORTATION);
-// featureManager.enableFeature(BABYLON.WebXRFeatureName.MOVEMENT, "latest", {
-//     xrInput: xr.input,
-//     movementOrientationFollowsViewerPose: true, // default true
-//     movementSpeed: 0.2,
-//     rotationSpeed: 0.2,
-// });
-
-xr.baseExperience.sessionManager.onXRFrameObservable.addOnce(() => {
-    xr.baseExperience.camera.position.set(-0.5, 0, 0);
-    xr.baseExperience.camera.setTarget(new BABYLON.Vector3(0, 0, 0));
-})
-
-
-
-// force simulation to step every frame
-scene.onBeforeRenderObservable.add(() => {
-    simulation.step();
-});
-
-//Render the scene we created
-babylonEngine.runRenderLoop(() => {
-    scene.render();
-});
-
-//Listen for window size changes and resize the scene accordingly
-window.addEventListener("resize", function () {
-    babylonEngine.resize();
-});
-
-// hide/show the Inspector
+// Add Keybinds for Graph Interaction
 window.addEventListener("keydown", (ev) => {
-    // Shift+Ctrl+Alt+I
+    // Add debug layer
     if (ev.shiftKey && ev.ctrlKey && ev.altKey && ev.keyCode === 73) {
         if (scene.debugLayer.isVisible()) {
             scene.debugLayer.hide();
@@ -310,4 +50,70 @@ window.addEventListener("keydown", (ev) => {
             scene.debugLayer.show();
         }
     }
+    
+    if (ev.key === "r") {
+        console.log("r pressed - Adding recommendations");
+        addRecommendationsFromSelectedPapers();
+    }
+    if (ev.key === "Backspace") {
+        console.log("Backspace pressed - Removing selected nodes");
+        removeSelectedNodesFromGraph();
+    }
+    if (ev.key === "l") {
+        console.log("L pressed - Toggling links");
+        toggleLinkType();
+    }
+    if (ev.key === "c") {
+        console.log("C pressed - Clearing node selection");
+        clearNodeSelection();
+    }
+    if (ev.key === "u") {
+        console.log("U pressed - Unpinning nodes");
+        unpinNodes();
+    }
+    if (ev.key === "1") {
+        console.log("1 pressed - Fetching paper citations");
+        // console.log(getCitationsForPaper("f9c602cc436a9ea2f9e7db48c77d924e09ce3c32"));
+        addCitationsFromSelectedPaper();
+    }
+    if (ev.key === "2") {
+        console.log("2 pressed - Fetching paper references");
+        // console.log(getReferencesForPaper("f9c602cc436a9ea2f9e7db48c77d924e09ce3c32"));
+        addReferencesFromSelectedPaper();
+    }
+    if (ev.key === "3") {
+        console.log("3 pressed - Fetching author's papers");
+        // console.log(getAuthorsPapers("145642373"));
+        addPapersFromAuthor("145642373");
+    }
+});
+
+// Start application initialization
+initializeApp();
+
+// --- Socket.IO Connection and Event Listener ---
+// Connect to a Socket.IO server running on port 3000
+// --- Socket.IO Connection and Event Listener ---
+// Connect to a Socket.IO server running on port 3000
+const socket = io("https://128.61.40.18:3000");
+
+// Log when the connection is established
+socket.on("connect", () => {
+    console.log(`Socket connected: ${socket.id}`);
+});
+
+// Log any connection errors
+socket.on("connect_error", (error) => {
+    console.error("Connection Error:", error);
+});
+
+socket.on("recommendByThematicSimilarity", (data) => {
+    console.log("Received socket.io event:", data);
+    addRecommendationsFromSelectedPapers();
+});
+
+
+socket.on("toggleLinks", (data) => {
+    console.log("Received socket.io event:", data);
+    toggleLinkType();
 });
