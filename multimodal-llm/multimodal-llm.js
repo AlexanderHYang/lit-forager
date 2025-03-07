@@ -52,7 +52,6 @@ let newStream = true;
 let bridgingOffset = 0;
 let lastTranscriptWasFinal = false;
 
-
 // -------------------- Speech Streaming Functions --------------------
 function startStream() {
     audioInput = [];
@@ -90,27 +89,46 @@ const speechCallback = (stream) => {
 
         const transcript = stream.results[0].alternatives[0].transcript;
 
-        // Detect combination of keywords
+        // Detect keyword combinations with a required keyword and optional keywords
         const keywordCombinations = [
             {
-                keywords: ["recommend", "thematic"],
+                required: "recommend",
+                optional: ["thematic", "similarity"],
                 eventType: "recommendByThematicSimilarity",
             },
             {
-                keywords: ["recommend", "author"],
+                required: "recommend",
+                optional: ["author", "authors"],
                 eventType: "recommendByAuthor",
             },
             {
-              keywords: ["toggle", "links"],
-              eventType: "toggleLinks",
-          },
+                required: "change",
+                optional: ["links", "link", "link type"],
+                eventType: "toggleLinks",
+            },
+            {
+                required: "toggle",
+                optional: ["links", "link", "link type"],
+                eventType: "toggleLinks",
+            },
         ];
 
         keywordCombinations.forEach((combo) => {
-            if (combo.keywords.every((kw) => transcript.includes(kw))) {
-                console.log(chalk.blue(`Combination detected: ${combo.keywords.join(" and ")}`));
+            // Check if the transcript contains the required keyword
+            // and at least one of the optional keywords
+            if (
+                transcript.includes(combo.required) &&
+                combo.optional.some((opt) => transcript.includes(opt))
+            ) {
+                console.log(
+                    chalk.blue(
+                        `Combination detected: Event "${combo.eventType}"\nKeywords: Required "${combo.required}" with optional "${combo.optional.join(
+                            '" or "'
+                        )}"`
+                    )
+                );
                 io.emit(combo.eventType, {
-                    info: `Detected combination: ${combo.keywords.join(" and ")}`,
+                    info: `Event: "${combo.eventType}"`,
                 });
             }
         });
@@ -199,27 +217,27 @@ const app = express();
 
 // Read your SSL/TLS certificate and key files
 const options = {
-  key: fs.readFileSync(join(__dirname, "certificates", "key.pem")),
-  cert: fs.readFileSync(join(__dirname, "certificates", "cert.pem")),
-  // Optionally, add ca, passphrase, etc.
+    key: fs.readFileSync(join(__dirname, "certificates", "key.pem")),
+    cert: fs.readFileSync(join(__dirname, "certificates", "cert.pem")),
+    // Optionally, add ca, passphrase, etc.
 };
 
 // Create an HTTPS server using your certificates
 const server = https.createServer(options, app);
 
 const io = new Server(server, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"],
-  },
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"],
+    },
 });
 
 // Serve a simple HTML file for testing
 app.get("/", (req, res) => {
-  res.sendFile(join(__dirname, "index.html"));
+    res.sendFile(join(__dirname, "index.html"));
 });
 
 // Start the HTTPS server
 server.listen(3000, "0.0.0.0", () => {
-  console.log(`Secure WebSocket server listening on port 3000`);
+    console.log(`Secure WebSocket server listening on port 3000`);
 });

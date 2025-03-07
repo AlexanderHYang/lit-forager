@@ -1,7 +1,7 @@
 const BASE_URL = "https://api.semanticscholar.org";
 const BASE_GRAPH_URL = `${BASE_URL}/graph/v1`;
 const BASE_RECOMMENDATIONS_URL = `${BASE_URL}/recommendations/v1`;
-const DEFAULT_FIELDS = "paperId,title,authors,abstract,references,referenceCount,citationCount";
+const DEFAULT_FIELDS = "paperId,title,authors,abstract,references,referenceCount,citationCount,venue,year";
 
 export async function getDetailsForMultiplePapers(paperIds) {
     if (!Array.isArray(paperIds) || paperIds.length === 0) {
