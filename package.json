@@ -20,6 +20,7 @@
     "@jpmorganchase/anu": "^0.2.9",
     "d3": "^7.9.0",
     "d3-force-3d": "^3.0.5",
+    "dotenv": "^16.4.7",
     "socket.io-client": "^4.8.1"
   }
 }

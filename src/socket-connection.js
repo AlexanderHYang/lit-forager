@@ -1,14 +1,17 @@
 import { io } from "socket.io-client";
 import { addRecommendationsFromSelectedPapers, toggleLinkType } from "./graph.js";
 
+// Declare a socket variable to be used globally
+let socket;
+
 export function initializeSocketConnection() {
     // Use the current hostname and connect on port 3000 over HTTPS
     const host = window.location.hostname;
-    const socket = io(`https://${host}:3000`, {
+    socket = io(`https://${host}:3000`, {
         // Set to auto-reconnect up to 5 times
-        reconnectionAttempts: 5,
+        reconnectionAttempts: 1,
         // Delay between reconnection attempts (in ms)
-        reconnectionDelay: 1000,
+        // reconnectionDelay: 500,
     });
 
     // Log when the connection is established
@@ -37,6 +40,15 @@ export function initializeSocketConnection() {
         console.log("Received socket.io event:", data);
         toggleLinkType();
     });
+    
+    socket.on("summarizePaper", (data) => {
+        console.log("Received socket.io event:", data);
+        toggleLinkType();
+    });
 
     return socket;
+
 }
+
+// Also export the socket so it can be imported elsewhere
+export { socket };

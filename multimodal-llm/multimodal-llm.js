@@ -11,6 +11,9 @@ import { dirname, join } from "path";
 import fs from "fs";
 import https from "https";
 
+import * as dotenv from 'dotenv';
+dotenv.config();
+
 // Define __dirname for ESM modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -51,6 +54,8 @@ let finalRequestEndTime = 0;
 let newStream = true;
 let bridgingOffset = 0;
 let lastTranscriptWasFinal = false;
+
+
 
 // -------------------- Speech Streaming Functions --------------------
 function startStream() {
@@ -111,6 +116,11 @@ const speechCallback = (stream) => {
                 optional: ["links", "link", "link type"],
                 eventType: "toggleLinks",
             },
+            {
+                required: "summarize",
+                optional: ["paper", "papers"],
+                eventType: "summarizePaper",
+            },
         ];
 
         keywordCombinations.forEach((combo) => {
@@ -122,14 +132,28 @@ const speechCallback = (stream) => {
             ) {
                 console.log(
                     chalk.blue(
-                        `Combination detected: Event "${combo.eventType}"\nKeywords: Required "${combo.required}" with optional "${combo.optional.join(
-                            '" or "'
-                        )}"`
+                        `Combination detected: Event "${combo.eventType}"\nKeywords: Required "${
+                            combo.required
+                        }" with optional "${combo.optional.join('" or "')}"`
                     )
                 );
-                io.emit(combo.eventType, {
-                    info: `Event: "${combo.eventType}"`,
-                });
+                
+                if (combo.eventType === "summarizePaper") {
+                    // Wait for the "sendPaperData" event to provide custom data.
+                    if (latestPaperData) {
+                        // Use the data received from sendPaperData
+                        const customData = JSON.stringify(latestPaperData, null, 2);
+                        summarizePaperGemini(customData);
+                    } else {
+                        // Optionally, fallback if no data has been received yet.
+                        console.warn("No nodes selected or no selection data available");
+                    }
+                } else {
+                    // For all other events, emit normally.
+                    io.emit(combo.eventType, {
+                        info: `Event: "${combo.eventType}"`,
+                    });
+                }
             }
         });
     } else {
@@ -232,6 +256,7 @@ const io = new Server(server, {
     },
 });
 
+
 // Serve a simple HTML file for testing
 app.get("/", (req, res) => {
     res.sendFile(join(__dirname, "index.html"));
@@ -241,3 +266,32 @@ app.get("/", (req, res) => {
 server.listen(3000, "0.0.0.0", () => {
     console.log(`Secure WebSocket server listening on port 3000`);
 });
+
+// Global variable to store data from the "sendPaperData" event.
+let latestPaperData = null;
+
+// Listen for client connections and handle "sendPaperData" events.
+io.on("connection", (socket) => {
+    console.log("Client connected:", socket.id);
+    socket.on("sendSelectedNodesData", (data) => {
+        console.log("Received sendPaperData event with payload:", data);
+        latestPaperData = data; // Update global data store.
+    });
+});
+
+// -------------------- Gemini Functions --------------------
+
+async function summarizePaperGemini(customData) {
+    try {
+        // Combine your custom prompt with the incoming custom data
+        const customPrompt = `Summarize the following paper information in a concise TLDR format:\n${customData}`;
+        console.log(customPrompt);
+        // Use the Gemini model to generate a response (adjust according to your Gemini API usage)
+        const result = await model.generateContent(customPrompt);
+        console.log("Gemini response:", result.response.text());
+        // // Optionally, emit an event back to clients with the Gemini response
+        // io.emit("geminiResponse", { response });
+    } catch (error) {
+        console.error("Error sending custom prompt to Gemini:", error);
+    }
+}

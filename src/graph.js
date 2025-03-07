@@ -22,6 +22,8 @@ import {
     setFullScreenUIText,
 } from "./graphics.js"; // Import shared scene from graphics.js
 
+import { socket } from "./socket-connection.js";
+
 // Shared graph data
 export const paperData = [];
 export const paperIds = [];
@@ -242,6 +244,7 @@ export function createNodes() {
                             if (!selectedIds.includes(d.paperId)) {
                                 selectedIds.push(d.paperId);
                                 highlighter.addMesh(n, Color3.White());
+                                sendSelectedNodesData();
                             } else {
                                 removeItem(selectedIds, d.paperId);
                                 highlighter.removeMesh(n);
@@ -643,7 +646,7 @@ export async function addCitationsFromSelectedPaper() {
     try {
         const paperId = selectedIds[0];
         selectedIds.length = 0;
-        const citationsResponse = await APIUtils.getCitationsForPaper(paperId);
+        const citationsResponse = await A5PIUtils.getCitationsForPaper(paperId);
         const citationIds = citationsResponse.data.map((d) => d.citingPaper.paperId);
         const filteredCitationsIds = citationIds.filter((id) => !paperIds.includes(id) && !removedPaperIds.includes(id));
         const newPapers = await APIUtils.getDetailsForMultiplePapers(filteredCitationsIds.slice(0,5));
@@ -763,4 +766,35 @@ export async function restoreDeletedPapers() {
         console.error("restoreDeletedPapers() failed with error:", error);
     }
     waitingForAPI = false;
+}
+
+
+export function sendSelectedNodesData() {
+    // Filter papers that are selected using the selectedIds array
+    const selectedNodes = paperData.filter(d => selectedIds.includes(d.paperId))
+        .map(d => {
+            return {
+                title: d.title,
+                abstract: d.abstract
+            };
+        });
+
+    const titles = [];
+    const abstracts = [];
+
+    // Filter papers that are selected using the selectedIds array
+    paperData.filter(d => selectedIds.includes(d.paperId))
+        .forEach(d => {
+            titles.push(d.title);
+            abstracts.push(d.abstract || "");
+        }); 
+    
+    // Emit the "sendPaperData" event using socket from the socket-connection module
+    if (typeof socket !== "undefined" && socket.connected) {
+        socket.emit("sendSelectedNodesData", { titles, abstracts });
+        console.log("Emitted 'sendSelectedNodesData' event with payload:", { titles, abstracts });
+    } else {
+        console.error("Socket is not available or not connected. 'sendSelectedNodesData' event not emitted.");
+    }
+
 }
