@@ -24,6 +24,7 @@ import {
 } from "./src/graph.js";
 import { getAuthorsPapers, getCitationsForPaper, getReferencesForPaper } from "./src/api.js";
 import { io } from "socket.io-client";
+import { initializeSocketConnection } from "./src/socket-connection.js";
 
 // Fetch initial paper data and initialize the graph
 async function initializeApp() {
@@ -96,29 +97,5 @@ window.addEventListener("keydown", (ev) => {
 // Start application initialization
 initializeApp();
 
-// --- Socket.IO Connection and Event Listener ---
-// Connect to a Socket.IO server running on port 3000
-// --- Socket.IO Connection and Event Listener ---
-// Connect to a Socket.IO server running on port 3000
-const socket = io("https://128.61.40.18:3000");
-
-// Log when the connection is established
-socket.on("connect", () => {
-    console.log(`Socket connected: ${socket.id}`);
-});
-
-// Log any connection errors
-socket.on("connect_error", (error) => {
-    console.error("Connection Error:", error);
-});
-
-socket.on("recommendByThematicSimilarity", (data) => {
-    console.log("Received socket.io event:", data);
-    addRecommendationsFromSelectedPapers();
-});
-
-
-socket.on("toggleLinks", (data) => {
-    console.log("Received socket.io event:", data);
-    toggleLinkType();
-});
+// Start socket connection with the multimodal-llm script
+initializeSocketConnection();

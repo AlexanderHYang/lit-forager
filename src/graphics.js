@@ -8,9 +8,15 @@ import {
     StandardMaterial,
     HighlightLayer,
     MeshBuilder,
-    DebugLayer
+    DebugLayer,
 } from "@babylonjs/core";
-import { AdvancedDynamicTexture, Rectangle, TextBlock, StackPanel, ScrollViewer } from "@babylonjs/gui";
+import {
+    AdvancedDynamicTexture,
+    Rectangle,
+    TextBlock,
+    StackPanel,
+    ScrollViewer,
+} from "@babylonjs/gui";
 import * as BABYLON from "@babylonjs/core";
 import * as GUI from "@babylonjs/gui";
 import "@babylonjs/loaders/glTF";
@@ -95,7 +101,11 @@ scene.setRenderingAutoClearDepthStencil(2, false);
 highlighter.blurHorizontalSize = 0.8;
 highlighter.blurVerticalSize = 0.8;
 
-export const hoverPlane = BABYLON.MeshBuilder.CreatePlane("hoverPlane", { width: 0.4, height: 0.4 }, scene);
+export const hoverPlane = BABYLON.MeshBuilder.CreatePlane(
+    "hoverPlane",
+    { width: 0.4, height: 0.4 },
+    scene
+);
 let hoverPlaneId = null;
 highlighter.addExcludedMesh(hoverPlane);
 
@@ -133,7 +143,7 @@ scene.onBeforeRenderObservable.add(() => {
             if (d.paperId === hoverPlaneId) {
                 hoverPlane.position = n.position.add(new Vector3(0, 0.08, 0)); // Add vertical offset
             }
-        })
+        });
     }
     const reversePos = hoverPlane.position.add(hoverPlane.position.subtract(currCam.position));
     hoverPlane.lookAt(reversePos);
@@ -149,9 +159,9 @@ export function setHoverPlaneToNode(d, n) {
         hoverPlaneId = null;
     } else {
         hoverPlaneId = d.paperId;
-        label.text = d.title
+        label.text = d.title;
         hoverPlane.position = n.position.add(new Vector3(0, 0.08, 0)); // Add vertical offset
-        
+
         if (hoverPlaneId !== paperDetailsPanelId) {
             hoverPlane.isVisible = true;
         }
@@ -204,17 +214,20 @@ handMenu.addButton(clearSelectionButton);
 handMenu.addButton(unpinNodesButton);
 handMenu.addButton(toggleLinksButton);
 
-
 // Make panel for paper details
 // Create a floating plane for the paper details panel
-export const paperDetailsPanel = MeshBuilder.CreatePlane("paperDetailsPanel", { width: 0.4, height: 0.8}, scene);
+export const paperDetailsPanel = MeshBuilder.CreatePlane(
+    "paperDetailsPanel",
+    { width: 0.4, height: 0.8 },
+    scene
+);
 // paperDetailsPanel.position = new Vector3(0, 1, -2); // Adjust position in VR space
 paperDetailsPanel.isVisible = false; // Initially hidden
 paperDetailsPanel.adaptHeightToChildren = true;
 // paperDetailsPanel.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
 paperDetailsPanel.isPickable = false;
 paperDetailsPanel.renderingGroupId = 2; // Ensure it renders in front
-export let paperDetailsPanelId = null
+export let paperDetailsPanelId = null;
 
 highlighter.addExcludedMesh(paperDetailsPanel);
 
@@ -226,11 +239,12 @@ paperDetailsPanel.material = panelMaterial;
 
 // Create an AdvancedDynamicTexture for the panel
 const panelTexture = AdvancedDynamicTexture.CreateForMesh(paperDetailsPanel, 1024, 2048);
-let loadedGUI = await panelTexture.parseFromSnippetAsync("#R4A2E9#5");
+let loadedGUI = await panelTexture.parseFromSnippetAsync("#R4A2E9#12");
 
 let paperDetailPanelBackground = panelTexture.getControlByName("paperDetailPanelBackground");
 let paperDetailStackPanel = paperDetailPanelBackground.getChildByName("paperDetailStackPanel");
 let titleBlock = paperDetailStackPanel.getChildByName("titleBlock");
+let authorBlock = paperDetailStackPanel.getChildByName("authorBlock");
 let metadataTextBlock = paperDetailStackPanel.getChildByName("metadataTextBlock");
 
 let abstractPanelBackground = panelTexture.getControlByName("abstractPanelBackground");
@@ -242,19 +256,24 @@ scene.onBeforeRenderObservable.add(() => {
     if (nodes) {
         nodes.run((d, n) => {
             if (d.paperId === paperDetailsPanelId) {
-                const cameraRight = BABYLON.Vector3.Cross(currCam.getForwardRay().direction, BABYLON.Vector3.Up()).normalize();
+                const cameraRight = BABYLON.Vector3.Cross(
+                    currCam.getForwardRay().direction,
+                    BABYLON.Vector3.Up()
+                ).normalize();
                 const offset = cameraRight.scale(0.25);
                 paperDetailsPanel.position = n.position.add(offset);
             }
-        })
+        });
     }
     // paperDetailsPanel.lookAt(currCam.position);
-    const reversePos = paperDetailsPanel.position.add(paperDetailsPanel.position.subtract(currCam.position));
+    const reversePos = paperDetailsPanel.position.add(
+        paperDetailsPanel.position.subtract(currCam.position)
+    );
     paperDetailsPanel.lookAt(reversePos);
 });
 
 // Function to update paper details
-export function updatePaperPanelToNode(d,n) {
+export function updatePaperPanelToNode(d, n) {
     if (paperDetailsPanelId !== null) {
         nodes.run((d, n) => {
             if (d.paperId === paperDetailsPanelId) {
@@ -267,7 +286,6 @@ export function updatePaperPanelToNode(d,n) {
         paperDetailsPanel.isVisible = false;
         paperDetailsPanelId = null;
     } else {
-
         if (paperDetailsPanelId === d.paperId) {
             updatePaperPanelToNode(null, null); // Hide panel if it's already visible
             highlighter.removeMesh(n);
@@ -277,23 +295,37 @@ export function updatePaperPanelToNode(d,n) {
 
         setHoverPlaneToNode(null, null); // Hide hover plane if it's visible
 
+        console.log(d);
         paperDetailsPanelId = d.paperId;
-        const metadata = `${d.authors.map(a => a.name).join(", ")}\nCitations: ${d.citationCount}\nReferences: ${d.referenceCount}`;
-        const abstractText = d.abstract;
 
+        // Modifying the UI elements for each paper
         titleBlock.text = d.title;
+        authorBlock.text = `${d.authors.map((a) => a.name).join(", ")}`;
+
+        const metadata = `Citation count: ${d.citationCount}\nYear: ${d.year}\nVenue: ${d.venue}`;
         metadataTextBlock.text = metadata;
+
+        // Limit the abstract to 2000 characters
+        let abstractText = d.abstract;
+        if (abstractText.length > 1800) {
+            let limited = abstractText.substring(0, 1800);
+            // Cut off at the last space to avoid breaking words
+            const lastSpace = limited.lastIndexOf(" ");
+            abstractText = (lastSpace > 0 ? abstractText.substring(0, lastSpace) : limited) + " ...";
+        }
         abstractTextBlock.text = abstractText;
 
         paperDetailsPanel.isVisible = true;
         highlighter.addMesh(n, Color3.Blue());
-
     }
 }
 
-
 // emulating full screen ui
-const fullscreenUIPlane = MeshBuilder.CreatePlane("fullscreenUIPlane", { width: 0.4, height: 0.4 }, scene);
+const fullscreenUIPlane = MeshBuilder.CreatePlane(
+    "fullscreenUIPlane",
+    { width: 0.4, height: 0.4 },
+    scene
+);
 const fullscreenUITexture = AdvancedDynamicTexture.CreateForMesh(fullscreenUIPlane);
 const fullScreenUIBackground = new Rectangle();
 const fullscreenUITextBlock = new TextBlock();
