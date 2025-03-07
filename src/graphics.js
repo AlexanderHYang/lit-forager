@@ -118,7 +118,7 @@ UIBackground.adaptWidthToChildren = true;
 UIBackground.adaptHeightToChildren = true;
 UIBackground.cornerRadius = 20;
 UIBackground.color = "Black";
-UIBackground.thickness = 2;
+UIBackground.thickness = 1;
 UIBackground.background = "White";
 advancedTexture.addControl(UIBackground);
 
@@ -218,7 +218,7 @@ handMenu.addButton(toggleLinksButton);
 // Create a floating plane for the paper details panel
 export const paperDetailsPanel = MeshBuilder.CreatePlane(
     "paperDetailsPanel",
-    { width: 0.4, height: 0.8 },
+    { width: 0.4, height: 1.2 },
     scene
 );
 // paperDetailsPanel.position = new Vector3(0, 1, -2); // Adjust position in VR space
@@ -238,8 +238,8 @@ panelMaterial.alpha = 0; // Transparent background
 paperDetailsPanel.material = panelMaterial;
 
 // Create an AdvancedDynamicTexture for the panel
-const panelTexture = AdvancedDynamicTexture.CreateForMesh(paperDetailsPanel, 1024, 2048);
-let loadedGUI = await panelTexture.parseFromSnippetAsync("#R4A2E9#12");
+const panelTexture = AdvancedDynamicTexture.CreateForMesh(paperDetailsPanel, 1024, 3072);
+let loadedGUI = await panelTexture.parseFromSnippetAsync("#R4A2E9#14");
 
 let paperDetailPanelBackground = panelTexture.getControlByName("paperDetailPanelBackground");
 let paperDetailStackPanel = paperDetailPanelBackground.getChildByName("paperDetailStackPanel");
@@ -311,7 +311,8 @@ export function updatePaperPanelToNode(d, n) {
             let limited = abstractText.substring(0, 1800);
             // Cut off at the last space to avoid breaking words
             const lastSpace = limited.lastIndexOf(" ");
-            abstractText = (lastSpace > 0 ? abstractText.substring(0, lastSpace) : limited) + " ...";
+            abstractText =
+                (lastSpace > 0 ? abstractText.substring(0, lastSpace) : limited) + " ...";
         }
         abstractTextBlock.text = abstractText;
 
