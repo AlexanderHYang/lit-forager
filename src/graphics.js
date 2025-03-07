@@ -21,7 +21,20 @@ import * as BABYLON from "@babylonjs/core";
 import * as GUI from "@babylonjs/gui";
 import "@babylonjs/loaders/glTF";
 import * as anu from "@jpmorganchase/anu";
-import { nodes, waitingForAPI } from "./graph";
+import { 
+    nodes, 
+    selectedIds, 
+    waitingForAPI,
+    addRecommendationsFromSelectedPapers,
+    removeSelectedNodesFromGraph,
+    clearNodeSelection,
+    unpinNodes,
+    toggleLinkType,
+    addCitationsFromSelectedPaper,
+    addReferencesFromSelectedPaper,
+    addPapersFromAuthor,
+    restoreDeletedPapers,
+} from "./graph";
 import "@babylonjs/inspector";
 import { timeout } from "d3";
 // Create the Babylon.js engine and scene
@@ -172,6 +185,15 @@ export function setHoverPlaneToNode(d, n) {
 export const guiManager = new GUI.GUI3DManager(scene);
 export const handMenu = new GUI.HandMenu(xr.baseExperience, "menu");
 
+function hideMenu(menu) {
+    menu.scaling = new Vector3(0, 0, 0);
+    menu.isPickable = false;
+}
+function showMenu(menu) {
+    menu.scaling = new Vector3(0.06, 0.06, 0.06);
+    menu.isPickable = true;
+}
+
 const handConstraintBehavior = handMenu.handConstraintBehavior;
 handConstraintBehavior.palmUpStrictness = 0.8;
 handConstraintBehavior.handConstraintVisibility = BABYLON.HandConstraintVisibility.PALM_UP;
@@ -183,36 +205,201 @@ handMenu.columns = 2;
 guiManager.addControl(handMenu);
 handMenu.backPlateMargin = 0.1;
 handMenu.scaling = new Vector3(0.06, 0.06, 0.06);
-// nearMenu.defaultBehavior.followBehavior.minimumDistance = 0.3;
-// nearMenu.defaultBehavior.followBehavior.maximumDistance = 0.5;
+
 // Helper function to create UI buttons
-const createButton = (name, text, onClick) => {
+const createButton = (name, text) => {
+    // add default properties here
     const button = new GUI.TouchHolographicButton(name);
     button.text = text;
-    button.onPointerClickObservable.add(onClick);
     return button;
 };
 
 // Exported UI buttons
-export const recommendButton = createButton("recommend", "Recommend", () =>
-    console.log("Recommend Clicked")
-);
-export const deleteButton = createButton("delete", "Delete", () => console.log("Delete Clicked"));
-export const clearSelectionButton = createButton("clearSelection", "Clear Selection", () =>
-    console.log("Clear Selection Clicked")
-);
-export const unpinNodesButton = createButton("unpinNodes", "Unpin Nodes", () =>
-    console.log("Unpin Nodes Clicked")
-);
-export const toggleLinksButton = createButton("toggleLinks", "Toggle Links", () =>
-    console.log("Toggle Links Clicked")
-);
+export const recommendButton = createButton("recommend", "Recommend");
+export const deleteButton = createButton("delete", "Delete");
+export const clearSelectionButton = createButton("clearSelection", "Clear Selection");
+export const unpinNodesButton = createButton("unpinNodes", "Unpin Nodes");
+export const toggleLinksButton = createButton("toggleLinks", "Toggle Links");
+
+// Attach UI button behaviors
+recommendButton.onPointerClickObservable.add(() => {
+    console.log("Recommend button pressed");
+
+    hideMenu(handMenu);
+    showMenu(recommendationsMenu);
+
+    if (selectedIds.length > 1) {
+        recByAuthorButton.color = "grey";
+        recByCitationButton.color = "grey";
+        recByReferenceButton.color = "grey";
+    }
+    // addRecommendationsFromSelectedPapers();
+});
+deleteButton.onPointerClickObservable.add(() => {
+    console.log("Delete button pressed");
+    removeSelectedNodesFromGraph();
+});
+clearSelectionButton.onPointerClickObservable.add(() => {
+    console.log("Clear Selection button pressed");
+    clearNodeSelection();
+});
+unpinNodesButton.onPointerClickObservable.add(() => {
+    console.log("Unpin Nodes button pressed");
+    unpinNodes();
+});
+toggleLinksButton.onPointerClickObservable.add(() => {
+    console.log("Toggle Links button pressed");
+    toggleLinkType();
+});
 
 handMenu.addButton(recommendButton);
 handMenu.addButton(deleteButton);
 handMenu.addButton(clearSelectionButton);
 handMenu.addButton(unpinNodesButton);
 handMenu.addButton(toggleLinksButton);
+
+
+// add extra hand menus
+const recommendationsMenu = new GUI.HandMenu(xr.baseExperience, "recommendationsMenu");
+
+const recommendationsMenuBehavior = recommendationsMenu.handConstraintBehavior;
+recommendationsMenuBehavior.palmUpStrictness = 0.8;
+recommendationsMenuBehavior.handConstraintVisibility = BABYLON.HandConstraintVisibility.PALM_UP;
+recommendationsMenuBehavior.targetZone = BABYLON.HandConstraintZone.ULNAR_SIDE;
+recommendationsMenuBehavior.nodeOrientationMode = BABYLON.HandConstraintOrientation.HAND_ROTATION;
+recommendationsMenuBehavior.targetOffset = 0.15;
+recommendationsMenu.columns = 1;
+
+guiManager.addControl(recommendationsMenu);
+recommendationsMenu.backPlateMargin = 0.1;
+recommendationsMenu.scaling = new Vector3(0.06, 0.06, 0.06);
+
+const recByThematicButton = createButton("recByThematic", "By Thematic");
+const recByCitationButton = createButton("recByCitation", "By Citation");
+const recByReferenceButton = createButton("recByReference", "By Reference");
+const recByAuthorButton = createButton("recByAuthor", "By Author");
+const recBackButton = createButton("recBack", "Back");
+
+recommendationsMenu.addButton(recBackButton);
+recommendationsMenu.addButton(recByAuthorButton);
+recommendationsMenu.addButton(recByReferenceButton);
+recommendationsMenu.addButton(recByCitationButton);
+recommendationsMenu.addButton(recByThematicButton);
+
+recByThematicButton.onPointerClickObservable.add(() => {
+    console.log("Recommend by thematic button pressed");
+    addRecommendationsFromSelectedPapers();
+});
+recByCitationButton.onPointerClickObservable.add(() => {
+    console.log("Recommend by citation button pressed");
+    addCitationsFromSelectedPaper();
+});
+recByReferenceButton.onPointerClickObservable.add(() => {
+    console.log("Recommend by reference button pressed");
+    addReferencesFromSelectedPaper();
+});
+recByAuthorButton.onPointerClickObservable.add(() => {
+    console.log("Recommend by author button pressed");
+    // addPapersFromAuthor();
+    generateAuthorButtons();
+    hideMenu(recommendationsMenu);
+    showMenu(authorMenu);
+});
+recBackButton.onPointerClickObservable.add(() => {
+    console.log("Recommend back button pressed");
+    hideMenu(recommendationsMenu);
+    showMenu(handMenu);
+});
+
+hideMenu(recommendationsMenu);
+
+let lastSelectedCount = 0;
+scene.onBeforeRenderObservable.add(() => {
+    if (selectedIds.length !== lastSelectedCount) {
+        lastSelectedCount = selectedIds.length;
+        if (selectedIds.length === 0) {
+            recByThematicButton.isVisible = false;
+            recByCitationButton.isVisible = false;
+            recByReferenceButton.isVisible = false;
+            recByAuthorButton.isVisible = false;
+
+            if (authorMenu.isPickable) {
+                hideMenu(authorMenu);
+                showMenu(handMenu);
+            }
+        } else if (selectedIds.length === 1) {
+            recByAuthorButton.isVisible = true;
+            recByCitationButton.isVisible = true;
+            recByReferenceButton.isVisible = true;
+            recByThematicButton.isVisible = true;
+        } else {
+            recByAuthorButton.isVisible = false;
+            recByCitationButton.isVisible = false;
+            recByReferenceButton.isVisible = false;
+            recByThematicButton.isVisible = true;
+            if (authorMenu.isPickable) {
+                hideMenu(authorMenu);
+                showMenu(handMenu);
+            }
+        }
+    }
+});
+
+
+const authorButtons = [];
+const authorMenu = new GUI.HandMenu(xr.baseExperience, "authorMenu");
+
+const authorMenuBehavior = authorMenu.handConstraintBehavior;
+authorMenuBehavior.palmUpStrictness = 0.8;
+authorMenuBehavior.handConstraintVisibility = BABYLON.HandConstraintVisibility.PALM_UP;
+authorMenuBehavior.targetZone = BABYLON.HandConstraintZone.ULNAR_SIDE;
+authorMenuBehavior.nodeOrientationMode = BABYLON.HandConstraintOrientation.HAND_ROTATION;
+authorMenuBehavior.targetOffset = 0.15;
+authorMenu.columns = 2;
+
+guiManager.addControl(authorMenu);
+authorMenu.backPlateMargin = 0.1;
+authorMenu.scaling = new Vector3(0.06, 0.06, 0.06);
+
+function generateAuthorButtons() {
+    if (selectedIds.length !== 1) {
+        console.error("Error: Must have exactly one selected node to generate author buttons");
+        return;
+    }
+
+    authorButtons.length = 0;
+    let authorData = null;
+    nodes.run((d, n) => {
+        if (d.paperId === selectedIds[0]) {
+            authorData = d.authors;
+        }
+    });
+
+    if (authorData === null) {
+        console.error("Error: Could not find author data for selected node");
+        return;
+    }
+    authorData.forEach((author) => {
+        const authorButton = createButton(`author_${author.authorId}`, author.name);
+        authorButton.onPointerClickObservable.add(() => {
+            console.log(`Author button for ${author.name} pressed`);
+            addPapersFromAuthor(author.authorId);
+        });
+        authorButtons.push(authorButton);
+        authorMenu.addButton(authorButton);
+    });
+
+    const authorBackButton = createButton("authorBack", "Back");
+    authorBackButton.onPointerClickObservable.add(() => {
+        console.log("Author back button pressed");
+        hideMenu(authorMenu);
+        showMenu(recommendationsMenu);
+    });
+    authorMenu.addButton(authorBackButton);
+}
+
+hideMenu(authorMenu);
+
 
 // Make panel for paper details
 // Create a floating plane for the paper details panel
@@ -257,7 +444,7 @@ scene.onBeforeRenderObservable.add(() => {
         nodes.run((d, n) => {
             if (d.paperId === paperDetailsPanelId) {
                 const cameraRight = BABYLON.Vector3.Cross(
-                    currCam.getForwardRay().direction,
+                    n.position.subtract(currCam.position),
                     BABYLON.Vector3.Up()
                 ).normalize();
                 const offset = cameraRight.scale(0.25);

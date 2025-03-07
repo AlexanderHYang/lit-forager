@@ -113,6 +113,7 @@ export function startSimulationRendering() {
 export function generateLinkData() {
     citationLinkData.length = 0;
     recommendationLinkData.length = 0;
+    authorLinkData.length = 0;
     paperData.forEach((d1, i) => {
         paperData.forEach((d2, j) => {
             if (d1.paperId !== d2.paperId) {
@@ -209,6 +210,7 @@ export function createNodes() {
             (d, n, i) =>
                 new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOutTrigger, () => {
                     //Same as above but in reverse
+                    console.log("pointer out");
                     isPointerOver[d.paperId] = false;
                     if (!isDragging[d.paperId]) {
                         setHoverPlaneToNode(null, null);
@@ -558,16 +560,22 @@ export function removeNodesFromGraph(idsToRemove) {
         (link) =>
             !idsToRemove.includes(link.source.paperId) && !idsToRemove.includes(link.target.paperId)
     );
+    const newAuthorLinkData = authorLinkData.filter(
+        (link) =>
+            !idsToRemove.includes(link.source.paperId) && !idsToRemove.includes(link.target.paperId)
+    );
 
     paperData.length = 0;
     paperIds.length = 0;
     citationLinkData.length = 0;
     recommendationLinkData.length = 0;
+    authorLinkData.length = 0;
 
     paperData.push(...newPaperData);
     paperIds.push(...newPaperIds);
     citationLinkData.push(...newCitationLinkData);
     recommendationLinkData.push(...newRecommendationLinkData);
+    authorLinkData.push(...newAuthorLinkData);
 
     idsToRemove.forEach((id) => {
         if (pinnedNodeIds.includes(id)) {
