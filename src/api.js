@@ -154,7 +154,7 @@ export async function getCitationsForPaper(paperId, limit=20) {
             }
 
             const data = await response.json();
-            console.log("Citations received from Semantic Scholar!");
+            console.log("Citations received from Semantic Scholar:", data);
             return data;
         } catch (error) {
             attempts++;
@@ -207,7 +207,7 @@ export async function getReferencesForPaper(paperId, limit=20) {
             }
 
             const data = await response.json();
-            console.log("References received from Semantic Scholar!");
+            console.log("References received from Semantic Scholar:", data);
             return data;
         } catch (error) {
             attempts++;
@@ -260,7 +260,7 @@ export async function getAuthorsPapers(authorId, limit=20) {
             }
 
             const data = await response.json();
-            console.log("Author's papers received from Semantic Scholar!");
+            console.log("Author's papers received from Semantic Scholar:", data);
             return data;
         } catch (error) {
             attempts++;

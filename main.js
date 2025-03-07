@@ -34,14 +34,6 @@ async function initializeApp() {
     startSimulationRendering();  // Start rendering the simulation
 }
 
-
-// Attach UI button behaviors
-recommendButton.onPointerClickObservable.add(() => addRecommendationsFromSelectedPapers());
-deleteButton.onPointerClickObservable.add(() => removeSelectedNodesFromGraph());
-clearSelectionButton.onPointerClickObservable.add(() => clearNodeSelection());
-unpinNodesButton.onPointerClickObservable.add(() => unpinNodes());
-toggleLinksButton.onPointerClickObservable.add(() => toggleLinkType());
-
 // Add Keybinds for Graph Interaction
 window.addEventListener("keydown", (ev) => {
     // Add debug layer
@@ -98,4 +90,4 @@ window.addEventListener("keydown", (ev) => {
 initializeApp();
 
 // Start socket connection with the multimodal-llm script
-initializeSocketConnection();
+// initializeSocketConnection();
