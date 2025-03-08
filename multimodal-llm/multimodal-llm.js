@@ -28,9 +28,6 @@ const streamingLimit = 55000; // ms - low value for demo
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-const prompt =
-    "Summarize the following abstract of a research paper in a tldr format (in a few sentences): immersive analytics turns the very space surrounding the user into a canvas for data analysis, supporting human cognitive abilities in myriad ways. We present the results of a design study, contextual inquiry, and longitudinal evaluation involving professional economists using a Virtual Reality (VR) system for multidimensional visualization to explore actual economic data. Results from our preregistered evaluation highlight the varied use of space depending on context (exploration vs. presentation), the organization of space to support work, and the impact of immersion on navigation and orientation in the 3D analysis space";
-
 // Google Speech client & config
 const client = new speech.SpeechClient();
 const config = {
