@@ -136,11 +136,11 @@ const speechCallback = (stream) => {
                 );
                 
                 if (combo.eventType === "summarizePaper") {
-                    // Wait for the "sendPaperData" event to provide custom data.
-                    if (latestPaperData) {
+                    if (selectedPaperData &&
+                        selectedPaperData.paperIds &&
+                        selectedPaperData.paperIds.length === 1) {
                         // Use the data received from sendPaperData
-                        const customData = JSON.stringify(latestPaperData, null, 2);
-                        summarizePaperGemini(customData);
+                        summarizePaperGemini(selectedPaperData);
                     } else {
                         // Optionally, fallback if no data has been received yet.
                         console.warn("No nodes selected or no selection data available");
@@ -265,29 +265,35 @@ server.listen(3000, "0.0.0.0", () => {
 });
 
 // Global variable to store data from the "sendPaperData" event.
-let latestPaperData = null;
+let selectedPaperData = null;
 
 // Listen for client connections and handle "sendPaperData" events.
 io.on("connection", (socket) => {
     console.log("Client connected:", socket.id);
     socket.on("sendSelectedNodesData", (data) => {
-        console.log("Received sendPaperData event with payload:", data);
-        latestPaperData = data; // Update global data store.
+        console.log("Received data for paper", data.paperIds);
+        selectedPaperData = data; // Update global data store.
     });
 });
 
 // -------------------- Gemini Functions --------------------
 
-async function summarizePaperGemini(customData) {
+async function summarizePaperGemini(selectedPaperData) {
     try {
+        // Final check for exactly one paper id
+        if (!selectedPaperData || !selectedPaperData.paperIds || selectedPaperData.paperIds.length !== 1) {
+            console.warn("Final check failed: Exactly one paper id is required");
+            return;
+        }
         // Combine your custom prompt with the incoming custom data
-        const customPrompt = `Summarize the following paper information in a concise TLDR format:\n${customData}`;
+        const customPrompt = `Summarize the following paper information in a concise TLDR format:\nTitle: ${selectedPaperData.titles[0]}\nAbstract: ${selectedPaperData.abstracts[0]}`;
         console.log(customPrompt);
         // Use the Gemini model to generate a response (adjust according to your Gemini API usage)
         const result = await model.generateContent(customPrompt);
-        console.log("Gemini response:", result.response.text());
-        // // Optionally, emit an event back to clients with the Gemini response
-        // io.emit("geminiResponse", { response });
+        const responseText = result.response.text();
+        console.log("Gemini response:", responseText);
+        // Emit an event back to clients with the Gemini response and the single paper id
+        io.emit("summarizePaperGemini", { response: responseText, paperId: selectedPaperData.paperIds[0] });
     } catch (error) {
         console.error("Error sending custom prompt to Gemini:", error);
     }

@@ -34,6 +34,7 @@ import {
     addReferencesFromSelectedPaper,
     addPapersFromAuthor,
     restoreDeletedPapers,
+    paperSummaryMap
 } from "./graph";
 import "@babylonjs/inspector";
 import { timeout } from "d3";
@@ -426,7 +427,7 @@ paperDetailsPanel.material = panelMaterial;
 
 // Create an AdvancedDynamicTexture for the panel
 const panelTexture = AdvancedDynamicTexture.CreateForMesh(paperDetailsPanel, 1024, 3072);
-let loadedGUI = await panelTexture.parseFromSnippetAsync("#R4A2E9#14");
+let loadedGUI = await panelTexture.parseFromSnippetAsync("#R4A2E9#17");
 
 let paperDetailPanelBackground = panelTexture.getControlByName("paperDetailPanelBackground");
 let paperDetailStackPanel = paperDetailPanelBackground.getChildByName("paperDetailStackPanel");
@@ -436,8 +437,11 @@ let metadataTextBlock = paperDetailStackPanel.getChildByName("metadataTextBlock"
 
 let abstractPanelBackground = panelTexture.getControlByName("abstractPanelBackground");
 let abstractPanelStackPanel = abstractPanelBackground.getChildByName("abstractPanelStackPanel");
-let abstractTitleTextBlock = abstractPanelStackPanel.getChildByName("abstractTitleTextBlock");
 let abstractTextBlock = abstractPanelStackPanel.getChildByName("abstractTextBlock");
+
+let insightsPanelBackground = panelTexture.getControlByName("insightsPanelBackground");
+let insightsPanelStackPanel = insightsPanelBackground.getChildByName("insightsPanelStackPanel");
+let insightsTextBlock = insightsPanelStackPanel.getChildByName("insightsTextBlock");
 
 scene.onBeforeRenderObservable.add(() => {
     if (nodes) {
@@ -494,19 +498,29 @@ export function updatePaperPanelToNode(d, n) {
 
         // Limit the abstract to 2000 characters
         let abstractText = d.abstract;
-        if (abstractText.length > 1800) {
+        if (abstractText?.length > 1800) {
             let limited = abstractText.substring(0, 1800);
             // Cut off at the last space to avoid breaking words
             const lastSpace = limited.lastIndexOf(" ");
             abstractText =
                 (lastSpace > 0 ? abstractText.substring(0, lastSpace) : limited) + " ...";
         }
-        abstractTextBlock.text = abstractText;
+        if (abstractText != null) {
+            abstractTextBlock.text = abstractText;
+        } 
 
+        updateInsightsText(d);
+        
         paperDetailsPanel.isVisible = true;
         highlighter.addMesh(n, Color3.Blue());
     }
 }
+
+// New function to update the insights text based on a given node
+export function updateInsightsText(d) {
+    insightsTextBlock.text = paperSummaryMap?.[d?.paperId] || "No available AI Insights";
+}
+
 
 // emulating full screen ui
 const fullscreenUIPlane = MeshBuilder.CreatePlane(

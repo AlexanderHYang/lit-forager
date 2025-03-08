@@ -1,5 +1,5 @@
 import { io } from "socket.io-client";
-import { addRecommendationsFromSelectedPapers, toggleLinkType } from "./graph.js";
+import { addRecommendationsFromSelectedPapers, toggleLinkType,addSummaryForPaper } from "./graph.js";
 
 // Declare a socket variable to be used globally
 let socket;
@@ -41,9 +41,9 @@ export function initializeSocketConnection() {
         toggleLinkType();
     });
     
-    socket.on("summarizePaper", (data) => {
+    socket.on("summarizePaperGemini", (data) => {
         console.log("Received socket.io event:", data);
-        toggleLinkType();
+        addSummaryForPaper(data.response,data.paperId);
     });
 
     return socket;
