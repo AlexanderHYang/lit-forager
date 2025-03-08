@@ -90,4 +90,4 @@ window.addEventListener("keydown", (ev) => {
 initializeApp();
 
 // Start socket connection with the multimodal-llm script
-// initializeSocketConnection();
+initializeSocketConnection();
