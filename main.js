@@ -21,6 +21,8 @@ import {
     addReferencesFromSelectedPaper,
     addPapersFromAuthor,
     restoreDeletedPapers,
+    connectSelectedNodes,
+    createClusters,
 } from "./src/graph.js";
 import { getAuthorsPapers, getCitationsForPaper, getReferencesForPaper } from "./src/api.js";
 import { io } from "socket.io-client";
@@ -36,7 +38,7 @@ async function initializeApp() {
 
 // Add Keybinds for Graph Interaction
 window.addEventListener("keydown", (ev) => {
-    // Add debug layer
+    // Add debug layer: shift + ctrl + alt + i
     if (ev.shiftKey && ev.ctrlKey && ev.altKey && ev.keyCode === 73) {
         if (scene.debugLayer.isVisible()) {
             scene.debugLayer.hide();
@@ -83,6 +85,14 @@ window.addEventListener("keydown", (ev) => {
     if (ev.key === "4") {
         console.log("4 pressed - Restoring deleted papers");
         restoreDeletedPapers();
+    }
+    if (ev.key === "5") {
+        console.log("5 pressed - Connecting nodes");
+        connectSelectedNodes();
+    }
+    if (ev.key === "6") {
+        console.log("6 pressed - Creating clusters");
+        createClusters();
     }
 });
 

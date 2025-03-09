@@ -48,6 +48,7 @@ const linkColorMap = {
     "citation": Color3.Magenta(),
     "recommendation": Color3.White(),
     "author" : Color3.Yellow(),
+    "custom": Color3.Green(),
 };
 
 // Initialize force simulation
@@ -111,6 +112,9 @@ export function startSimulationRendering() {
  * Creates link data from paperData.
  */
 export function generateLinkData() {
+    // even though links are initially created as index-based
+    // they are later transformed into object-based via updateLines(),
+    // anu.js or d3 must do this internally
     citationLinkData.length = 0;
     recommendationLinkData.length = 0;
     authorLinkData.length = 0;
@@ -119,12 +123,12 @@ export function generateLinkData() {
             if (d1.paperId !== d2.paperId) {
                 d1.references.forEach((ref) => {
                     if (ref.paperId === d2.paperId) {
-                        citationLinkData.push({ source: i, target: j });
+                        citationLinkData.push({ source: d1, target: d2 });
                     }
                 });
                 d1.recommends.forEach((rec) => {
                     if (rec === d2.paperId) {
-                        recommendationLinkData.push({ source: i, target: j });
+                        recommendationLinkData.push({ source: d1, target: d2 });
                     }
                 });
             }
@@ -132,12 +136,12 @@ export function generateLinkData() {
                 d1.authors.forEach((author1) => {
                     d2.authors.forEach((author2) => {
                         if (author1.authorId === author2.authorId) {
-                            authorLinkData.push({ source: i, target: j });
+                            authorLinkData.push({ source: d1, target: d2 });
                         }
                     });
                 });
-                if (userConnections.some(([a, b]) => (a === paperId1 && b === paperId2) || (a === paperId2 && b === paperId1))) {
-                    userLinkData.push({ source: i, target: j });
+                if (userConnections.some(([a, b]) => (a === d1.paperId && b === d2.paperId) || (a === d2.paperId && b === d1.paperId))) {
+                    userLinkData.push({ source: d1, target: d2 });
                 }
             }
         });
@@ -373,6 +377,8 @@ function createLinks() {
         createLinksFromData(citationLinkData, linkColorMap[linkType]);
     } else if (linkType === "author") {
         createLinksFromData(authorLinkData, linkColorMap[linkType]);
+    } else if (linkType === "custom") {
+        createLinksFromData(userLinkData, linkColorMap[linkType]);
     } else {
         console.error("Invalid link type:", linkType);
     }
@@ -517,6 +523,13 @@ export function addPapersToGraph(newPapers) {
     // createLinksFromData(useCitationLinks ? citationLinkData : recommendationLinkData);
     createLinks();
 
+    // recommendationLinkData.forEach((d) => {
+    //     console.log(d);
+    // });
+    // citationLinkData.forEach((d) => {
+    //     console.log(d);
+    // });
+
     nodes.run((d, n, i) => {
         if (newPaperIds.includes(d.paperId)) {
             highlighter.addMesh(n, Color3.FromHexString("#7CFC00"));
@@ -564,18 +577,24 @@ export function removeNodesFromGraph(idsToRemove) {
         (link) =>
             !idsToRemove.includes(link.source.paperId) && !idsToRemove.includes(link.target.paperId)
     );
+    const newUserLinkData = userLinkData.filter(
+        (link) =>
+            !idsToRemove.includes(link.source.paperId) && !idsToRemove.includes(link.target.paperId)
+    );
 
     paperData.length = 0;
     paperIds.length = 0;
     citationLinkData.length = 0;
     recommendationLinkData.length = 0;
     authorLinkData.length = 0;
+    userLinkData.length = 0;
 
     paperData.push(...newPaperData);
     paperIds.push(...newPaperIds);
     citationLinkData.push(...newCitationLinkData);
     recommendationLinkData.push(...newRecommendationLinkData);
     authorLinkData.push(...newAuthorLinkData);
+    userLinkData.push(...newUserLinkData);
 
     idsToRemove.forEach((id) => {
         if (pinnedNodeIds.includes(id)) {
@@ -608,6 +627,8 @@ export function toggleLinkType() {
     } else if (linkType === "citation") {
         linkType = "author";
     } else if (linkType === "author") {
+        linkType = "custom";
+    } else if (linkType === "custom") {
         linkType = "recommendation";
     } else {
         console.error("Invalid link type:", linkType);
@@ -617,7 +638,7 @@ export function toggleLinkType() {
 }
 
 export function setLinkType(type) {
-    if (type !== "recommendation" && type !== "citation" && type !== "author") {
+    if (type !== "recommendation" && type !== "citation" && type !== "author" && linkType !== "custom") {
         console.error("Invalid link type:", type);
         return;
     }
@@ -771,4 +792,110 @@ export async function restoreDeletedPapers() {
         console.error("restoreDeletedPapers() failed with error:", error);
     }
     waitingForAPI = false;
+}
+
+function regenerateUserLinkData() {
+    userLinkData.length = 0;
+    userConnections.forEach(([a, b]) => {
+        if (paperIds.includes(a) && paperIds.includes (b)) {
+            userLinkData.push({ source: paperData.find(d => d.paperId === a), target: paperData.find(d => d.paperId === b) });
+        }
+    });
+}
+
+export function connectSelectedNodes() {
+    console.log("connectSelectedNodes() called");
+    
+    if (selectedIds.length !== 2) {
+        console.error("Error: Must select exactly two papers to connect.");
+        return;
+    }
+
+    const paperId1 = selectedIds[0];
+    const paperId2 = selectedIds[1];
+
+    // if nodes are already connected
+    let i = userConnections.findIndex(([a, b]) => (a === paperId1 && b === paperId2) || (a === paperId2 && b === paperId1));
+    if (i !== -1) {
+        if (linkType === "custom") {
+            console.log("nodes already connected");
+            userConnections.splice(i, 1);
+            regenerateUserLinkData();
+            createLinks();
+        } else {
+            linkType = "custom";
+        }
+    } else {
+        userConnections.push([paperId1, paperId2]);
+        userLinkData.push({ source: paperIds.indexOf(paperId1), target: paperIds.indexOf(paperId2) });
+        linkType = "custom";
+        createLinks();
+    }
+}
+
+function generateFibonacciLatticePositions(n, center, radius) {
+    // Fibonacci Lattice https://observablehq.com/@meetamit/fibonacci-lattices
+    const positions = [];
+    const randOffset = 2 * Math.PI * Math.random();
+    const goldenAngle = Math.PI * (1 + Math.sqrt(5)); // Golden angle for even distribution
+    for (let i = 0; i < n; i++) {
+        const phi = Math.acos(1 - 2 * (i + 0.5) / n); // Latitude angle
+        const theta = goldenAngle * i + randOffset; // Golden angle for even distribution
+        positions.push(new Vector3(
+            center.x + radius * Math.sin(phi) * Math.cos(theta),
+            center.y + radius * Math.sin(phi) * Math.sin(theta),
+            center.z + radius * Math.cos(phi)
+        ));
+    }
+    return positions;
+}
+
+export function createClusters() {
+    console.log("createClusters() called");
+
+    // random cluster assignments for now
+    const clusterAssignment = [[], [], []];
+    paperIds.forEach((id, i) => {
+        clusterAssignment[i % 3].push(id);
+    });
+    const clusterNames = ["A", "B", "C"];
+
+    const majorClusterSphereRadius = 0.35;
+    const minorClusterSphereRadius = 0.1;
+    const clusterCount = 3;
+
+    const clusterCenters = generateFibonacciLatticePositions(clusterCount, new Vector3(0, 0, 0), majorClusterSphereRadius);
+    const nodePositions = []; // 2d array of node positions for each cluster
+    clusterAssignment.forEach((ids, i) => {
+        const positions = generateFibonacciLatticePositions(ids.length, clusterCenters[i], minorClusterSphereRadius);
+        nodePositions.push(positions);
+    });
+
+    // assign positions to nodes
+    clusterAssignment.forEach((ids, i) => {
+        const positions = nodePositions[i];
+        ids.forEach((id, j) => {
+            const d = paperData.find((d) => d.paperId === id);
+            d.fx = positions[j].x;
+            d.fy = positions[j].y;
+            d.fz = positions[j].z;
+            d.x = positions[j].x;
+            d.y = positions[j].y;
+            d.z = positions[j].z;
+        });
+    });
+    pinnedNodeIds.push(...paperIds);
+
+    // assign cluster names
+    clusterAssignment.forEach((ids, i) => {
+        const clusterName = clusterNames[i];
+        ids.forEach((id) => {
+            const d = paperData.find((d) => d.paperId === id);
+            d.clusterName = clusterName;
+        });
+    });
+
+    linkType = "custom";
+    createLinks();
+
 }
