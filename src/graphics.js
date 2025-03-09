@@ -135,6 +135,12 @@ UIBackground.thickness = 1;
 UIBackground.background = "White";
 advancedTexture.addControl(UIBackground);
 
+const hoverPlaneTextPanel = new StackPanel();
+hoverPlaneTextPanel.isVertical = true;
+hoverPlaneTextPanel.adaptWidthToChildren = true;
+hoverPlaneTextPanel.adaptHeightToChildren = true;
+UIBackground.addControl(hoverPlaneTextPanel);
+
 //Create an empty text block
 let label = new TextBlock();
 label.paddingLeftInPixels = 25;
@@ -143,7 +149,17 @@ label.fontSizeInPixels = 50;
 label.resizeToFit = true;
 label.textWrapping = true;
 label.text = " ";
-UIBackground.addControl(label);
+hoverPlaneTextPanel.addControl(label);
+
+let clusterLabel = new TextBlock();
+clusterLabel.paddingLeftInPixels = 25;
+clusterLabel.paddingRightInPixels = 25;
+clusterLabel.fontSizeInPixels = 50;
+clusterLabel.resizeToFit = true;
+clusterLabel.textWrapping = true;
+clusterLabel.text = "";
+clusterLabel.isVisible = false;
+hoverPlaneTextPanel.addControl(clusterLabel);
 
 hoverPlane.isVisible = false; //Hide the plane until it is needed
 // hoverPlane.billboardMode = 7; //Set billboard mode to always face camera
@@ -172,7 +188,15 @@ export function setHoverPlaneToNode(d, n) {
         hoverPlaneId = null;
     } else {
         hoverPlaneId = d.paperId;
+
         label.text = d.title;
+        if (d.clusterName) {
+            clusterLabel.text = `Cluster: ${d.clusterName}`;
+            clusterLabel.isVisible = true;
+        } else {
+            clusterLabel.isVisible = false;
+        }
+
         hoverPlane.position = n.position.add(new Vector3(0, 0.08, 0)); // Add vertical offset
 
         if (hoverPlaneId !== paperDetailsPanelId) {
@@ -220,6 +244,8 @@ export const deleteButton = createButton("delete", "Delete");
 export const clearSelectionButton = createButton("clearSelection", "Clear Selection");
 export const unpinNodesButton = createButton("unpinNodes", "Unpin Nodes");
 export const toggleLinksButton = createButton("toggleLinks", "Toggle Links");
+export const connectNodesButton = createButton("connectNodes", "Connect Nodes");
+export const clusterNodesButton = createButton("clusterNodes", "Cluster Nodes");
 
 // Attach UI button behaviors
 recommendButton.onPointerClickObservable.add(() => {
@@ -251,12 +277,22 @@ toggleLinksButton.onPointerClickObservable.add(() => {
     console.log("Toggle Links button pressed");
     toggleLinkType();
 });
+connectNodesButton.onPointerClickObservable.add(() => {
+    console.log("Connect Nodes button pressed");
+    connectSelectedNodes();
+});
+clusterNodesButton.onPointerClickObservable.add(() => {
+    console.log("Cluster Nodes button pressed");
+    createClusters();
+});
 
 handMenu.addButton(recommendButton);
 handMenu.addButton(deleteButton);
 handMenu.addButton(clearSelectionButton);
 handMenu.addButton(unpinNodesButton);
 handMenu.addButton(toggleLinksButton);
+handMenu.addButton(connectNodesButton);
+handMenu.addButton(clusterNodesButton);
 
 
 // add extra hand menus
@@ -317,16 +353,13 @@ let lastSelectedCount = 0;
 scene.onBeforeRenderObservable.add(() => {
     if (selectedIds.length !== lastSelectedCount) {
         lastSelectedCount = selectedIds.length;
+
+        // recommendationsMenu buttons
         if (selectedIds.length === 0) {
             recByThematicButton.isVisible = false;
             recByCitationButton.isVisible = false;
             recByReferenceButton.isVisible = false;
             recByAuthorButton.isVisible = false;
-
-            if (authorMenu.isPickable) {
-                hideMenu(authorMenu);
-                showMenu(handMenu);
-            }
         } else if (selectedIds.length === 1) {
             recByAuthorButton.isVisible = true;
             recByCitationButton.isVisible = true;
@@ -337,10 +370,19 @@ scene.onBeforeRenderObservable.add(() => {
             recByCitationButton.isVisible = false;
             recByReferenceButton.isVisible = false;
             recByThematicButton.isVisible = true;
-            if (authorMenu.isPickable) {
-                hideMenu(authorMenu);
-                showMenu(handMenu);
-            }
+        }
+
+        // authorMenu buttons
+        if (selectedIds.length !== 1 && authorMenu.isPickable) {
+            hideMenu(authorMenu);
+            showMenu(recommendationsMenu);
+        }
+
+        // handMenu buttons
+        if (selectedIds.length !== 2) {
+            connectNodesButton.isVisible = false;
+        } else {
+            connectNodesButton.isVisible = true;
         }
     }
 });
