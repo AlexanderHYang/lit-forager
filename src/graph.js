@@ -878,6 +878,8 @@ function generateFibonacciLatticePositions(n, center, radius) {
 export function createClusters() {
     console.log("createClusters() called");
 
+    getClustersFromGemini();
+
     // random cluster assignments for now
     const clusterAssignment = [[], [], []];
     paperIds.forEach((id, i) => {
@@ -922,5 +924,66 @@ export function createClusters() {
 
     linkType = "custom";
     createLinks();
+}
 
+export function getClustersFromGemini() {
+    const basePrompt = `You are an AI that clusters academic papers based on thematic similarity. Given a list of papers, each with a unique "paperId", "title", and "abstract", your task is to organize them into **at least 2 clusters** with **at least 2 papers per cluster**.
+
+### Instructions:
+- Group papers based on their thematic similarity by analyzing the **title** and **abstract**.
+- Each cluster should have a **descriptive name** that summarizes the common theme of the grouped papers.
+- Ensure that **each paper appears in only one cluster**.
+- **Do not leave any papers unclustered.**
+- Return the result in a **valid JSON format** that is easy to parse in JavaScript.
+
+### Input Format Example:
+{
+    "papers": [
+        {"paperId": "p1", "title": "Deep Learning in Healthcare", "abstract": "This paper explores deep learning models applied to medical diagnostics."},
+        {"paperId": "p2", "title": "AI in Radiology", "abstract": "We discuss how AI models analyze radiology scans."},
+        {"paperId": "p3", "title": "Quantum Computing Advances", "abstract": "Recent progress in quantum computing and its impact on cryptography."},
+        {"paperId": "p4", "title": "Secure Quantum Cryptography", "abstract": "New quantum cryptographic protocols to enhance cybersecurity."}
+    ]
+}
+
+### Expected Output Format:
+{
+    "clusters": [
+        {
+            "name": "AI in Healthcare",
+            "paperIds": ["p1", "p2"]
+        },
+        {
+            "name": "Quantum Computing & Security",
+            "paperIds": ["p3", "p4"]
+        }
+    ]
+}
+
+### Additional Guidelines:
+- **Be concise and accurate** when naming the clusters.
+- **Do not add extra commentary**—just return the JSON object.
+- The response **must be in valid JSON format** with proper syntax.
+
+Now, **process the following input and generate clusters accordingly:**`
+
+    const paperInfo = {papers: []};
+    paperData.forEach((d) => {
+        paperInfo.papers.push({
+            paperId: d.paperId,
+            title: d.title,
+            abstract: d.abstract,
+        });
+    });
+
+    const prompt = `${basePrompt}\n\n${JSON.stringify(paperInfo, null, 4)}`;
+    console.log(prompt);
+
+    // processing received data
+    const data = {};
+
+    const clusterAssignments = data.clusters.map((cluster) => cluster.paperIds);
+    const clusterNames = data.clusters.map((cluster) => cluster.name);
+
+    return {clusterAssignments, clusterNames};
 }
