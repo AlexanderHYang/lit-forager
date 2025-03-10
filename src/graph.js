@@ -42,6 +42,7 @@ const unpickTime = {};
 const shouldDrag = {};
 const isDragging = {};
 const isPointerOver = {};
+const excludeFromNodeConnection = [];
 const CLICK_DELAY_THRESHOLD = 400; // milliseconds
 export let waitingForAPI = false;
 const linkColorMap = {
@@ -289,6 +290,19 @@ export function createNodes() {
             if (!pinnedNodeIds.includes(d.paperId)) {
                 pinnedNodeIds.push(d.paperId);
             }
+
+            // check distance to other currently dragged nodes
+            paperData.forEach((other) => {
+                if (other.paperId !== d.paperId && (true || isDragging[other.paperId])) {
+                    let dist = new Vector3(other.x, other.y, other.z).subtract(n.position).length();
+                    if (dist < 0.05) {
+                        console.log("Node connection gesture detected");
+                        connectNodes(d.paperId, other.paperId);
+                        excludeFromNodeConnection.push(d.paperId);
+                        excludeFromNodeConnection.push(other.paperId);
+                    }
+                }
+            });
         });
         dragBehavior.onDragObservable.add((data) => {
             if (shouldDrag[d.paperId]) {
@@ -305,6 +319,8 @@ export function createNodes() {
             if (!isPointerOver[d.paperId]) {
                 setHoverPlaneToNode(null, null);
             }
+
+            excludeFromNodeConnection.length = 0;
 
             // Release node from being fixed in place
             // delete d.fx;
@@ -814,6 +830,15 @@ export function connectSelectedNodes() {
     const paperId1 = selectedIds[0];
     const paperId2 = selectedIds[1];
 
+    connectNodes(paperId1, paperId2);
+}
+
+export function connectNodes(paperId1, paperId2) {
+    if (excludeFromNodeConnection.includes(paperId1) || excludeFromNodeConnection.includes(paperId2)) {
+        console.log("nodes excluded from connection");
+        return;
+    }
+
     // if nodes are already connected
     let i = userConnections.findIndex(([a, b]) => (a === paperId1 && b === paperId2) || (a === paperId2 && b === paperId1));
     if (i !== -1) {
@@ -837,10 +862,10 @@ function generateFibonacciLatticePositions(n, center, radius) {
     // Fibonacci Lattice https://observablehq.com/@meetamit/fibonacci-lattices
     const positions = [];
     const randOffset = 2 * Math.PI * Math.random();
-    const goldenAngle = Math.PI * (1 + Math.sqrt(5)); // Golden angle for even distribution
+    const goldenAngle = Math.PI * (1 + Math.sqrt(5)); // golden angle for even distribution
     for (let i = 0; i < n; i++) {
-        const phi = Math.acos(1 - 2 * (i + 0.5) / n); // Latitude angle
-        const theta = goldenAngle * i + randOffset; // Golden angle for even distribution
+        const phi = Math.acos(1 - 2 * (i + 0.5) / n); // latitude angle
+        const theta = goldenAngle * i + randOffset; // longitude angle
         positions.push(new Vector3(
             center.x + radius * Math.sin(phi) * Math.cos(theta),
             center.y + radius * Math.sin(phi) * Math.sin(theta),
