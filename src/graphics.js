@@ -21,20 +21,20 @@ import * as BABYLON from "@babylonjs/core";
 import * as GUI from "@babylonjs/gui";
 import "@babylonjs/loaders/glTF";
 import * as anu from "@jpmorganchase/anu";
-import { 
-    nodes, 
-    selectedIds, 
+import {
+    nodes,
+    selectedIds,
     waitingForAPI,
     addRecommendationsFromSelectedPapers,
     removeSelectedNodesFromGraph,
     clearNodeSelection,
     unpinNodes,
-    toggleLinkType,
+    changeLinkType,
     addCitationsFromSelectedPaper,
     addReferencesFromSelectedPaper,
     addPapersFromAuthor,
     restoreDeletedPapers,
-    paperSummaryMap
+    paperSummaryMap,
 } from "./graph";
 import "@babylonjs/inspector";
 import { timeout } from "d3";
@@ -250,7 +250,7 @@ unpinNodesButton.onPointerClickObservable.add(() => {
 });
 toggleLinksButton.onPointerClickObservable.add(() => {
     console.log("Toggle Links button pressed");
-    toggleLinkType();
+    changeLinkType();
 });
 
 handMenu.addButton(recommendButton);
@@ -258,7 +258,6 @@ handMenu.addButton(deleteButton);
 handMenu.addButton(clearSelectionButton);
 handMenu.addButton(unpinNodesButton);
 handMenu.addButton(toggleLinksButton);
-
 
 // add extra hand menus
 const recommendationsMenu = new GUI.HandMenu(xr.baseExperience, "recommendationsMenu");
@@ -346,7 +345,6 @@ scene.onBeforeRenderObservable.add(() => {
     }
 });
 
-
 const authorButtons = [];
 const authorMenu = new GUI.HandMenu(xr.baseExperience, "authorMenu");
 
@@ -400,7 +398,6 @@ function generateAuthorButtons() {
 }
 
 hideMenu(authorMenu);
-
 
 // Make panel for paper details
 // Create a floating plane for the paper details panel
@@ -507,10 +504,10 @@ export function updatePaperPanelToNode(d, n) {
         }
         if (abstractText != null) {
             abstractTextBlock.text = abstractText;
-        } 
+        }
 
         updateInsightsText(d);
-        
+
         paperDetailsPanel.isVisible = true;
         highlighter.addMesh(n, Color3.Blue());
     }
@@ -520,7 +517,6 @@ export function updatePaperPanelToNode(d, n) {
 export function updateInsightsText(d) {
     insightsTextBlock.text = paperSummaryMap?.[d?.paperId] || "No available AI Insights";
 }
-
 
 // emulating full screen ui
 const fullscreenUIPlane = MeshBuilder.CreatePlane(

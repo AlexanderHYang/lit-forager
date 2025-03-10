@@ -11,7 +11,7 @@ import { dirname, join } from "path";
 import fs from "fs";
 import https from "https";
 
-import * as dotenv from 'dotenv';
+import * as dotenv from "dotenv";
 dotenv.config();
 
 // Define __dirname for ESM modules
@@ -51,8 +51,6 @@ let finalRequestEndTime = 0;
 let newStream = true;
 let bridgingOffset = 0;
 let lastTranscriptWasFinal = false;
-
-
 
 // -------------------- Speech Streaming Functions --------------------
 function startStream() {
@@ -104,6 +102,16 @@ const speechCallback = (stream) => {
                 eventType: "recommendByAuthor",
             },
             {
+                required: "recommend",
+                optional: ["citation", "citations"],
+                eventType: "recommendByCitations",
+            },
+            {
+                required: "recommend",
+                optional: ["reference", "references"],
+                eventType: "recommendByReferences",
+            },
+            {
                 required: "change",
                 optional: ["links", "link", "link type"],
                 eventType: "toggleLinks",
@@ -117,6 +125,36 @@ const speechCallback = (stream) => {
                 required: "summarize",
                 optional: ["paper", "papers"],
                 eventType: "summarizePaper",
+            },
+            {
+                required: "delete",
+                optional: ["paper", "papers", "node", "nodes"],
+                eventType: "deletePaper",
+            },
+            {
+                required: "clear",
+                optional: ["selection", "selected", "select", "node", "nodes"],
+                eventType: "clearNodeSelection",
+            },
+            {
+                required: "unpin",
+                optional: ["paper", "papers", "node", "nodes"],
+                eventType: "unpinNodes",
+            },
+            {
+                required: "detach",
+                optional: ["paper", "papers", "node", "nodes"],
+                eventType: "unpinNodes",
+            },
+            {
+                required: "release",
+                optional: ["paper", "papers", "node", "nodes"],
+                eventType: "unpinNodes",
+            },
+            {
+                required: "restore",
+                optional: ["deleted", "delete", "paper", "papers", "node", "nodes"],
+                eventType: "restoreDeletedPapers",
             },
         ];
 
@@ -134,11 +172,13 @@ const speechCallback = (stream) => {
                         }" with optional "${combo.optional.join('" or "')}"`
                     )
                 );
-                
+
                 if (combo.eventType === "summarizePaper") {
-                    if (selectedPaperData &&
+                    if (
+                        selectedPaperData &&
                         selectedPaperData.paperIds &&
-                        selectedPaperData.paperIds.length === 1) {
+                        selectedPaperData.paperIds.length === 1
+                    ) {
                         // Use the data received from sendPaperData
                         summarizePaperGemini(selectedPaperData);
                     } else {
@@ -253,7 +293,6 @@ const io = new Server(server, {
     },
 });
 
-
 // Serve a simple HTML file for testing
 app.get("/", (req, res) => {
     res.sendFile(join(__dirname, "index.html"));
@@ -281,7 +320,11 @@ io.on("connection", (socket) => {
 async function summarizePaperGemini(selectedPaperData) {
     try {
         // Final check for exactly one paper id
-        if (!selectedPaperData || !selectedPaperData.paperIds || selectedPaperData.paperIds.length !== 1) {
+        if (
+            !selectedPaperData ||
+            !selectedPaperData.paperIds ||
+            selectedPaperData.paperIds.length !== 1
+        ) {
             console.warn("Final check failed: Exactly one paper id is required");
             return;
         }
@@ -293,7 +336,10 @@ async function summarizePaperGemini(selectedPaperData) {
         const responseText = result.response.text();
         console.log("Gemini response:", responseText);
         // Emit an event back to clients with the Gemini response and the single paper id
-        io.emit("summarizePaperGemini", { response: responseText, paperId: selectedPaperData.paperIds[0] });
+        io.emit("summarizePaperGemini", {
+            response: responseText,
+            paperId: selectedPaperData.paperIds[0],
+        });
     } catch (error) {
         console.error("Error sending custom prompt to Gemini:", error);
     }
