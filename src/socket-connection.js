@@ -1,5 +1,15 @@
 import { io } from "socket.io-client";
-import { addRecommendationsFromSelectedPapers, toggleLinkType,addSummaryForPaper } from "./graph.js";
+import {
+    addRecommendationsFromSelectedPapers,
+    changeLinkType,
+    addSummaryForPaper,
+    removeSelectedNodesFromGraph,
+    clearNodeSelection,
+    unpinNodes,
+    addCitationsFromSelectedPaper,
+    addReferencesFromSelectedPaper,
+    restoreDeletedPapers
+} from "./graph.js";
 
 // Declare a socket variable to be used globally
 let socket;
@@ -36,18 +46,47 @@ export function initializeSocketConnection() {
         addRecommendationsFromSelectedPapers();
     });
 
+    socket.on("recommendByCitations", (data) => {
+        console.log("Received socket.io event:", data);
+        addCitationsFromSelectedPaper();
+    });
+
+    socket.on("recommendByReferences", (data) => {
+        console.log("Received socket.io event:", data);
+        addReferencesFromSelectedPaper();
+    });
+
     socket.on("toggleLinks", (data) => {
         console.log("Received socket.io event:", data);
-        toggleLinkType();
+        changeLinkType();
     });
-    
+
     socket.on("summarizePaperGemini", (data) => {
         console.log("Received socket.io event:", data);
-        addSummaryForPaper(data.response,data.paperId);
+        addSummaryForPaper(data.response, data.paperId);
+    });
+
+    socket.on("deletePaper", (data) => {
+        console.log("Received socket.io event:", data);
+        removeSelectedNodesFromGraph();
+    });
+
+    socket.on("clearNodeSelection", (data) => {
+        console.log("Received socket.io event:", data);
+        clearNodeSelection();
+    });
+
+    socket.on("unpinNodes", (data) => {
+        console.log("Received socket.io event:", data);
+        unpinNodes();
+    });
+
+    socket.on("restoreDeletedPapers", (data) => {
+        console.log("Received socket.io event:", data);
+        restoreDeletedPapers();
     });
 
     return socket;
-
 }
 
 // Also export the socket so it can be imported elsewhere

@@ -20,7 +20,7 @@ import {
     setHoverPlaneToNode,
     updatePaperPanelToNode,
     setFullScreenUIText,
-    updateInsightsText
+    updateInsightsText,
 } from "./graphics.js"; // Import shared scene from graphics.js
 
 import { socket } from "./socket-connection.js";
@@ -55,7 +55,6 @@ const linkColorMap = {
 
 // Global variable to store mapping of paperId to summary
 export let paperSummaryMap = {};
-
 
 // Initialize force simulation
 export let simulation;
@@ -614,7 +613,7 @@ export function removeNodesFromGraph(idsToRemove) {
 /**
  * Toggles between citation and recommendation links.
  */
-export function toggleLinkType() {
+export function changeLinkType() {
     console.log("toggleLinkType() called");
     // useCitationLinks = !useCitationLinks;
     // createLinksFromData(useCitationLinks ? citationLinkData : recommendationLinkData);
@@ -668,7 +667,7 @@ export async function addCitationsFromSelectedPaper() {
     try {
         const paperId = selectedIds[0];
         selectedIds.length = 0;
-        const citationsResponse = await A5PIUtils.getCitationsForPaper(paperId);
+        const citationsResponse = await APIUtils.getCitationsForPaper(paperId);
         const citationIds = citationsResponse.data.map((d) => d.citingPaper.paperId);
         const filteredCitationsIds = citationIds.filter(
             (id) => !paperIds.includes(id) && !removedPaperIds.includes(id)
@@ -842,7 +841,4 @@ export function addSummaryForPaper(summary, paperId) {
     nodes.run((d, n, i) => {
         updateInsightsText(d);
     });
-  
 }
-
-
