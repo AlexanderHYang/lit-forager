@@ -22,7 +22,6 @@ import {
     addPapersFromAuthor,
     restoreDeletedPapers,
     connectSelectedNodes,
-    createClusters,
 } from "./src/graph.js";
 import { getAuthorsPapers, getCitationsForPaper, getReferencesForPaper } from "./src/api.js";
 import { io } from "socket.io-client";
@@ -89,10 +88,6 @@ window.addEventListener("keydown", (ev) => {
     if (ev.key === "5") {
         console.log("5 pressed - Connecting nodes");
         connectSelectedNodes();
-    }
-    if (ev.key === "6") {
-        console.log("6 pressed - Creating clusters");
-        createClusters();
     }
 });
 
