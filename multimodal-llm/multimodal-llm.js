@@ -26,6 +26,7 @@ const streamingLimit = 55000; // ms - low value for demo
 
 // Replace with your actual API key
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+console.log(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
 // Google Speech client & config
@@ -156,6 +157,11 @@ const speechCallback = (stream) => {
                 optional: ["deleted", "delete", "paper", "papers", "node", "nodes"],
                 eventType: "restoreDeletedPapers",
             },
+            {
+                required: "cluster",
+                optional: ["papers", "nodes"],
+                eventType: "createClusters"
+            },
         ];
 
         keywordCombinations.forEach((combo) => {
@@ -185,6 +191,8 @@ const speechCallback = (stream) => {
                         // Optionally, fallback if no data has been received yet.
                         console.warn("No nodes selected or no selection data available");
                     }
+                } else if (combo.eventType == "createClusters") {
+                    createClustersGemini()
                 } else {
                     // For all other events, emit normally.
                     io.emit(combo.eventType, {
@@ -303,8 +311,10 @@ server.listen(3000, "0.0.0.0", () => {
     console.log(`Secure WebSocket server listening on port 3000`);
 });
 
-// Global variable to store data from the "sendPaperData" event.
+// Global variable to store data from the "sendPaperData" event and "sendAllNodesData".
 let selectedPaperData = null;
+let allNodesData = null;
+
 
 // Listen for client connections and handle "sendPaperData" events.
 io.on("connection", (socket) => {
@@ -313,6 +323,12 @@ io.on("connection", (socket) => {
         console.log("Received data for paper", data.paperIds);
         selectedPaperData = data; // Update global data store.
     });
+
+    // Handle sendAllNodesData event
+    socket.on("sendAllNodesData", (data) => {
+        console.log("Received all nodes data for paperIds:", data.map((d) => d.paperId));
+        allNodesData = data;
+    })
 });
 
 // -------------------- Gemini Functions --------------------
@@ -340,6 +356,80 @@ async function summarizePaperGemini(selectedPaperData) {
             response: responseText,
             paperId: selectedPaperData.paperIds[0],
         });
+    } catch (error) {
+        console.error("Error sending custom prompt to Gemini:", error);
+    }
+}
+
+async function createClustersGemini() {
+    try {
+        // Final check for null or 0 paper ids
+        if (!allNodesData) {
+            console.warn("Final check failed: ");
+            return;
+        }
+
+        // Combine your custom prompt with the incoming custom data
+        const basePrompt = `You are an AI that clusters academic papers based on thematic similarity. Given a list of papers, each with a unique "paperId", "title", and "abstract", your task is to organize them into **at least 2 clusters** with **at least 2 papers per cluster**.
+
+### Instructions:
+- Group papers based on their thematic similarity by analyzing the **title** and **abstract**.
+- Each cluster should have a **descriptive name** that summarizes the common theme of the grouped papers.
+- Ensure that **each paper appears in only one cluster**.
+- **Do not leave any papers unclustered.**
+- Return the result in a **valid JSON format** that is easy to parse in JavaScript.
+
+### Input Format Example:
+{
+    "papers": [
+        {"paperId": "p1", "title": "Deep Learning in Healthcare", "abstract": "This paper explores deep learning models applied to medical diagnostics."},
+        {"paperId": "p2", "title": "AI in Radiology", "abstract": "We discuss how AI models analyze radiology scans."},
+        {"paperId": "p3", "title": "Quantum Computing Advances", "abstract": "Recent progress in quantum computing and its impact on cryptography."},
+        {"paperId": "p4", "title": "Secure Quantum Cryptography", "abstract": "New quantum cryptographic protocols to enhance cybersecurity."}
+    ]
+}
+
+### Expected Output Format:
+{
+    "clusters": [
+        {
+            "name": "AI in Healthcare",
+            "paperIds": ["p1", "p2"]
+        },
+        {
+            "name": "Quantum Computing & Security",
+            "paperIds": ["p3", "p4"]
+        }
+    ]
+}
+
+### Additional Guidelines:
+- **Be concise and accurate** when naming the clusters.
+- **Do not add extra commentary**—just return the JSON object. Do NOT include any backticks (\`\`\`) before or after the response, and do NOT include a JSON label. The first and last characters should be { and } respectively.
+- The response **must be in valid JSON format** with proper syntax.
+
+Now, **process the following input and generate clusters accordingly:**`
+
+        const prompt = `${basePrompt}\n\n${JSON.stringify(allNodesData, null, 4)}`;
+        console.log(prompt);
+
+        // Use the Gemini model to generate a response (adjust according to your Gemini API usage)
+        const result = await model.generateContent(prompt);
+        
+        // Extract JSON from response
+        const responseText = await result.response.text(); // Await response text
+        const cleanedResponse = responseText
+            .replace(/```json/g, "") // Remove opening json block
+            .replace(/```/g, "") // Remove closing block
+            .trim(); // Trim any extra whitespace
+        const parsedResponse = JSON.parse(cleanedResponse); // Parse JSON
+
+        // Emit structured response to the frontend
+        io.emit("createClustersGemini", {
+            status: "success",
+            clusters: parsedResponse.clusters, // Only send the relevant part
+        });
+
     } catch (error) {
         console.error("Error sending custom prompt to Gemini:", error);
     }

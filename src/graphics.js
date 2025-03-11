@@ -36,7 +36,6 @@ import {
     restoreDeletedPapers,
     paperSummaryMap,
     connectSelectedNodes,
-    createClusters
 } from "./graph";
 import "@babylonjs/inspector";
 import { timeout } from "d3";
@@ -248,7 +247,6 @@ export const clearSelectionButton = createButton("clearSelection", "Clear Select
 export const unpinNodesButton = createButton("unpinNodes", "Unpin Nodes");
 export const toggleLinksButton = createButton("toggleLinks", "Toggle Links");
 export const connectNodesButton = createButton("connectNodes", "Connect Nodes");
-export const clusterNodesButton = createButton("clusterNodes", "Cluster Nodes");
 
 // Attach UI button behaviors
 recommendButton.onPointerClickObservable.add(() => {
@@ -284,19 +282,6 @@ connectNodesButton.onPointerClickObservable.add(() => {
     console.log("Connect Nodes button pressed");
     connectSelectedNodes();
 });
-clusterNodesButton.onPointerClickObservable.add(() => {
-    console.log("Cluster Nodes button pressed");
-    createClusters();
-
-});
-connectNodesButton.onPointerClickObservable.add(() => {
-    console.log("Connect Nodes button pressed");
-    connectSelectedNodes();
-});
-clusterNodesButton.onPointerClickObservable.add(() => {
-    console.log("Cluster Nodes button pressed");
-    createClusters();
-});
 
 handMenu.addButton(recommendButton);
 handMenu.addButton(deleteButton);
@@ -304,7 +289,6 @@ handMenu.addButton(clearSelectionButton);
 handMenu.addButton(unpinNodesButton);
 handMenu.addButton(toggleLinksButton);
 handMenu.addButton(connectNodesButton);
-handMenu.addButton(clusterNodesButton);
 
 // add extra hand menus
 const recommendationsMenu = new GUI.HandMenu(xr.baseExperience, "recommendationsMenu");

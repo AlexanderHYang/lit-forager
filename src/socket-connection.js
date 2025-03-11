@@ -8,7 +8,8 @@ import {
     unpinNodes,
     addCitationsFromSelectedPaper,
     addReferencesFromSelectedPaper,
-    restoreDeletedPapers
+    restoreDeletedPapers,
+    createClustersFromGemini
 } from "./graph.js";
 
 // Declare a socket variable to be used globally
@@ -65,6 +66,11 @@ export function initializeSocketConnection() {
         console.log("Received socket.io event:", data);
         addSummaryForPaper(data.response, data.paperId);
     });
+
+    socket.on("createClustersGemini", (data) => {
+        console.log("Received socket.io event for createClustersGemini:", data);
+        createClustersFromGemini(data.clusters);
+    })
 
     socket.on("deletePaper", (data) => {
         console.log("Received socket.io event:", data);

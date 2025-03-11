@@ -352,6 +352,8 @@ export function createNodes() {
             d.fz = d.z;
         }
     });
+
+    sendAllNodesData();
 }
 
 /**
@@ -900,121 +902,84 @@ function generateFibonacciLatticePositions(n, center, radius) {
     return positions;
 }
 
-export async function createClusters() {
-    console.log("createClusters() called");
+export async function createClustersFromGemini(response) {
+    console.log("createClustersFromGemini() called");
 
-    let x = await getClustersFromGemini();
+    try {
 
-    // random cluster assignments for now
-    const clusterAssignment = [[], [], []];
-    paperIds.forEach((id, i) => {
-        clusterAssignment[i % 3].push(id);
-    });
-    const clusterNames = ["A", "B", "C"];
+        console.log("clusters received from gemini:", response);
+        // const data = JSON.parse(response);
+        const clusterAssignments = response.map((cluster) => cluster.paperIds);
+        const clusterNames = response.map((cluster) => cluster.name);
 
-    const majorClusterSphereRadius = 0.35;
-    const minorClusterSphereRadius = 0.1;
-    const clusterCount = 3;
+        // const clusterAssignments = [[], [], []];
+        // paperIds.forEach((id, i) => {
+        //     clusterAssignments[i % 3].push(id);
+        // });
+        // const clusterNames = ["A", "B", "C"];
 
-    const clusterCenters = generateFibonacciLatticePositions(clusterCount, new Vector3(0, 0, 0), majorClusterSphereRadius);
-    const nodePositions = []; // 2d array of node positions for each cluster
-    clusterAssignment.forEach((ids, i) => {
-        const positions = generateFibonacciLatticePositions(ids.length, clusterCenters[i], minorClusterSphereRadius);
-        nodePositions.push(positions);
-    });
+        const majorClusterSphereRadius = 0.35;
+        const minorClusterSphereRadius = 0.1;
+        const clusterCount = 3;
 
-    // assign positions to nodes
-    clusterAssignment.forEach((ids, i) => {
-        const positions = nodePositions[i];
-        ids.forEach((id, j) => {
-            const d = paperData.find((d) => d.paperId === id);
-            d.fx = positions[j].x;
-            d.fy = positions[j].y;
-            d.fz = positions[j].z;
-            d.x = positions[j].x;
-            d.y = positions[j].y;
-            d.z = positions[j].z;
+        const clusterCenters = generateFibonacciLatticePositions(clusterCount, new Vector3(0, 0, 0), majorClusterSphereRadius);
+        const nodePositions = []; // 2d array of node positions for each cluster
+        clusterAssignments.forEach((ids, i) => {
+            const positions = generateFibonacciLatticePositions(ids.length, clusterCenters[i], minorClusterSphereRadius);
+            nodePositions.push(positions);
         });
-    });
-    pinnedNodeIds.push(...paperIds);
 
-    // assign cluster names
-    clusterAssignment.forEach((ids, i) => {
-        const clusterName = clusterNames[i];
-        ids.forEach((id) => {
-            const d = paperData.find((d) => d.paperId === id);
-            d.clusterName = clusterName;
+        // assign positions to nodes
+        clusterAssignments.forEach((ids, i) => {
+            const positions = nodePositions[i];
+            ids.forEach((id, j) => {
+                const d = paperData.find((d) => d.paperId === id);
+                d.fx = positions[j].x;
+                d.fy = positions[j].y;
+                d.fz = positions[j].z;
+                d.x = positions[j].x;
+                d.y = positions[j].y;
+                d.z = positions[j].z;
+            });
         });
-    });
+        pinnedNodeIds.push(...paperIds);
 
-    linkType = "custom";
-    createLinks();
+        // assign cluster names
+        clusterAssignments.forEach((ids, i) => {
+            const clusterName = clusterNames[i];
+            ids.forEach((id) => {
+                const d = paperData.find((d) => d.paperId === id);
+                d.clusterName = clusterName;
+            });
+        });
+
+        linkType = "custom";
+        createLinks();
+
+    } catch (error) {
+        console.error("createClustersFromGemini() failed with error:", error);
+        return;
+    }
 }
 
-export async function getClustersFromGemini() {
-    const basePrompt = `You are an AI that clusters academic papers based on thematic similarity. Given a list of papers, each with a unique "paperId", "title", and "abstract", your task is to organize them into **at least 2 clusters** with **at least 2 papers per cluster**.
+export function sendAllNodesData() {
 
-### Instructions:
-- Group papers based on their thematic similarity by analyzing the **title** and **abstract**.
-- Each cluster should have a **descriptive name** that summarizes the common theme of the grouped papers.
-- Ensure that **each paper appears in only one cluster**.
-- **Do not leave any papers unclustered.**
-- Return the result in a **valid JSON format** that is easy to parse in JavaScript.
-
-### Input Format Example:
-{
-    "papers": [
-        {"paperId": "p1", "title": "Deep Learning in Healthcare", "abstract": "This paper explores deep learning models applied to medical diagnostics."},
-        {"paperId": "p2", "title": "AI in Radiology", "abstract": "We discuss how AI models analyze radiology scans."},
-        {"paperId": "p3", "title": "Quantum Computing Advances", "abstract": "Recent progress in quantum computing and its impact on cryptography."},
-        {"paperId": "p4", "title": "Secure Quantum Cryptography", "abstract": "New quantum cryptographic protocols to enhance cybersecurity."}
-    ]
-}
-
-### Expected Output Format:
-{
-    "clusters": [
-        {
-            "name": "AI in Healthcare",
-            "paperIds": ["p1", "p2"]
-        },
-        {
-            "name": "Quantum Computing & Security",
-            "paperIds": ["p3", "p4"]
-        }
-    ]
-}
-
-### Additional Guidelines:
-- **Be concise and accurate** when naming the clusters.
-- **Do not add extra commentary**—just return the JSON object.
-- The response **must be in valid JSON format** with proper syntax.
-
-Now, **process the following input and generate clusters accordingly:**`
-
-    const paperInfo = {papers: []};
+    const payload = [];
     paperData.forEach((d) => {
-        paperInfo.papers.push({
-            paperId: d.paperId,
-            title: d.title,
-            abstract: d.abstract,
-        });
+        payload.push(
+            {paperId: d.paperId, title: d.title, abstract: d.abstract}
+        );
     });
 
-    const prompt = `${basePrompt}\n\n${JSON.stringify(paperInfo, null, 4)}`;
-    console.log(prompt);
-
-    // processing received data
-    const data = {
-        clusters: [
-            {name: "", paperIds: []}
-        ]
-        };
-
-    const clusterAssignments = data.clusters.map((cluster) => cluster.paperIds);
-    const clusterNames = data.clusters.map((cluster) => cluster.name);
-
-    return {clusterAssignments, clusterNames};
+    // Emit the "sendAllNodesData" event using socket from the socket-connection module
+    if (typeof socket !== "undefined" && socket.connected) {
+        socket.emit("sendAllNodesData", payload);
+        console.log("Emitted 'sendAllNodesData' event with payload:", payload);
+    } else {
+        console.error(
+            "Socket is not available or not connected. 'sendAllNodesData' event not emitted."
+        );
+    }
 }
 
 export function sendSelectedNodesData() {
