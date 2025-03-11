@@ -1,18 +1,18 @@
-import { 
-    engine, 
-    scene, 
-    recommendButton, 
-    deleteButton, 
+import {
+    engine,
+    scene,
+    recommendButton,
+    deleteButton,
     toggleLinksButton,
     clearSelectionButton,
     unpinNodesButton,
 } from "./src/graphics.js";
-import { 
-    fetchInitialPapers, 
-    initializeSimulation, 
-    createNodes, 
-    toggleLinkType, 
-    removeSelectedNodesFromGraph, 
+import {
+    fetchInitialPapers,
+    initializeSimulation,
+    createNodes,
+    changeLinkType as changeLinkType,
+    removeSelectedNodesFromGraph,
     addRecommendationsFromSelectedPapers,
     startSimulationRendering,
     clearNodeSelection,
@@ -30,10 +30,10 @@ import { initializeSocketConnection } from "./src/socket-connection.js";
 
 // Fetch initial paper data and initialize the graph
 async function initializeApp() {
-    await fetchInitialPapers();  // Fetch initial paper data
-    initializeSimulation();      // Initialize force simulation
-    createNodes();               // Create the initial set of nodes
-    startSimulationRendering();  // Start rendering the simulation
+    await fetchInitialPapers(); // Fetch initial paper data
+    initializeSimulation(); // Initialize force simulation
+    createNodes(); // Create the initial set of nodes
+    startSimulationRendering(); // Start rendering the simulation
 }
 
 // Add Keybinds for Graph Interaction
@@ -46,7 +46,7 @@ window.addEventListener("keydown", (ev) => {
             scene.debugLayer.show();
         }
     }
-    
+
     if (ev.key === "r") {
         console.log("r pressed - Adding recommendations");
         addRecommendationsFromSelectedPapers();
@@ -56,8 +56,8 @@ window.addEventListener("keydown", (ev) => {
         removeSelectedNodesFromGraph();
     }
     if (ev.key === "l") {
-        console.log("L pressed - Toggling links");
-        toggleLinkType();
+        console.log("L pressed - Changing links");
+        changeLinkType();
     }
     if (ev.key === "c") {
         console.log("C pressed - Clearing node selection");
@@ -100,4 +100,4 @@ window.addEventListener("keydown", (ev) => {
 initializeApp();
 
 // Start socket connection with the multimodal-llm script
-// initializeSocketConnection();
+initializeSocketConnection();

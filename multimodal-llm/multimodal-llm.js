@@ -11,6 +11,9 @@ import { dirname, join } from "path";
 import fs from "fs";
 import https from "https";
 
+import * as dotenv from "dotenv";
+dotenv.config();
+
 // Define __dirname for ESM modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -24,9 +27,6 @@ const streamingLimit = 55000; // ms - low value for demo
 // Replace with your actual API key
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-
-const prompt =
-    "Summarize the following abstract of a research paper in a tldr format (in a few sentences): immersive analytics turns the very space surrounding the user into a canvas for data analysis, supporting human cognitive abilities in myriad ways. We present the results of a design study, contextual inquiry, and longitudinal evaluation involving professional economists using a Virtual Reality (VR) system for multidimensional visualization to explore actual economic data. Results from our preregistered evaluation highlight the varied use of space depending on context (exploration vs. presentation), the organization of space to support work, and the impact of immersion on navigation and orientation in the 3D analysis space";
 
 // Google Speech client & config
 const client = new speech.SpeechClient();
@@ -102,6 +102,16 @@ const speechCallback = (stream) => {
                 eventType: "recommendByAuthor",
             },
             {
+                required: "recommend",
+                optional: ["citation", "citations"],
+                eventType: "recommendByCitations",
+            },
+            {
+                required: "recommend",
+                optional: ["reference", "references"],
+                eventType: "recommendByReferences",
+            },
+            {
                 required: "change",
                 optional: ["links", "link", "link type"],
                 eventType: "toggleLinks",
@@ -110,6 +120,41 @@ const speechCallback = (stream) => {
                 required: "toggle",
                 optional: ["links", "link", "link type"],
                 eventType: "toggleLinks",
+            },
+            {
+                required: "summarize",
+                optional: ["paper", "papers"],
+                eventType: "summarizePaper",
+            },
+            {
+                required: "delete",
+                optional: ["paper", "papers", "node", "nodes"],
+                eventType: "deletePaper",
+            },
+            {
+                required: "clear",
+                optional: ["selection", "selected", "select", "node", "nodes"],
+                eventType: "clearNodeSelection",
+            },
+            {
+                required: "unpin",
+                optional: ["paper", "papers", "node", "nodes"],
+                eventType: "unpinNodes",
+            },
+            {
+                required: "detach",
+                optional: ["paper", "papers", "node", "nodes"],
+                eventType: "unpinNodes",
+            },
+            {
+                required: "release",
+                optional: ["paper", "papers", "node", "nodes"],
+                eventType: "unpinNodes",
+            },
+            {
+                required: "restore",
+                optional: ["deleted", "delete", "paper", "papers", "node", "nodes"],
+                eventType: "restoreDeletedPapers",
             },
         ];
 
@@ -122,14 +167,30 @@ const speechCallback = (stream) => {
             ) {
                 console.log(
                     chalk.blue(
-                        `Combination detected: Event "${combo.eventType}"\nKeywords: Required "${combo.required}" with optional "${combo.optional.join(
-                            '" or "'
-                        )}"`
+                        `Combination detected: Event "${combo.eventType}"\nKeywords: Required "${
+                            combo.required
+                        }" with optional "${combo.optional.join('" or "')}"`
                     )
                 );
-                io.emit(combo.eventType, {
-                    info: `Event: "${combo.eventType}"`,
-                });
+
+                if (combo.eventType === "summarizePaper") {
+                    if (
+                        selectedPaperData &&
+                        selectedPaperData.paperIds &&
+                        selectedPaperData.paperIds.length === 1
+                    ) {
+                        // Use the data received from sendPaperData
+                        summarizePaperGemini(selectedPaperData);
+                    } else {
+                        // Optionally, fallback if no data has been received yet.
+                        console.warn("No nodes selected or no selection data available");
+                    }
+                } else {
+                    // For all other events, emit normally.
+                    io.emit(combo.eventType, {
+                        info: `Event: "${combo.eventType}"`,
+                    });
+                }
             }
         });
     } else {
@@ -241,3 +302,45 @@ app.get("/", (req, res) => {
 server.listen(3000, "0.0.0.0", () => {
     console.log(`Secure WebSocket server listening on port 3000`);
 });
+
+// Global variable to store data from the "sendPaperData" event.
+let selectedPaperData = null;
+
+// Listen for client connections and handle "sendPaperData" events.
+io.on("connection", (socket) => {
+    console.log("Client connected:", socket.id);
+    socket.on("sendSelectedNodesData", (data) => {
+        console.log("Received data for paper", data.paperIds);
+        selectedPaperData = data; // Update global data store.
+    });
+});
+
+// -------------------- Gemini Functions --------------------
+
+async function summarizePaperGemini(selectedPaperData) {
+    try {
+        // Final check for exactly one paper id
+        if (
+            !selectedPaperData ||
+            !selectedPaperData.paperIds ||
+            selectedPaperData.paperIds.length !== 1
+        ) {
+            console.warn("Final check failed: Exactly one paper id is required");
+            return;
+        }
+        // Combine your custom prompt with the incoming custom data
+        const customPrompt = `Summarize the following paper information in a concise TLDR format:\nTitle: ${selectedPaperData.titles[0]}\nAbstract: ${selectedPaperData.abstracts[0]}`;
+        console.log(customPrompt);
+        // Use the Gemini model to generate a response (adjust according to your Gemini API usage)
+        const result = await model.generateContent(customPrompt);
+        const responseText = result.response.text();
+        console.log("Gemini response:", responseText);
+        // Emit an event back to clients with the Gemini response and the single paper id
+        io.emit("summarizePaperGemini", {
+            response: responseText,
+            paperId: selectedPaperData.paperIds[0],
+        });
+    } catch (error) {
+        console.error("Error sending custom prompt to Gemini:", error);
+    }
+}

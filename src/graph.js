@@ -20,7 +20,10 @@ import {
     setHoverPlaneToNode,
     updatePaperPanelToNode,
     setFullScreenUIText,
+    updateInsightsText,
 } from "./graphics.js"; // Import shared scene from graphics.js
+
+import { socket } from "./socket-connection.js";
 
 // Shared graph data
 export const paperData = [];
@@ -51,6 +54,9 @@ const linkColorMap = {
     "author" : Color3.Yellow(),
     "custom": Color3.Green(),
 };
+
+// Global variable to store mapping of paperId to summary
+export let paperSummaryMap = {};
 
 // Initialize force simulation
 export let simulation;
@@ -229,8 +235,8 @@ export function createNodes() {
                     pickStartTime[d.paperId] = performance.now();
                     shouldDrag[d.paperId] = false;
                     setTimeout(() => {
-                        if (isDragging[d.paperId] && !shouldDrag[d.paperId]) { 
-                            updatePaperPanelToNode(d,n);
+                        if (isDragging[d.paperId] && !shouldDrag[d.paperId]) {
+                            updatePaperPanelToNode(d, n);
                         }
                     }, CLICK_DELAY_THRESHOLD);
                 })
@@ -249,6 +255,7 @@ export function createNodes() {
                             if (!selectedIds.includes(d.paperId)) {
                                 selectedIds.push(d.paperId);
                                 highlighter.addMesh(n, Color3.White());
+                                sendSelectedNodesData();
                             } else {
                                 removeItem(selectedIds, d.paperId);
                                 highlighter.removeMesh(n);
@@ -470,8 +477,12 @@ export async function addRecommendationsFromSelectedPapers() {
             }
         });
 
-        const filteredRecommendedPaperIds = recommendedPaperIds.filter((id) => !paperIds.includes(id) && !removedPaperIds.includes(id));
-        const newPapers = await APIUtils.getDetailsForMultiplePapers(filteredRecommendedPaperIds.slice(0,5));
+        const filteredRecommendedPaperIds = recommendedPaperIds.filter(
+            (id) => !paperIds.includes(id) && !removedPaperIds.includes(id)
+        );
+        const newPapers = await APIUtils.getDetailsForMultiplePapers(
+            filteredRecommendedPaperIds.slice(0, 5)
+        );
 
         selectedIds.length = 0;
         // recommendedPapers.forEach((p) => selectedIds.push(p));
@@ -632,7 +643,7 @@ export function removeNodesFromGraph(idsToRemove) {
 /**
  * Toggles between citation and recommendation links.
  */
-export function toggleLinkType() {
+export function changeLinkType() {
     console.log("toggleLinkType() called");
     // useCitationLinks = !useCitationLinks;
     // createLinksFromData(useCitationLinks ? citationLinkData : recommendationLinkData);
@@ -690,8 +701,12 @@ export async function addCitationsFromSelectedPaper() {
         selectedIds.length = 0;
         const citationsResponse = await APIUtils.getCitationsForPaper(paperId);
         const citationIds = citationsResponse.data.map((d) => d.citingPaper.paperId);
-        const filteredCitationsIds = citationIds.filter((id) => !paperIds.includes(id) && !removedPaperIds.includes(id));
-        const newPapers = await APIUtils.getDetailsForMultiplePapers(filteredCitationsIds.slice(0,5));
+        const filteredCitationsIds = citationIds.filter(
+            (id) => !paperIds.includes(id) && !removedPaperIds.includes(id)
+        );
+        const newPapers = await APIUtils.getDetailsForMultiplePapers(
+            filteredCitationsIds.slice(0, 5)
+        );
 
         addPapersToGraph(newPapers);
         setLinkType("citation");
@@ -734,9 +749,13 @@ export async function addReferencesFromSelectedPaper() {
         selectedIds.length = 0;
         const referencesResponse = await APIUtils.getReferencesForPaper(paperId);
         const referenceIds = referencesResponse.data.map((d) => d.citedPaper.paperId);
-        const filteredReferenceIds = referenceIds.filter((id) => !paperIds.includes(id) && !removedPaperIds.includes(id));
+        const filteredReferenceIds = referenceIds.filter(
+            (id) => !paperIds.includes(id) && !removedPaperIds.includes(id)
+        );
         console.log("filteredReferenceIds", filteredReferenceIds);
-        const newPapers = await APIUtils.getDetailsForMultiplePapers(filteredReferenceIds.slice(0,5));
+        const newPapers = await APIUtils.getDetailsForMultiplePapers(
+            filteredReferenceIds.slice(0, 5)
+        );
 
         addPapersToGraph(newPapers);
         setLinkType("citation");
@@ -764,7 +783,9 @@ export async function addPapersFromAuthor(authorId) {
     }
     waitingForAPI = true;
 
-    const recommendationSourceIds = paperData.filter((d) => d.authors.some((a) => a.authorId === authorId)).map((d) => d.paperId);
+    const recommendationSourceIds = paperData
+        .filter((d) => d.authors.some((a) => a.authorId === authorId))
+        .map((d) => d.paperId);
 
     // adjust glow layers
     nodes.run((d, n, i) => {
@@ -777,8 +798,12 @@ export async function addPapersFromAuthor(authorId) {
     try {
         const authorResponse = await APIUtils.getAuthorsPapers(authorId);
         const authorPaperIds = authorResponse.data.map((d) => d.paperId);
-        const filteredAuthorPaperIds = authorPaperIds.filter((id) => !paperIds.includes(id) && !removedPaperIds.includes(id));
-        const newPapers = await APIUtils.getDetailsForMultiplePapers(filteredAuthorPaperIds.slice(0,5));
+        const filteredAuthorPaperIds = authorPaperIds.filter(
+            (id) => !paperIds.includes(id) && !removedPaperIds.includes(id)
+        );
+        const newPapers = await APIUtils.getDetailsForMultiplePapers(
+            filteredAuthorPaperIds.slice(0, 5)
+        );
 
         addPapersToGraph(newPapers);
         setLinkType("author");
@@ -990,4 +1015,44 @@ Now, **process the following input and generate clusters accordingly:**`
     const clusterNames = data.clusters.map((cluster) => cluster.name);
 
     return {clusterAssignments, clusterNames};
+}
+
+export function sendSelectedNodesData() {
+    // Filter papers that are selected using the selectedIds array
+    const paperIds = [];
+    const titles = [];
+    const abstracts = [];
+
+    // Filter papers that are selected using the selectedIds array
+    paperData
+        .filter((d) => selectedIds.includes(d.paperId))
+        .forEach((d) => {
+            paperIds.push(d.paperId);
+            titles.push(d.title);
+            abstracts.push(d.abstract || "");
+        });
+
+    // Emit the "sendPaperData" event using socket from the socket-connection module
+    if (typeof socket !== "undefined" && socket.connected) {
+        socket.emit("sendSelectedNodesData", { paperIds, titles, abstracts });
+        console.log("Emitted 'sendSelectedNodesData' event with payload:", {
+            paperIds,
+            titles,
+            abstracts,
+        });
+    } else {
+        console.error(
+            "Socket is not available or not connected. 'sendSelectedNodesData' event not emitted."
+        );
+    }
+}
+
+/**
+ * Adds a summary for a given paper and updates the global mapping.
+ */
+export function addSummaryForPaper(summary, paperId) {
+    paperSummaryMap[paperId] = summary;
+    nodes.run((d, n, i) => {
+        updateInsightsText(d);
+    });
 }
