@@ -875,10 +875,10 @@ function generateFibonacciLatticePositions(n, center, radius) {
     return positions;
 }
 
-export function createClusters() {
+export async function createClusters() {
     console.log("createClusters() called");
 
-    getClustersFromGemini();
+    let x = await getClustersFromGemini();
 
     // random cluster assignments for now
     const clusterAssignment = [[], [], []];
@@ -926,7 +926,7 @@ export function createClusters() {
     createLinks();
 }
 
-export function getClustersFromGemini() {
+export async function getClustersFromGemini() {
     const basePrompt = `You are an AI that clusters academic papers based on thematic similarity. Given a list of papers, each with a unique "paperId", "title", and "abstract", your task is to organize them into **at least 2 clusters** with **at least 2 papers per cluster**.
 
 ### Instructions:
