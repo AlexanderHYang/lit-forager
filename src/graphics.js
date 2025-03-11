@@ -34,6 +34,8 @@ import {
     addReferencesFromSelectedPaper,
     addPapersFromAuthor,
     restoreDeletedPapers,
+    connectSelectedNodes,
+    createClusters
 } from "./graph";
 import "@babylonjs/inspector";
 import { timeout } from "d3";

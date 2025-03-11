@@ -293,7 +293,7 @@ export function createNodes() {
 
             // check distance to other currently dragged nodes
             paperData.forEach((other) => {
-                if (other.paperId !== d.paperId && (true || isDragging[other.paperId])) {
+                if (other.paperId !== d.paperId && (false || isDragging[other.paperId])) {
                     let dist = new Vector3(other.x, other.y, other.z).subtract(n.position).length();
                     if (dist < 0.05) {
                         console.log("Node connection gesture detected");
@@ -980,7 +980,11 @@ Now, **process the following input and generate clusters accordingly:**`
     console.log(prompt);
 
     // processing received data
-    const data = {};
+    const data = {
+        clusters: [
+            {name: "", paperIds: []}
+        ]
+        };
 
     const clusterAssignments = data.clusters.map((cluster) => cluster.paperIds);
     const clusterNames = data.clusters.map((cluster) => cluster.name);
