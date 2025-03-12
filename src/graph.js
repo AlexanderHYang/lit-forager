@@ -797,6 +797,7 @@ export async function addReferencesFromSelectedPaper() {
 export async function addPapersFromAuthor(authorId) {
     if (!authorId) {
         console.error("Error: authorId must be a non-empty string.");
+        setFullScreenUIText("No available papers to add");
         return;
     }
 
@@ -940,9 +941,9 @@ export async function createClustersFromGemini(response) {
         // });
         // const clusterNames = ["A", "B", "C"];
 
-        const majorClusterSphereRadius = 0.35;
-        const minorClusterSphereRadius = 0.1;
-        const clusterCount = 3;
+        const majorClusterSphereRadius = 0.25;
+        const minorClusterSphereRadius = 0.08;
+        const clusterCount = clusterAssignments.length;
 
         const clusterCenters = generateFibonacciLatticePositions(clusterCount, new Vector3(0, 0, 0), majorClusterSphereRadius);
         const nodePositions = []; // 2d array of node positions for each cluster
@@ -974,6 +975,7 @@ export async function createClustersFromGemini(response) {
         });
     
         // create links between elements in cluster
+        userConnections.length = 0;
         clusterAssignments.forEach((cluster) => {
             cluster.forEach((id1, i) => {
                 cluster.forEach((id2, j) => {
@@ -1006,9 +1008,9 @@ export async function testCreateClusters() {
     });
     const clusterNames = ["A", "B", "C"];
 
-    const majorClusterSphereRadius = 0.35;
-    const minorClusterSphereRadius = 0.1;
-    const clusterCount = 3;
+    const majorClusterSphereRadius = 0.25;
+    const minorClusterSphereRadius = 0.08;
+    const clusterCount = clusterAssignments.length;
 
     const clusterCenters = generateFibonacciLatticePositions(clusterCount, new Vector3(0, 0, 0), majorClusterSphereRadius);
     const nodePositions = []; // 2d array of node positions for each cluster
@@ -1039,6 +1041,7 @@ export async function testCreateClusters() {
     });
 
     // create links between elements in cluster
+    userConnections.length = 0;
     clusterAssignments.forEach((cluster) => {
         cluster.forEach((id1, i) => {
             cluster.forEach((id2, j) => {
