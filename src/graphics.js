@@ -36,6 +36,7 @@ import {
     restoreDeletedPapers,
     paperSummaryMap,
     connectSelectedNodes,
+    testCreateClusters,
 } from "./graph";
 import "@babylonjs/inspector";
 import { timeout } from "d3";
@@ -56,6 +57,9 @@ export const camera = new ArcRotateCamera(
     scene
 );
 export const light = new HemisphericLight("light1", new Vector3(0, 10, 0), scene);
+
+camera.position.set(-0.5, 0, 0);
+camera.setTarget(new BABYLON.Vector3(0, 0, 0));
 
 camera.wheelPrecision = 20;
 camera.minZ = 0;
@@ -96,7 +100,7 @@ const xrSessionManager = xr.baseExperience.sessionManager;
 let currCam = camera;
 
 xrSessionManager.onXRFrameObservable.addOnce(() => {
-    xr.baseExperience.camera.position.set(-0.5, 0.5, 0);
+    xr.baseExperience.camera.position.set(-0.5, 0, 0);
     xr.baseExperience.camera.setTarget(new BABYLON.Vector3(0, 0, 0));
 });
 xrSessionManager.onXRSessionInit.add(() => {
@@ -124,49 +128,29 @@ export const hoverPlane = BABYLON.MeshBuilder.CreatePlane(
 let hoverPlaneId = null;
 highlighter.addExcludedMesh(hoverPlane);
 
-//Use the Babylon GUI system to create an AdvancedDynamicTexture that will the updated with our label content
-const advancedTexture = AdvancedDynamicTexture.CreateForMesh(hoverPlane);
+// 0AQMY9
+const hoverPlaneTexture = AdvancedDynamicTexture.CreateForMesh(hoverPlane);
+const hoverPlaneGUI = await hoverPlaneTexture.parseFromSnippetAsync("0AQMY9");
 
-//Create a rectangle for the background
-let UIBackground = new Rectangle();
-UIBackground.adaptWidthToChildren = true;
-UIBackground.adaptHeightToChildren = true;
-UIBackground.cornerRadius = 20;
-UIBackground.color = "Black";
-UIBackground.thickness = 1;
-UIBackground.background = "White";
-advancedTexture.addControl(UIBackground);
+const titlePanelBackground = hoverPlaneTexture.getControlByName("titlePanelBackground");
+const titleStackPanel = titlePanelBackground.getChildByName("titleStackPanel");
+const titleTextBlock = titleStackPanel.getChildByName("titleTextBlock");
+console.log(titleTextBlock);
 
-const hoverPlaneTextPanel = new StackPanel();
-hoverPlaneTextPanel.isVertical = true;
-hoverPlaneTextPanel.adaptWidthToChildren = true;
-hoverPlaneTextPanel.adaptHeightToChildren = true;
-UIBackground.addControl(hoverPlaneTextPanel);
+const clusterPanelBackground = hoverPlaneTexture.getControlByName("clusterPanelBackground");
+const clusterStackPanel = clusterPanelBackground.getChildByName("clusterStackPanel");
+const clusterTextBlock = clusterStackPanel.getChildByName("clusterTextBlock");
 
-//Create an empty text block
-let label = new TextBlock();
-label.paddingLeftInPixels = 25;
-label.paddingRightInPixels = 25;
-label.fontSizeInPixels = 50;
-label.resizeToFit = true;
-label.textWrapping = true;
-label.text = " ";
-hoverPlaneTextPanel.addControl(label);
+clusterPanelBackground.isVisible = false;
+hoverPlane.isVisible = false;
+hoverPlane.isPickable = false;
+hoverPlane.renderingGroupId = 2;
 
-let clusterLabel = new TextBlock();
-clusterLabel.paddingLeftInPixels = 25;
-clusterLabel.paddingRightInPixels = 25;
-clusterLabel.fontSizeInPixels = 50;
-clusterLabel.resizeToFit = true;
-clusterLabel.textWrapping = true;
-clusterLabel.text = "";
-clusterLabel.isVisible = false;
-hoverPlaneTextPanel.addControl(clusterLabel);
+titleTextBlock.paddingLeftInPixels = 25;
+titleTextBlock.paddingRightInPixels = 25;
 
-hoverPlane.isVisible = false; //Hide the plane until it is needed
-// hoverPlane.billboardMode = 7; //Set billboard mode to always face camera
-hoverPlane.isPickable = false; //Disable picking so it doesn't get in the way of interactions
-hoverPlane.renderingGroupId = 2; //Set render id higher so it always renders in front
+clusterTextBlock.paddingLeftInPixels = 25;
+clusterTextBlock.paddingRightInPixels = 25;
 
 scene.onBeforeRenderObservable.add(() => {
     if (nodes) {
@@ -182,7 +166,8 @@ scene.onBeforeRenderObservable.add(() => {
 });
 
 export function updateHoverPlaneText(text) {
-    label.text = text;
+    // label.text = text;
+    titleTextBlock.text = text;
 }
 export function setHoverPlaneToNode(d, n) {
     if (n === null || d === null) {
@@ -191,12 +176,16 @@ export function setHoverPlaneToNode(d, n) {
     } else {
         hoverPlaneId = d.paperId;
 
-        label.text = d.title;
+        // label.text = d.title;
+        titleTextBlock.text = d.title;
         if (d.clusterName) {
-            clusterLabel.text = `Cluster: ${d.clusterName}`;
-            clusterLabel.isVisible = true;
+            // clusterLabel.text = `Cluster: ${d.clusterName}`;
+            // clusterLabel.isVisible = true;
+            clusterTextBlock.text = `Cluster: ${d.clusterName}`;
+            clusterPanelBackground.isVisible = true;
         } else {
-            clusterLabel.isVisible = false;
+            // clusterLabel.isVisible = false;
+            clusterPanelBackground.isVisible = false;
         }
 
         hoverPlane.position = n.position.add(new Vector3(0, 0.08, 0)); // Add vertical offset
@@ -246,7 +235,7 @@ export const deleteButton = createButton("delete", "Delete");
 export const clearSelectionButton = createButton("clearSelection", "Clear Selection");
 export const unpinNodesButton = createButton("unpinNodes", "Unpin Nodes");
 export const toggleLinksButton = createButton("toggleLinks", "Toggle Links");
-export const connectNodesButton = createButton("connectNodes", "Connect Nodes");
+export const testClusterButton = createButton("testCluster", "Test Cluster");
 
 // Attach UI button behaviors
 recommendButton.onPointerClickObservable.add(() => {
@@ -278,9 +267,9 @@ toggleLinksButton.onPointerClickObservable.add(() => {
     console.log("Toggle Links button pressed");
     changeLinkType();
 });
-connectNodesButton.onPointerClickObservable.add(() => {
-    console.log("Connect Nodes button pressed");
-    connectSelectedNodes();
+testClusterButton.onPointerClickObservable.add(() => {
+    console.log("Test Cluster button pressed");
+    testCreateClusters();
 });
 
 handMenu.addButton(recommendButton);
@@ -288,7 +277,7 @@ handMenu.addButton(deleteButton);
 handMenu.addButton(clearSelectionButton);
 handMenu.addButton(unpinNodesButton);
 handMenu.addButton(toggleLinksButton);
-handMenu.addButton(connectNodesButton);
+handMenu.addButton(testClusterButton);
 
 // add extra hand menus
 const recommendationsMenu = new GUI.HandMenu(xr.baseExperience, "recommendationsMenu");
@@ -299,7 +288,7 @@ recommendationsMenuBehavior.handConstraintVisibility = BABYLON.HandConstraintVis
 recommendationsMenuBehavior.targetZone = BABYLON.HandConstraintZone.ULNAR_SIDE;
 recommendationsMenuBehavior.nodeOrientationMode = BABYLON.HandConstraintOrientation.HAND_ROTATION;
 recommendationsMenuBehavior.targetOffset = 0.15;
-recommendationsMenu.columns = 1;
+recommendationsMenu.columns = 2;
 
 guiManager.addControl(recommendationsMenu);
 recommendationsMenu.backPlateMargin = 0.1;
@@ -371,13 +360,6 @@ scene.onBeforeRenderObservable.add(() => {
         if (selectedIds.length !== 1 && authorMenu.isPickable) {
             hideMenu(authorMenu);
             showMenu(recommendationsMenu);
-        }
-
-        // handMenu buttons
-        if (selectedIds.length !== 2) {
-            connectNodesButton.isVisible = false;
-        } else {
-            connectNodesButton.isVisible = true;
         }
     }
 });
@@ -571,14 +553,17 @@ fullScreenUIBackground.addControl(fullscreenUITextBlock);
 fullScreenUIBackground.thickness = 0;
 fullscreenUITextBlock.text = "Full Screen UI";
 fullscreenUITextBlock.color = "black";
-fullscreenUITextBlock.fontSize = 50;
+fullscreenUITextBlock.fontSize = 30;
+fullscreenUITextBlock.outlineWidth = 10;  // Adjust thickness of the outline
+fullscreenUITextBlock.outlineColor = "white"; // Set outline color to white
 
 fullscreenUIPlane.isVisible = false;
 fullscreenUIPlane.isPickable = false;
+fullscreenUIPlane.renderingGroupId = 3;
 
 scene.onBeforeRenderObservable.add(() => {
     if (fullscreenUIPlane.isVisible) {
-        fullscreenUIPlane.position = currCam.getFrontPosition(1.5);
+        fullscreenUIPlane.position = currCam.getFrontPosition(0.75);
         fullscreenUIPlane.lookAt(currCam.position);
         fullscreenUIPlane.rotate(new Vector3(0, 1, 0), Math.PI);
     }
@@ -586,7 +571,6 @@ scene.onBeforeRenderObservable.add(() => {
 
 let timeoutTime = null;
 export function setFullScreenUIText(text) {
-    console.log(text);
     fullscreenUIPlane.isVisible = true;
     fullscreenUITextBlock.text = text;
     timeoutTime = performance.now() + 2900;

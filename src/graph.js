@@ -89,6 +89,9 @@ export async function fetchInitialPapers() {
         });
     }
     paperIds.push("f9c602cc436a9ea2f9e7db48c77d924e09ce3c32");
+    paperData[0].x = 0;
+    paperData[0].y = 0;
+    paperData[0].z = 0;
     waitingForAPI = false;
 }
 
@@ -493,6 +496,7 @@ export async function addRecommendationsFromSelectedPapers() {
         setLinkType("recommendation");
     } catch (error) {
         console.error("addRecommendationsFromSelectedPapers() failed with error:", error);
+        setFullScreenUIText("No available papers to add");
     }
     waitingForAPI = false;
 
@@ -528,6 +532,14 @@ export function addPapersToGraph(newPapers) {
             newPaperIds.push(p.paperId);
         }
     });
+
+    const newPositions = generateFibonacciLatticePositions(newPaperIds.length, new Vector3(0,0,0), 0.2);
+    for (let i = 0; i < newPaperIds.length; i++) {
+        let j = paperData.length - newPaperIds.length + i;
+        paperData[j].x = newPositions[i].x;
+        paperData[j].y = newPositions[i].y;
+        paperData[j].z = newPositions[i].z;
+    }
 
     paperData.forEach((d) => {
         // lock nodes in place before simulation
@@ -714,6 +726,7 @@ export async function addCitationsFromSelectedPaper() {
         setLinkType("citation");
     } catch (error) {
         console.error("addCitationsFromSelectedPaper() failed with error:", error);
+        setFullScreenUIText("No available papers to add");
     }
     waitingForAPI = false;
 
@@ -763,6 +776,7 @@ export async function addReferencesFromSelectedPaper() {
         setLinkType("citation");
     } catch (error) {
         console.error("addReferencesFromSelectedPaper() failed with error:", error);
+        setFullScreenUIText("No available papers to add");
     }
     waitingForAPI = false;
 
@@ -811,6 +825,7 @@ export async function addPapersFromAuthor(authorId) {
         setLinkType("author");
     } catch (error) {
         console.error("addReferencesFromSelectedPaper() failed with error:", error);
+        setFullScreenUIText("No available papers to add");
     }
     waitingForAPI = false;
 
@@ -889,10 +904,10 @@ function generateFibonacciLatticePositions(n, center, radius) {
     // Fibonacci Lattice https://observablehq.com/@meetamit/fibonacci-lattices
     const positions = [];
     const randOffset = 2 * Math.PI * Math.random();
-    const goldenAngle = Math.PI * (1 + Math.sqrt(5)); // golden angle for even distribution
+    const goldenAngle = 0.5 * (1 + Math.sqrt(5)); // golden angle for even distribution
     for (let i = 0; i < n; i++) {
         const phi = Math.acos(1 - 2 * (i + 0.5) / n); // latitude angle
-        const theta = goldenAngle * i + randOffset; // longitude angle
+        const theta = (goldenAngle * i + randOffset) % (2 * Math.PI); // longitude angle
         positions.push(new Vector3(
             center.x + radius * Math.sin(phi) * Math.cos(theta),
             center.y + radius * Math.sin(phi) * Math.sin(theta),
@@ -929,21 +944,19 @@ export async function createClustersFromGemini(response) {
             nodePositions.push(positions);
         });
 
-        // assign positions to nodes
+        // animate position movement
         clusterAssignments.forEach((ids, i) => {
             const positions = nodePositions[i];
             ids.forEach((id, j) => {
                 const d = paperData.find((d) => d.paperId === id);
-                d.fx = positions[j].x;
-                d.fy = positions[j].y;
-                d.fz = positions[j].z;
-                d.x = positions[j].x;
-                d.y = positions[j].y;
-                d.z = positions[j].z;
+                const startPos = new BABYLON.Vector3(d.x, d.y, d.z);
+                const endPos = new BABYLON.Vector3(positions[j].x, positions[j].y, positions[j].z);
+                animateNodeData(d, startPos, endPos, 1000); // 1000ms = 1s animation
             });
         });
+    
         pinnedNodeIds.push(...paperIds);
-
+    
         // assign cluster names
         clusterAssignments.forEach((ids, i) => {
             const clusterName = clusterNames[i];
@@ -952,8 +965,23 @@ export async function createClustersFromGemini(response) {
                 d.clusterName = clusterName;
             });
         });
-
+    
+        // create links between elements in cluster
+        clusterAssignments.forEach((cluster) => {
+            cluster.forEach((id1, i) => {
+                cluster.forEach((id2, j) => {
+                    if (j > i) {
+                        let k = userConnections.findIndex(([a, b]) => (a === id1 && b === id2) || (a === id2 && b === id1));
+                        if (k === -1) {
+                            userConnections.push([id1, id2]);
+                        }
+                    }
+                })
+            })
+        });
+    
         linkType = "custom";
+        regenerateUserLinkData();
         createLinks();
 
     } catch (error) {
@@ -961,6 +989,89 @@ export async function createClustersFromGemini(response) {
         return;
     }
 }
+
+export async function testCreateClusters() {
+    console.log("test createClusters() called");
+
+    const clusterAssignments = [[], [], []];
+    paperIds.forEach((id, i) => {
+        clusterAssignments[i % 3].push(id);
+    });
+    const clusterNames = ["A", "B", "C"];
+
+    const majorClusterSphereRadius = 0.35;
+    const minorClusterSphereRadius = 0.1;
+    const clusterCount = 3;
+
+    const clusterCenters = generateFibonacciLatticePositions(clusterCount, new Vector3(0, 0, 0), majorClusterSphereRadius);
+    const nodePositions = []; // 2d array of node positions for each cluster
+    clusterAssignments.forEach((ids, i) => {
+        const positions = generateFibonacciLatticePositions(ids.length, clusterCenters[i], minorClusterSphereRadius);
+        nodePositions.push(positions);
+    });
+
+    clusterAssignments.forEach((ids, i) => {
+        const positions = nodePositions[i];
+        ids.forEach((id, j) => {
+            const d = paperData.find((d) => d.paperId === id);
+            const startPos = new BABYLON.Vector3(d.x, d.y, d.z);
+            const endPos = new BABYLON.Vector3(positions[j].x, positions[j].y, positions[j].z);
+            animateNodeData(d, startPos, endPos, 1000); // 1000ms = 1s animation
+        });
+    });
+
+    pinnedNodeIds.push(...paperIds);
+
+    // assign cluster names
+    clusterAssignments.forEach((ids, i) => {
+        const clusterName = clusterNames[i];
+        ids.forEach((id) => {
+            const d = paperData.find((d) => d.paperId === id);
+            d.clusterName = clusterName;
+        });
+    });
+
+    // create links between elements in cluster
+    clusterAssignments.forEach((cluster) => {
+        cluster.forEach((id1, i) => {
+            cluster.forEach((id2, j) => {
+                if (j > i) {
+                    let k = userConnections.findIndex(([a, b]) => (a === id1 && b === id2) || (a === id2 && b === id1));
+                    if (k === -1) {
+                        userConnections.push([id1, id2]);
+                    }
+                }
+            })
+        })
+    });
+
+    linkType = "custom";
+    regenerateUserLinkData();
+    createLinks();
+}
+
+
+function animateNodeData(d, startPos, endPos, duration = 1000) {
+    const startTime = performance.now();
+
+    const observer = scene.onBeforeRenderObservable.add(() => {
+        const elapsed = performance.now() - startTime;
+        let t = Math.min(elapsed / duration, 1); // Normalize t between 0 and 1
+
+        t = t * (2 - t);
+
+        // Smooth interpolation (linear, but can be adjusted)
+        d.fx = startPos.x + (endPos.x - startPos.x) * t;
+        d.fy = startPos.y + (endPos.y - startPos.y) * t;
+        d.fz = startPos.z + (endPos.z - startPos.z) * t;
+
+        // Stop updating once the animation is complete
+        if (t >= 1) {
+            scene.onBeforeRenderObservable.remove(observer);
+        }
+    });
+}
+
 
 export function sendAllNodesData() {
 
