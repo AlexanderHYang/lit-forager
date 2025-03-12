@@ -21,6 +21,7 @@ import {
     updatePaperPanelToNode,
     setFullScreenUIText,
     updateInsightsText,
+    paperDetailsPanelId,
 } from "./graphics.js"; // Import shared scene from graphics.js
 
 import { socket } from "./socket-connection.js";
@@ -240,6 +241,9 @@ export function createNodes() {
                     setTimeout(() => {
                         if (isDragging[d.paperId] && !shouldDrag[d.paperId]) {
                             updatePaperPanelToNode(d, n);
+                            if (selectedIds.includes(d.paperId)) {
+                                removeItem(selectedIds, d.paperId);
+                            }
                         }
                     }, CLICK_DELAY_THRESHOLD);
                 })
@@ -257,6 +261,9 @@ export function createNodes() {
                             // only process click if it is short
                             if (!selectedIds.includes(d.paperId)) {
                                 selectedIds.push(d.paperId);
+                                if (d.paperId === paperDetailsPanelId) {
+                                    updatePaperPanelToNode(null, null);
+                                }
                                 highlighter.addMesh(n, Color3.White());
                                 sendSelectedNodesData();
                             } else {
