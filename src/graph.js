@@ -20,7 +20,7 @@ import {
     setHoverPlaneToNode,
     updatePaperPanelToNode,
     setFullScreenUIText,
-    updateInsightsText,
+    updateInsightsAndNotesText,
     paperDetailsPanelId,
 } from "./graphics.js"; // Import shared scene from graphics.js
 
@@ -1139,6 +1139,6 @@ export function sendSelectedNodesData() {
 export function addSummaryForPaper(summary, paperId) {
     paperSummaryMap[paperId] = summary;
     nodes.run((d, n, i) => {
-        updateInsightsText(d);
+        updateInsightsAndNotesText(d);
     });
 }
