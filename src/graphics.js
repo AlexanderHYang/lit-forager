@@ -445,7 +445,7 @@ paperDetailsPanel.material = panelMaterial;
 
 // Create an AdvancedDynamicTexture for the panel
 const panelTexture = AdvancedDynamicTexture.CreateForMesh(paperDetailsPanel, 1024, 3072);
-let loadedGUI = await panelTexture.parseFromSnippetAsync("#R4A2E9#17");
+let loadedGUI = await panelTexture.parseFromSnippetAsync("#R4A2E9#20");
 
 let paperDetailPanelBackground = panelTexture.getControlByName("paperDetailPanelBackground");
 let paperDetailStackPanel = paperDetailPanelBackground.getChildByName("paperDetailStackPanel");
@@ -456,10 +456,11 @@ let metadataTextBlock = paperDetailStackPanel.getChildByName("metadataTextBlock"
 let abstractPanelBackground = panelTexture.getControlByName("abstractPanelBackground");
 let abstractPanelStackPanel = abstractPanelBackground.getChildByName("abstractPanelStackPanel");
 let abstractTextBlock = abstractPanelStackPanel.getChildByName("abstractTextBlock");
+let insightsTextBlock = abstractPanelStackPanel.getChildByName("insightsTextBlock");
 
-let insightsPanelBackground = panelTexture.getControlByName("insightsPanelBackground");
-let insightsPanelStackPanel = insightsPanelBackground.getChildByName("insightsPanelStackPanel");
-let insightsTextBlock = insightsPanelStackPanel.getChildByName("insightsTextBlock");
+let notesPanelBackground = panelTexture.getControlByName("notesPanelBackground");
+let notesPanelStackPanel = notesPanelBackground.getChildByName("notesPanelStackPanel");
+let notesTextBlock = notesPanelStackPanel.getChildByName("notesTextBlock");
 
 scene.onBeforeRenderObservable.add(() => {
     if (nodes) {
@@ -527,7 +528,7 @@ export function updatePaperPanelToNode(d, n) {
             abstractTextBlock.text = abstractText;
         }
 
-        updateInsightsText(d);
+        updateInsightsAndNotesText(d);
 
         paperDetailsPanel.isVisible = true;
         highlighter.addMesh(n, Color3.Blue());
@@ -535,8 +536,15 @@ export function updatePaperPanelToNode(d, n) {
 }
 
 // New function to update the insights text based on a given node
-export function updateInsightsText(d) {
-    insightsTextBlock.text = paperSummaryMap?.[d?.paperId] || "No available AI Insights";
+export function updateInsightsAndNotesText(d) {
+    const insights = paperSummaryMap?.[d?.paperId];
+    if (insights && insights.trim() !== "") {
+        insightsTextBlock.text = insights;
+        insightsTextBlock.isVisible = true;
+    } else {
+        insightsTextBlock.text = "";
+        insightsTextBlock.isVisible = true;
+    }
 }
 
 // emulating full screen ui
@@ -556,7 +564,7 @@ fullScreenUIBackground.thickness = 0;
 fullscreenUITextBlock.text = "Full Screen UI";
 fullscreenUITextBlock.color = "black";
 fullscreenUITextBlock.fontSize = 30;
-fullscreenUITextBlock.outlineWidth = 10;  // Adjust thickness of the outline
+fullscreenUITextBlock.outlineWidth = 10; // Adjust thickness of the outline
 fullscreenUITextBlock.outlineColor = "white"; // Set outline color to white
 
 fullscreenUIPlane.isVisible = false;
