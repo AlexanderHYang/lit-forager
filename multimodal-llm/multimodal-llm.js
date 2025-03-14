@@ -329,6 +329,18 @@ io.on("connection", (socket) => {
         console.log("Received all nodes data for paperIds:", data.map((d) => d.paperId));
         allNodesData = data;
     })
+
+    // Handle createClustersButtonPressed event
+    socket.on("createClustersButtonPressed", (data) => {
+        console.log("Received createClustersButtonPressed event with data", data);
+        createClustersGemini();
+    })
+
+    // Handle summarizeButtonPressed event
+    socket.on("summarizeButtonPressed", (data) => {
+        console.log("Received summarizeButtonPressed event with data", data);
+        summarizePaperGemini(selectedPaperData);
+    })
 });
 
 // -------------------- Gemini Functions --------------------

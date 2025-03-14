@@ -935,7 +935,12 @@ export function connectNodes(paperId1, paperId2) {
         }
     } else {
         userConnections.push([paperId1, paperId2]);
-        userLinkData.push({ source: paperIds.indexOf(paperId1), target: paperIds.indexOf(paperId2) });
+        const p1 = paperData.find((d) => d.paperId === paperId1);
+        const p2 = paperData.find((d) => d.paperId === paperId2);
+
+        if (p1 && p2) {
+            userLinkData.push({ source: p1, target: p2 });
+        }
         linkType = "custom";
         createLinks();
     }
