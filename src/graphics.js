@@ -40,6 +40,7 @@ import {
 } from "./graph";
 import "@babylonjs/inspector";
 import { timeout } from "d3";
+import { removeItem } from "./utils";
 // Create the Babylon.js engine and scene
 const app = document.querySelector("#app");
 const canvas = document.createElement("canvas");
@@ -483,6 +484,8 @@ scene.onBeforeRenderObservable.add(() => {
 
 // Function to update paper details
 export function updatePaperPanelToNode(d, n) {
+
+    // remove old highlight, add node to selectedIds
     if (paperDetailsPanelId !== null) {
         nodes.run((d, n) => {
             if (d.paperId === paperDetailsPanelId) {
@@ -491,18 +494,37 @@ export function updatePaperPanelToNode(d, n) {
         });
     }
 
-    if (d === null || n === null) {
+    if (d === null || n === null) { // if setting to null
+        // remove highlight from prev blue node
+        nodes.run((d1,n1) => {
+            if (d1.paperId === paperDetailsPanelId) {
+                highlighter.removeMesh(n1);
+            }
+        })
+        // remove previous blue node from selectedIds
+        removeItem(selectedIds, paperDetailsPanelId);
+        // hide panel
         paperDetailsPanel.isVisible = false;
         paperDetailsPanelId = null;
-    } else {
+
+    } else { // if setting to a new node
+
+        // if setting to current node, then treat as if unselecting
         if (paperDetailsPanelId === d.paperId) {
             updatePaperPanelToNode(null, null); // Hide panel if it's already visible
-            highlighter.removeMesh(n);
             setHoverPlaneToNode(d, n); // Show hover plane instead
             return;
         }
 
         setHoverPlaneToNode(null, null); // Hide hover plane if it's visible
+
+        // remove previous selection before adding new selection
+        updatePaperPanelToNode(null, null);
+
+        // make sure node is selected
+        if (!selectedIds.includes(d.paperId)) {
+            selectedIds.push(d.paperId);
+        }
 
         console.log(d);
         paperDetailsPanelId = d.paperId;

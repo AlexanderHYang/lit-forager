@@ -110,12 +110,19 @@ export function initializeSimulation() {
     // console.log(simulation.nodes());
 }
 
+let frames = 0
 export function startSimulationRendering() {
     // force simulation to step every frame
     scene.onBeforeRenderObservable.add(() => {
         // simulation.step();
         simulation.tick();
         ticked();
+
+        frames += 1;
+        if (frames % 60 === 0) {
+            console.log(selectedIds);
+        }
+
     });
 }
 
@@ -241,9 +248,6 @@ export function createNodes() {
                     setTimeout(() => {
                         if (isDragging[d.paperId] && !shouldDrag[d.paperId]) {
                             updatePaperPanelToNode(d, n);
-                            if (selectedIds.includes(d.paperId)) {
-                                removeItem(selectedIds, d.paperId);
-                            }
                         }
                     }, CLICK_DELAY_THRESHOLD);
                 })
@@ -259,11 +263,15 @@ export function createNodes() {
 
                         if (pickDuration < CLICK_DELAY_THRESHOLD) {
                             // only process click if it is short
-                            if (!selectedIds.includes(d.paperId)) {
-                                selectedIds.push(d.paperId);
-                                if (d.paperId === paperDetailsPanelId) {
-                                    updatePaperPanelToNode(null, null);
+
+                            if (d.paperId === paperDetailsPanelId) {
+                                updatePaperPanelToNode(null, null);
+                                if (!selectedIds.includes(d.paperId)) {
+                                    selectedIds.push(d.paperId);
                                 }
+                                highlighter.addMesh(n, Color3.White());
+                            } else if (!selectedIds.includes(d.paperId)) {
+                                selectedIds.push(d.paperId);
                                 highlighter.addMesh(n, Color3.White());
                                 sendSelectedNodesData();
                             } else {
@@ -465,7 +473,7 @@ export async function addRecommendationsFromSelectedPapers() {
         return;
     }
     waitingForAPI = true;
-    const recommendationSourceIds = selectedIds.splice();
+    const recommendationSourceIds = selectedIds.slice();
 
     // adjust glow layers
     nodes.run((d, n, i) => {
@@ -497,6 +505,9 @@ export async function addRecommendationsFromSelectedPapers() {
         );
 
         selectedIds.length = 0;
+        if (paperDetailsPanelId) {
+            selectedIds.push(paperDetailsPanelId);
+        }
         // recommendedPapers.forEach((p) => selectedIds.push(p));
 
         addPapersToGraph(newPapers);
@@ -508,8 +519,12 @@ export async function addRecommendationsFromSelectedPapers() {
     waitingForAPI = false;
 
     nodes.run((d, n, i) => {
-        if (recommendationSourceIds.includes(d.paperId) && !selectedIds.includes(d.paperId)) {
-            highlighter.removeMesh(n);
+        if (recommendationSourceIds.includes(d.paperId)) {
+            if (!selectedIds.includes(d.paperId)) {
+                highlighter.removeMesh(n);
+            } else if (d.paperId === paperDetailsPanelId) {
+                highlighter.addMesh(n, Color3.Blue());
+            }
         }
     });
 }
@@ -720,6 +735,9 @@ export async function addCitationsFromSelectedPaper() {
     try {
         const paperId = selectedIds[0];
         selectedIds.length = 0;
+        if (paperDetailsPanelId) {
+            selectedIds.push(paperDetailsPanelId);
+        }
         const citationsResponse = await APIUtils.getCitationsForPaper(paperId);
         const citationIds = citationsResponse.data.map((d) => d.citingPaper.paperId);
         const filteredCitationsIds = citationIds.filter(
@@ -738,8 +756,12 @@ export async function addCitationsFromSelectedPaper() {
     waitingForAPI = false;
 
     nodes.run((d, n, i) => {
-        if (recommendationSourceIds.includes(d.paperId) && !selectedIds.includes(d.paperId)) {
-            highlighter.removeMesh(n);
+        if (recommendationSourceIds.includes(d.paperId)) {
+            if (!selectedIds.includes(d.paperId)) {
+                highlighter.removeMesh(n);
+            } else if (d.paperId === paperDetailsPanelId) {
+                highlighter.addMesh(n, Color3.Blue());
+            }
         }
     });
 }
@@ -769,6 +791,9 @@ export async function addReferencesFromSelectedPaper() {
     try {
         const paperId = selectedIds[0];
         selectedIds.length = 0;
+        if (paperDetailsPanelId) {
+            selectedIds.push(paperDetailsPanelId);
+        }
         const referencesResponse = await APIUtils.getReferencesForPaper(paperId);
         const referenceIds = referencesResponse.data.map((d) => d.citedPaper.paperId);
         const filteredReferenceIds = referenceIds.filter(
@@ -788,8 +813,12 @@ export async function addReferencesFromSelectedPaper() {
     waitingForAPI = false;
 
     nodes.run((d, n, i) => {
-        if (recommendationSourceIds.includes(d.paperId) && !selectedIds.includes(d.paperId)) {
-            highlighter.removeMesh(n);
+        if (recommendationSourceIds.includes(d.paperId)) {
+            if (!selectedIds.includes(d.paperId)) {
+                highlighter.removeMesh(n);
+            } else if (d.paperId === paperDetailsPanelId) {
+                highlighter.addMesh(n, Color3.Blue());
+            }
         }
     });
 }
@@ -838,8 +867,12 @@ export async function addPapersFromAuthor(authorId) {
     waitingForAPI = false;
 
     nodes.run((d, n, i) => {
-        if (recommendationSourceIds.includes(d.paperId) && !selectedIds.includes(d.paperId)) {
-            highlighter.removeMesh(n);
+        if (recommendationSourceIds.includes(d.paperId)) {
+            if (!selectedIds.includes(d.paperId)) {
+                highlighter.removeMesh(n);
+            } else if (d.paperId === paperDetailsPanelId) {
+                highlighter.addMesh(n, Color3.Blue());
+            }
         }
     });
 }
