@@ -41,6 +41,7 @@ import {
 import "@babylonjs/inspector";
 import { timeout } from "d3";
 import { removeItem } from "./utils";
+import { socket } from "./socket-connection";
 // Create the Babylon.js engine and scene
 const app = document.querySelector("#app");
 const canvas = document.createElement("canvas");
@@ -238,21 +239,14 @@ export const deleteButton = createButton("delete", "Delete");
 export const clearSelectionButton = createButton("clearSelection", "Clear Selection");
 export const unpinNodesButton = createButton("unpinNodes", "Unpin Nodes");
 export const toggleLinksButton = createButton("toggleLinks", "Toggle Links");
-export const testClusterButton = createButton("testCluster", "Test Cluster");
+export const createClustersButton = createButton("createClusters", "Create Clusters");
+export const summarizeButton = createButton("summarizeButton", "Summarize Paper");
 
 // Attach UI button behaviors
 recommendButton.onPointerClickObservable.add(() => {
     console.log("Recommend button pressed");
-
     hideMenu(handMenu);
     showMenu(recommendationsMenu);
-
-    if (selectedIds.length > 1) {
-        recByAuthorButton.color = "grey";
-        recByCitationButton.color = "grey";
-        recByReferenceButton.color = "grey";
-    }
-    // addRecommendationsFromSelectedPapers();
 });
 deleteButton.onPointerClickObservable.add(() => {
     console.log("Delete button pressed");
@@ -270,17 +264,22 @@ toggleLinksButton.onPointerClickObservable.add(() => {
     console.log("Toggle Links button pressed");
     changeLinkType();
 });
-testClusterButton.onPointerClickObservable.add(() => {
-    console.log("Test Cluster button pressed");
-    testCreateClusters();
+createClustersButton.onPointerClickObservable.add(() => {
+    console.log("Create Cluster button pressed");
+    socket.emit("createClustersButtonPressed", {});
 });
+summarizeButton.onPointerClickObservable.add(() => {
+    console.log("Summarize Button pressed");
+    socket.emit("summarizeButtonPressed", {});
+})
 
 handMenu.addButton(recommendButton);
 handMenu.addButton(deleteButton);
 handMenu.addButton(clearSelectionButton);
 handMenu.addButton(unpinNodesButton);
 handMenu.addButton(toggleLinksButton);
-handMenu.addButton(testClusterButton);
+handMenu.addButton(createClustersButton);
+handMenu.addButton(summarizeButton);
 
 // add extra hand menus
 const recommendationsMenu = new GUI.HandMenu(xr.baseExperience, "recommendationsMenu");

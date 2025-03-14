@@ -26,7 +26,7 @@ import {
 } from "./src/graph.js";
 import { getAuthorsPapers, getCitationsForPaper, getReferencesForPaper } from "./src/api.js";
 import { io } from "socket.io-client";
-import { initializeSocketConnection } from "./src/socket-connection.js";
+import { initializeSocketConnection, socket } from "./src/socket-connection.js";
 
 // Fetch initial paper data and initialize the graph
 async function initializeApp() {
@@ -92,7 +92,13 @@ window.addEventListener("keydown", (ev) => {
     }
     if (ev.key === "6") {
         console.log("6 pressed - Testing clustering");
-        testCreateClusters();
+        // testCreateClusters();
+        socket.emit("createClustersButtonPressed", {});
+    }
+    if (ev.key === "7") {
+        console.log("7 pressed - Testing summarize paper");
+        // testCreateClusters();
+        socket.emit("summarizeButtonPressed", {});
     }
 });
 
