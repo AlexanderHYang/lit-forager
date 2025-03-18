@@ -128,6 +128,11 @@ const speechCallback = (stream) => {
                 eventType: "summarizePaper",
             },
             {
+                required: "keyword",
+                optional: ["summarize", "generate"],
+                eventType: "generateKeywords",
+            },
+            {
                 required: "delete",
                 optional: ["paper", "papers", "node", "nodes"],
                 eventType: "deletePaper",
@@ -160,7 +165,7 @@ const speechCallback = (stream) => {
             {
                 required: "cluster",
                 optional: ["papers", "nodes"],
-                eventType: "createClusters"
+                eventType: "createClusters",
             },
         ];
 
@@ -180,19 +185,23 @@ const speechCallback = (stream) => {
                 );
 
                 if (combo.eventType === "summarizePaper") {
-                    if (
-                        selectedPaperData &&
-                        selectedPaperData.paperIds &&
-                        selectedPaperData.paperIds.length === 1
-                    ) {
+                    if (currentlyViewingPaperData && currentlyViewingPaperData.paperId) {
                         // Use the data received from sendPaperData
-                        summarizePaperGemini(selectedPaperData);
+                        summarizePaperGemini(currentlyViewingPaperData);
                     } else {
                         // Optionally, fallback if no data has been received yet.
-                        console.warn("No nodes selected or no selection data available");
+                        console.warn("No nodes selected or more than one node selected");
                     }
+                }else if (combo.eventType === "generateKeywords") {
+                        if (currentlyViewingPaperData && currentlyViewingPaperData.paperId) {
+                            // Use the data received from sendPaperData
+                            generateKeywordsGemini(currentlyViewingPaperData);
+                        } else {
+                            // Optionally, fallback if no data has been received yet.
+                            console.warn("No nodes selected or more than one node selected");
+                        }           
                 } else if (combo.eventType == "createClusters") {
-                    createClustersGemini()
+                    createClustersGemini();
                 } else {
                     // For all other events, emit normally.
                     io.emit(combo.eventType, {
@@ -312,61 +321,73 @@ server.listen(3000, "0.0.0.0", () => {
 });
 
 // Global variable to store data from the "sendPaperData" event and "sendAllNodesData".
-let selectedPaperData = null;
+let currentlyViewingPaperData = null;
 let allNodesData = null;
-
 
 // Listen for client connections and handle "sendPaperData" events.
 io.on("connection", (socket) => {
     console.log("Client connected:", socket.id);
-    socket.on("sendSelectedNodesData", (data) => {
-        console.log("Received data for paper", data.paperIds);
-        selectedPaperData = data; // Update global data store.
+    socket.on("sendCurrentlyViewingNodeData", (data) => {
+        console.log("Received data for paper", data.paperId);
+        currentlyViewingPaperData = data; // Update global data store.
     });
 
     // Handle sendAllNodesData event
     socket.on("sendAllNodesData", (data) => {
-        console.log("Received all nodes data for paperIds:", data.map((d) => d.paperId));
+        console.log(
+            "Received all nodes data for paperIds:",
+            data.map((d) => d.paperId)
+        );
         allNodesData = data;
-    })
+    });
 
     // Handle createClustersButtonPressed event
     socket.on("createClustersButtonPressed", (data) => {
         console.log("Received createClustersButtonPressed event with data", data);
         createClustersGemini();
-    })
+    });
 
     // Handle summarizeButtonPressed event
     socket.on("summarizeButtonPressed", (data) => {
         console.log("Received summarizeButtonPressed event with data", data);
-        summarizePaperGemini(selectedPaperData);
-    })
+        summarizePaperGemini(currentlyViewingPaperData);
+    });
 });
 
 // -------------------- Gemini Functions --------------------
 
-async function summarizePaperGemini(selectedPaperData) {
-    try {
-        // Final check for exactly one paper id
-        if (
-            !selectedPaperData ||
-            !selectedPaperData.paperIds ||
-            selectedPaperData.paperIds.length !== 1
-        ) {
-            console.warn("Final check failed: Exactly one paper id is required");
-            return;
-        }
+async function summarizePaperGemini(currentlyViewingPaperData) {
+    try { 
         // Combine your custom prompt with the incoming custom data
-        const customPrompt = `Summarize the following paper information in a concise TLDR format:\nTitle: ${selectedPaperData.titles[0]}\nAbstract: ${selectedPaperData.abstracts[0]}`;
-        console.log(customPrompt);
+        const customPrompt = `Summarize the following paper information in a concise TLDR format:\nTitle: ${currentlyViewingPaperData.title}\nAbstract: ${currentlyViewingPaperData.abstract}`;
+        // console.log(customPrompt);
         // Use the Gemini model to generate a response (adjust according to your Gemini API usage)
         const result = await model.generateContent(customPrompt);
-        const responseText = result.response.text();
-        console.log("Gemini response:", responseText);
+        const responseText = result.response.text().replace(/[*\n]/g, "");
+        // console.log("Gemini response:", responseText);
         // Emit an event back to clients with the Gemini response and the single paper id
         io.emit("summarizePaperGemini", {
             response: responseText,
-            paperId: selectedPaperData.paperIds[0],
+            paperId: currentlyViewingPaperData.paperId,
+        });
+    } catch (error) {
+        console.error("Error sending custom prompt to Gemini:", error);
+    }
+}
+
+async function generateKeywordsGemini(currentlyViewingPaperData) {
+    try { 
+        // Combine your custom prompt with the incoming custom data
+        const customPrompt = `Extract only the thematic keywords/index terms from the following research paper and return the 5 most important ones as a comma-separated list. Do not include any extra text or explanation. ${currentlyViewingPaperData.title}\nAbstract: ${currentlyViewingPaperData.abstract}`;
+        // console.log(customPrompt);
+        // Use the Gemini model to generate a response (adjust according to your Gemini API usage)
+        const result = await model.generateContent(customPrompt);
+        const responseText = "Keywords: " + result.response.text().replace(/[*\n]/g, "");
+        console.log("Gemini response:", responseText);
+        // Emit an event back to clients with the Gemini response and the single paper id
+        io.emit("generateKeywordsGemini", {
+            response: responseText,
+            paperId: currentlyViewingPaperData.paperId,
         });
     } catch (error) {
         console.error("Error sending custom prompt to Gemini:", error);
@@ -420,14 +441,14 @@ async function createClustersGemini() {
 - **Do not add extra commentary**—just return the JSON object. Do NOT include any backticks (\`\`\`) before or after the response, and do NOT include a JSON label. The first and last characters should be { and } respectively.
 - The response **must be in valid JSON format** with proper syntax.
 
-Now, **process the following input and generate clusters accordingly:**`
+Now, **process the following input and generate clusters accordingly:**`;
 
         const prompt = `${basePrompt}\n\n${JSON.stringify(allNodesData, null, 4)}`;
         console.log(prompt);
 
         // Use the Gemini model to generate a response (adjust according to your Gemini API usage)
         const result = await model.generateContent(prompt);
-        
+
         // Extract JSON from response
         const responseText = await result.response.text(); // Await response text
         const cleanedResponse = responseText
@@ -441,7 +462,6 @@ Now, **process the following input and generate clusters accordingly:**`
             status: "success",
             clusters: parsedResponse.clusters, // Only send the relevant part
         });
-
     } catch (error) {
         console.error("Error sending custom prompt to Gemini:", error);
     }

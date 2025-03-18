@@ -3,6 +3,7 @@ import {
     addRecommendationsFromSelectedPapers,
     changeLinkType,
     addSummaryForPaper,
+    addKeywordsForPaper,
     removeSelectedNodesFromGraph,
     clearNodeSelection,
     unpinNodes,
@@ -65,6 +66,11 @@ export function initializeSocketConnection() {
     socket.on("summarizePaperGemini", (data) => {
         console.log("Received socket.io event:", data);
         addSummaryForPaper(data.response, data.paperId);
+    });
+
+    socket.on("generateKeywordsGemini", (data) => {
+        console.log("Received socket.io event:", data);
+        addKeywordsForPaper(data.response, data.paperId);
     });
 
     socket.on("createClustersGemini", (data) => {

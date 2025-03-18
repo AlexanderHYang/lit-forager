@@ -50,14 +50,17 @@ const excludeFromNodeConnection = [];
 const CLICK_DELAY_THRESHOLD = 400; // milliseconds
 export let waitingForAPI = false;
 const linkColorMap = {
-    "citation": Color3.Magenta(),
-    "recommendation": Color3.White(),
-    "author" : Color3.Yellow(),
-    "custom": Color3.Green(),
+    citation: Color3.Magenta(),
+    recommendation: Color3.White(),
+    author: Color3.Yellow(),
+    custom: Color3.Green(),
 };
 
 // Global variable to store mapping of paperId to summary
 export let paperSummaryMap = {};
+
+// Global variable to store mapping of paperId to summary
+export let paperKeywordsMap = {};
 
 // Initialize force simulation
 export let simulation;
@@ -110,7 +113,7 @@ export function initializeSimulation() {
     // console.log(simulation.nodes());
 }
 
-let frames = 0
+// let frames = 0
 export function startSimulationRendering() {
     // force simulation to step every frame
     scene.onBeforeRenderObservable.add(() => {
@@ -118,11 +121,10 @@ export function startSimulationRendering() {
         simulation.tick();
         ticked();
 
-        frames += 1;
-        if (frames % 60 === 0) {
-            console.log(selectedIds);
-        }
-
+        // frames += 1;
+        // if (frames % 60 === 0) {
+        //     console.log(selectedIds);
+        // }
     });
 }
 
@@ -158,7 +160,13 @@ export function generateLinkData() {
                         }
                     });
                 });
-                if (userConnections.some(([a, b]) => (a === d1.paperId && b === d2.paperId) || (a === d2.paperId && b === d1.paperId))) {
+                if (
+                    userConnections.some(
+                        ([a, b]) =>
+                            (a === d1.paperId && b === d2.paperId) ||
+                            (a === d2.paperId && b === d1.paperId)
+                    )
+                ) {
                     userLinkData.push({ source: d1, target: d2 });
                 }
             }
@@ -273,7 +281,6 @@ export function createNodes() {
                             } else if (!selectedIds.includes(d.paperId)) {
                                 selectedIds.push(d.paperId);
                                 highlighter.addMesh(n, Color3.White());
-                                sendSelectedNodesData();
                             } else {
                                 removeItem(selectedIds, d.paperId);
                                 highlighter.removeMesh(n);
@@ -555,7 +562,11 @@ export function addPapersToGraph(newPapers) {
         }
     });
 
-    const newPositions = generateFibonacciLatticePositions(newPaperIds.length, new Vector3(0,0,0), 0.2);
+    const newPositions = generateFibonacciLatticePositions(
+        newPaperIds.length,
+        new Vector3(0, 0, 0),
+        0.2
+    );
     for (let i = 0; i < newPaperIds.length; i++) {
         let j = paperData.length - newPaperIds.length + i;
         paperData[j].x = newPositions[i].x;
@@ -701,7 +712,12 @@ export function changeLinkType() {
 }
 
 export function setLinkType(type) {
-    if (type !== "recommendation" && type !== "citation" && type !== "author" && linkType !== "custom") {
+    if (
+        type !== "recommendation" &&
+        type !== "citation" &&
+        type !== "author" &&
+        linkType !== "custom"
+    ) {
         console.error("Invalid link type:", type);
         return;
     }
@@ -896,15 +912,18 @@ export async function restoreDeletedPapers() {
 function regenerateUserLinkData() {
     userLinkData.length = 0;
     userConnections.forEach(([a, b]) => {
-        if (paperIds.includes(a) && paperIds.includes (b)) {
-            userLinkData.push({ source: paperData.find(d => d.paperId === a), target: paperData.find(d => d.paperId === b) });
+        if (paperIds.includes(a) && paperIds.includes(b)) {
+            userLinkData.push({
+                source: paperData.find((d) => d.paperId === a),
+                target: paperData.find((d) => d.paperId === b),
+            });
         }
     });
 }
 
 export function connectSelectedNodes() {
     console.log("connectSelectedNodes() called");
-    
+
     if (selectedIds.length !== 2) {
         console.error("Error: Must select exactly two papers to connect.");
         return;
@@ -917,13 +936,18 @@ export function connectSelectedNodes() {
 }
 
 export function connectNodes(paperId1, paperId2) {
-    if (excludeFromNodeConnection.includes(paperId1) || excludeFromNodeConnection.includes(paperId2)) {
+    if (
+        excludeFromNodeConnection.includes(paperId1) ||
+        excludeFromNodeConnection.includes(paperId2)
+    ) {
         console.log("nodes excluded from connection");
         return;
     }
 
     // if nodes are already connected
-    let i = userConnections.findIndex(([a, b]) => (a === paperId1 && b === paperId2) || (a === paperId2 && b === paperId1));
+    let i = userConnections.findIndex(
+        ([a, b]) => (a === paperId1 && b === paperId2) || (a === paperId2 && b === paperId1)
+    );
     if (i !== -1) {
         if (linkType === "custom") {
             console.log("nodes already connected");
@@ -952,13 +976,15 @@ function generateFibonacciLatticePositions(n, center, radius) {
     const randOffset = 2 * Math.PI * Math.random();
     const goldenAngle = 0.5 * (1 + Math.sqrt(5)); // golden angle for even distribution
     for (let i = 0; i < n; i++) {
-        const phi = Math.acos(1 - 2 * (i + 0.5) / n); // latitude angle
+        const phi = Math.acos(1 - (2 * (i + 0.5)) / n); // latitude angle
         const theta = (goldenAngle * i + randOffset) % (2 * Math.PI); // longitude angle
-        positions.push(new Vector3(
-            center.x + radius * Math.sin(phi) * Math.cos(theta),
-            center.y + radius * Math.sin(phi) * Math.sin(theta),
-            center.z + radius * Math.cos(phi)
-        ));
+        positions.push(
+            new Vector3(
+                center.x + radius * Math.sin(phi) * Math.cos(theta),
+                center.y + radius * Math.sin(phi) * Math.sin(theta),
+                center.z + radius * Math.cos(phi)
+            )
+        );
     }
     return positions;
 }
@@ -967,7 +993,6 @@ export async function createClustersFromGemini(response) {
     console.log("createClustersFromGemini() called");
 
     try {
-
         console.log("clusters received from gemini:", response);
         // const data = JSON.parse(response);
         const clusterAssignments = response.map((cluster) => cluster.paperIds);
@@ -983,10 +1008,18 @@ export async function createClustersFromGemini(response) {
         const minorClusterSphereRadius = 0.08;
         const clusterCount = clusterAssignments.length;
 
-        const clusterCenters = generateFibonacciLatticePositions(clusterCount, new Vector3(0, 0, 0), majorClusterSphereRadius);
+        const clusterCenters = generateFibonacciLatticePositions(
+            clusterCount,
+            new Vector3(0, 0, 0),
+            majorClusterSphereRadius
+        );
         const nodePositions = []; // 2d array of node positions for each cluster
         clusterAssignments.forEach((ids, i) => {
-            const positions = generateFibonacciLatticePositions(ids.length, clusterCenters[i], minorClusterSphereRadius);
+            const positions = generateFibonacciLatticePositions(
+                ids.length,
+                clusterCenters[i],
+                minorClusterSphereRadius
+            );
             nodePositions.push(positions);
         });
 
@@ -1000,9 +1033,9 @@ export async function createClustersFromGemini(response) {
                 animateNodeData(d, startPos, endPos, 1000); // 1000ms = 1s animation
             });
         });
-    
+
         pinnedNodeIds.push(...paperIds);
-    
+
         // assign cluster names
         clusterAssignments.forEach((ids, i) => {
             const clusterName = clusterNames[i];
@@ -1011,26 +1044,27 @@ export async function createClustersFromGemini(response) {
                 d.clusterName = clusterName;
             });
         });
-    
+
         // create links between elements in cluster
         userConnections.length = 0;
         clusterAssignments.forEach((cluster) => {
             cluster.forEach((id1, i) => {
                 cluster.forEach((id2, j) => {
                     if (j > i) {
-                        let k = userConnections.findIndex(([a, b]) => (a === id1 && b === id2) || (a === id2 && b === id1));
+                        let k = userConnections.findIndex(
+                            ([a, b]) => (a === id1 && b === id2) || (a === id2 && b === id1)
+                        );
                         if (k === -1) {
                             userConnections.push([id1, id2]);
                         }
                     }
-                })
-            })
+                });
+            });
         });
-    
+
         linkType = "custom";
         regenerateUserLinkData();
         createLinks();
-
     } catch (error) {
         console.error("createClustersFromGemini() failed with error:", error);
         return;
@@ -1050,10 +1084,18 @@ export async function testCreateClusters() {
     const minorClusterSphereRadius = 0.08;
     const clusterCount = clusterAssignments.length;
 
-    const clusterCenters = generateFibonacciLatticePositions(clusterCount, new Vector3(0, 0, 0), majorClusterSphereRadius);
+    const clusterCenters = generateFibonacciLatticePositions(
+        clusterCount,
+        new Vector3(0, 0, 0),
+        majorClusterSphereRadius
+    );
     const nodePositions = []; // 2d array of node positions for each cluster
     clusterAssignments.forEach((ids, i) => {
-        const positions = generateFibonacciLatticePositions(ids.length, clusterCenters[i], minorClusterSphereRadius);
+        const positions = generateFibonacciLatticePositions(
+            ids.length,
+            clusterCenters[i],
+            minorClusterSphereRadius
+        );
         nodePositions.push(positions);
     });
 
@@ -1084,20 +1126,21 @@ export async function testCreateClusters() {
         cluster.forEach((id1, i) => {
             cluster.forEach((id2, j) => {
                 if (j > i) {
-                    let k = userConnections.findIndex(([a, b]) => (a === id1 && b === id2) || (a === id2 && b === id1));
+                    let k = userConnections.findIndex(
+                        ([a, b]) => (a === id1 && b === id2) || (a === id2 && b === id1)
+                    );
                     if (k === -1) {
                         userConnections.push([id1, id2]);
                     }
                 }
-            })
-        })
+            });
+        });
     });
 
     linkType = "custom";
     regenerateUserLinkData();
     createLinks();
 }
-
 
 function animateNodeData(d, startPos, endPos, duration = 1000) {
     const startTime = performance.now();
@@ -1120,14 +1163,10 @@ function animateNodeData(d, startPos, endPos, duration = 1000) {
     });
 }
 
-
 export function sendAllNodesData() {
-
     const payload = [];
     paperData.forEach((d) => {
-        payload.push(
-            {paperId: d.paperId, title: d.title, abstract: d.abstract}
-        );
+        payload.push({ paperId: d.paperId, title: d.title, abstract: d.abstract });
     });
 
     // Emit the "sendAllNodesData" event using socket from the socket-connection module
@@ -1141,33 +1180,24 @@ export function sendAllNodesData() {
     }
 }
 
-export function sendSelectedNodesData() {
-    // Filter papers that are selected using the selectedIds array
-    const paperIds = [];
-    const titles = [];
-    const abstracts = [];
+export function sendCurrentlyViewingNodeData() {
+    const currentlyViewingPaper = paperData.find((d) => paperDetailsPanelId === d.paperId);
+    if (currentlyViewingPaper) {
+        const payload = {
+            paperId: currentlyViewingPaper.paperId,
+            title: currentlyViewingPaper.title,
+            abstract: currentlyViewingPaper.abstract || "",
+        };
 
-    // Filter papers that are selected using the selectedIds array
-    paperData
-        .filter((d) => selectedIds.includes(d.paperId))
-        .forEach((d) => {
-            paperIds.push(d.paperId);
-            titles.push(d.title);
-            abstracts.push(d.abstract || "");
-        });
-
-    // Emit the "sendPaperData" event using socket from the socket-connection module
-    if (typeof socket !== "undefined" && socket.connected) {
-        socket.emit("sendSelectedNodesData", { paperIds, titles, abstracts });
-        console.log("Emitted 'sendSelectedNodesData' event with payload:", {
-            paperIds,
-            titles,
-            abstracts,
-        });
-    } else {
-        console.error(
-            "Socket is not available or not connected. 'sendSelectedNodesData' event not emitted."
-        );
+        // Emit the "sendPaperData" event using socket from the socket-connection module
+        if (typeof socket !== "undefined" && socket.connected) {
+            socket.emit("sendCurrentlyViewingNodeData", payload);
+            // console.log("Emitted 'sendCurrentlyViewingNodeData' event with payload:", payload);
+        } else {
+            console.error(
+                "Socket is not available or not connected. 'sendCurrentlyViewingNodeData' event not emitted."
+            );
+        }
     }
 }
 
@@ -1176,7 +1206,13 @@ export function sendSelectedNodesData() {
  */
 export function addSummaryForPaper(summary, paperId) {
     paperSummaryMap[paperId] = summary;
-    nodes.run((d, n, i) => {
-        updateInsightsAndNotesText(d);
-    });
+    updateInsightsAndNotesText(paperId);
+}
+
+/**
+ * Adds keywords for a given paper and updates the global mapping.
+ */
+export function addKeywordsForPaper(keywords, paperId) {
+    paperKeywordsMap[paperId] = keywords;
+    updateInsightsAndNotesText(paperId);
 }
