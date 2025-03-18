@@ -36,6 +36,7 @@ import {
     restoreDeletedPapers,
     paperSummaryMap,
     paperKeywordsMap,
+    paperAnnotationsMap,
     connectSelectedNodes,
     testCreateClusters,
     sendCurrentlyViewingNodeData,
@@ -228,10 +229,10 @@ handMenu.backPlateMargin = 0.1;
 handMenu.scaling = new Vector3(0.06, 0.06, 0.06);
 
 // Helper function to create UI buttons
-const createButton = (name, text) => {
-    // add default properties here
-    const button = new GUI.TouchHolographicButton(name);
+const createButton = (name, text, shareMaterial = true) => {
+    const button = new GUI.TouchHolographicButton(name, shareMaterial);
     button.text = text;
+    guiManager.addControl(button);
     return button;
 };
 
@@ -240,9 +241,12 @@ export const recommendButton = createButton("recommend", "Recommend");
 export const deleteButton = createButton("delete", "Delete");
 export const clearSelectionButton = createButton("clearSelection", "Clear Selection");
 export const unpinNodesButton = createButton("unpinNodes", "Unpin Nodes");
-export const toggleLinksButton = createButton("toggleLinks", "Toggle Links");
+export const toggleLinksButton = createButton("toggleLinks", "Change Link Type");
 export const createClustersButton = createButton("createClusters", "Create Clusters");
 export const summarizeButton = createButton("summarizeButton", "Summarize Paper");
+export const keywordsButton = createButton("keywordsButton", "Generate Keywords");
+export const annotateButton = createButton("annotateButton", "Annotate", false);
+annotateButton.isToggleButton = true;
 
 // Attach UI button behaviors
 recommendButton.onPointerClickObservable.add(() => {
@@ -250,6 +254,7 @@ recommendButton.onPointerClickObservable.add(() => {
     hideMenu(handMenu);
     showMenu(recommendationsMenu);
 });
+
 deleteButton.onPointerClickObservable.add(() => {
     console.log("Delete button pressed");
     removeSelectedNodesFromGraph();
@@ -273,7 +278,31 @@ createClustersButton.onPointerClickObservable.add(() => {
 summarizeButton.onPointerClickObservable.add(() => {
     console.log("Summarize Button pressed");
     socket.emit("summarizeButtonPressed", {});
-})
+});
+
+keywordsButton.onPointerClickObservable.add(() => {
+    console.log("Keywords Button pressed");
+    socket.emit("keywordsButtonPressed", {});
+});
+
+annotateButton.onToggleObservable.add(() => {
+    // Set alpha mode regardless of toggle state
+    
+
+    if (annotateButton.isToggled) {
+        console.log("Annotate Button toggled on");
+        annotateButton.plateMaterial.alphaMode = BABYLON.Engine.ALPHA_ONEONE;
+        annotateButton.plateMaterial.diffuseColor = new BABYLON.Color3(0, 255, 255); 
+        annotateButton.text = "Listening...";
+        socket.emit("annotateButtonPressed", {});
+    } else {
+        console.log("Annotate Button toggled off");
+        annotateButton.plateMaterial.alphaMode = 2;
+        annotateButton.plateMaterial.diffuseColor = new BABYLON.Color3(0.4, 0.4, 0.4); 
+        annotateButton.text = "Annotate";
+        socket.emit("annotateButtonReleased", {});
+    }
+});
 
 handMenu.addButton(recommendButton);
 handMenu.addButton(deleteButton);
@@ -282,7 +311,8 @@ handMenu.addButton(unpinNodesButton);
 handMenu.addButton(toggleLinksButton);
 handMenu.addButton(createClustersButton);
 handMenu.addButton(summarizeButton);
-
+handMenu.addButton(keywordsButton);
+handMenu.addButton(annotateButton);
 // add extra hand menus
 const recommendationsMenu = new GUI.HandMenu(xr.baseExperience, "recommendationsMenu");
 
@@ -486,7 +516,6 @@ scene.onBeforeRenderObservable.add(() => {
 
 // Function to update paper details
 export function updatePaperPanelToNode(d, n) {
-
     // remove old highlight, add node to selectedIds
     if (paperDetailsPanelId !== null) {
         nodes.run((d, n) => {
@@ -496,20 +525,21 @@ export function updatePaperPanelToNode(d, n) {
         });
     }
 
-    if (d === null || n === null) { // if setting to null
+    if (d === null || n === null) {
+        // if setting to null
         // remove highlight from prev blue node
-        nodes.run((d1,n1) => {
+        nodes.run((d1, n1) => {
             if (d1.paperId === paperDetailsPanelId) {
                 highlighter.removeMesh(n1);
             }
-        })
+        });
         // remove previous blue node from selectedIds
         removeItem(selectedIds, paperDetailsPanelId);
         // hide panel
         paperDetailsPanel.isVisible = false;
         paperDetailsPanelId = null;
-
-    } else { // if setting to a new node
+    } else {
+        // if setting to a new node
 
         // if setting to current node, then treat as if unselecting
         if (paperDetailsPanelId === d.paperId) {
@@ -563,6 +593,7 @@ export function updatePaperPanelToNode(d, n) {
 export function updateInsightsAndNotesText(paperId) {
     const insights = paperSummaryMap[paperId];
     const keywords = paperKeywordsMap[paperId];
+    const annotations = paperAnnotationsMap[paperId];
     let content = "";
 
     if (insights && insights.trim() !== "") {
@@ -574,13 +605,21 @@ export function updateInsightsAndNotesText(paperId) {
         }
         content += keywords;
     }
-    
+
     if (content === "") {
         insightsTextBlock.text = "";
         insightsTextBlock.isVisible = false;
     } else {
         insightsTextBlock.text = content;
         insightsTextBlock.isVisible = true;
+    }
+
+    if (annotations && annotations.trim() !== "") {
+        notesTextBlock.text += annotations + " ";
+        notesPanelBackground.isVisible = true;
+    } else {
+        notesTextBlock.text = "";
+        notesPanelBackground.isVisible = false;
     }
 }
 

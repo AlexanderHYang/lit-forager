@@ -62,6 +62,9 @@ export let paperSummaryMap = {};
 // Global variable to store mapping of paperId to summary
 export let paperKeywordsMap = {};
 
+// Global variable to store mapping of paperId to annotations
+export let paperAnnotationsMap = {};
+
 // Initialize force simulation
 export let simulation;
 
@@ -1214,5 +1217,10 @@ export function addSummaryForPaper(summary, paperId) {
  */
 export function addKeywordsForPaper(keywords, paperId) {
     paperKeywordsMap[paperId] = keywords;
+    updateInsightsAndNotesText(paperId);
+}
+
+export function addAnnotationsForPaper(annotations, paperId) {
+    paperAnnotationsMap[paperId] = annotations;
     updateInsightsAndNotesText(paperId);
 }
