@@ -35,8 +35,10 @@ import {
     addPapersFromAuthor,
     restoreDeletedPapers,
     paperSummaryMap,
+    paperKeywordsMap,
     connectSelectedNodes,
     testCreateClusters,
+    sendCurrentlyViewingNodeData,
 } from "./graph";
 import "@babylonjs/inspector";
 import { timeout } from "d3";
@@ -549,21 +551,35 @@ export function updatePaperPanelToNode(d, n) {
             abstractTextBlock.text = abstractText;
         }
 
-        updateInsightsAndNotesText(d);
+        updateInsightsAndNotesText(d.paperId);
 
         paperDetailsPanel.isVisible = true;
         highlighter.addMesh(n, Color3.Blue());
+        sendCurrentlyViewingNodeData();
     }
 }
 
 // New function to update the insights text based on a given node
-export function updateInsightsAndNotesText(d) {
-    const insights = paperSummaryMap?.[d?.paperId];
+export function updateInsightsAndNotesText(paperId) {
+    const insights = paperSummaryMap[paperId];
+    const keywords = paperKeywordsMap[paperId];
+    let content = "";
+
     if (insights && insights.trim() !== "") {
-        insightsTextBlock.text = insights;
-        insightsTextBlock.isVisible = true;
-    } else {
+        content += insights;
+    }
+    if (keywords && keywords.trim() !== "") {
+        if (content !== "") {
+            content += "\n";
+        }
+        content += keywords;
+    }
+    
+    if (content === "") {
         insightsTextBlock.text = "";
+        insightsTextBlock.isVisible = false;
+    } else {
+        insightsTextBlock.text = content;
         insightsTextBlock.isVisible = true;
     }
 }
