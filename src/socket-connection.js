@@ -4,6 +4,7 @@ import {
     changeLinkType,
     addSummaryForPaper,
     addKeywordsForPaper,
+    addAnnotationsForPaper,
     removeSelectedNodesFromGraph,
     clearNodeSelection,
     unpinNodes,
@@ -71,6 +72,11 @@ export function initializeSocketConnection() {
     socket.on("generateKeywordsGemini", (data) => {
         console.log("Received socket.io event:", data);
         addKeywordsForPaper(data.response, data.paperId);
+    });
+
+    socket.on("annotateGemini", (data) => {
+        console.log("Received socket.io event:", data);
+        addAnnotationsForPaper(data.response, data.paperId);
     });
 
     socket.on("createClustersGemini", (data) => {

@@ -52,6 +52,9 @@ let finalRequestEndTime = 0;
 let newStream = true;
 let bridgingOffset = 0;
 let lastTranscriptWasFinal = false;
+let transcript = null;
+let annotationTranscript = "";
+let isAnnotating = false;
 
 // -------------------- Speech Streaming Functions --------------------
 function startStream() {
@@ -88,7 +91,9 @@ const speechCallback = (stream) => {
         isFinalEndTime = resultEndTime;
         lastTranscriptWasFinal = true;
 
-        const transcript = stream.results[0].alternatives[0].transcript;
+        transcript = stream.results[0].alternatives[0].transcript;
+
+        if (isAnnotating) annotationTranscript += transcript + " ";
 
         // Detect keyword combinations with a required keyword and optional keywords
         const keywordCombinations = [
@@ -167,6 +172,16 @@ const speechCallback = (stream) => {
                 optional: ["papers", "nodes"],
                 eventType: "createClusters",
             },
+            {
+                required: "start",
+                optional: ["annotate", "notes", "annotating"],
+                eventType: "startAnnotate",
+            },
+            {
+                required: "stop",
+                optional: ["annotate", "notes", "annotating"],
+                eventType: "stopAnnotate",
+            },
         ];
 
         keywordCombinations.forEach((combo) => {
@@ -192,16 +207,24 @@ const speechCallback = (stream) => {
                         // Optionally, fallback if no data has been received yet.
                         console.warn("No nodes selected or more than one node selected");
                     }
-                }else if (combo.eventType === "generateKeywords") {
-                        if (currentlyViewingPaperData && currentlyViewingPaperData.paperId) {
-                            // Use the data received from sendPaperData
-                            generateKeywordsGemini(currentlyViewingPaperData);
-                        } else {
-                            // Optionally, fallback if no data has been received yet.
-                            console.warn("No nodes selected or more than one node selected");
-                        }           
+                } else if (combo.eventType === "generateKeywords") {
+                    if (currentlyViewingPaperData && currentlyViewingPaperData.paperId) {
+                        // Use the data received from sendPaperData
+                        generateKeywordsGemini(currentlyViewingPaperData);
+                    } else {
+                        // Optionally, fallback if no data has been received yet.
+                        console.warn("No nodes selected or more than one node selected");
+                    }
                 } else if (combo.eventType == "createClusters") {
                     createClustersGemini();
+                } else if (combo.eventType === "startAnnotate") {
+                    annotationTranscript = "";
+                    isAnnotating = true;
+                    console.log("Annotation started");
+                } else if (combo.eventType === "stopAnnotate") {
+                    isAnnotating = false;
+                    console.log("Annotation stopped. Transcript:", annotationTranscript);
+                    processAnnotationGemini(currentlyViewingPaperData);
                 } else {
                     // For all other events, emit normally.
                     io.emit(combo.eventType, {
@@ -348,16 +371,38 @@ io.on("connection", (socket) => {
     });
 
     // Handle summarizeButtonPressed event
-    socket.on("summarizeButtonPressed", (data) => {
-        console.log("Received summarizeButtonPressed event with data", data);
+    socket.on("summarizeButtonPressed", () => {
+        console.log("Received summarizeButtonPressed event");
         summarizePaperGemini(currentlyViewingPaperData);
+    });
+
+    // Handle KeywordsButtonPressed event
+    socket.on("keywordsButtonPressed", () => {
+        console.log("Received KeywordsButtonPressed event");
+        generateKeywordsGemini(currentlyViewingPaperData);
+    });
+
+    // Handle annotateButtonPressed event
+    socket.on("annotateButtonPressed", () => {
+        console.log("Received annotateButtonPressed event");
+        annotationTranscript = "";
+        isAnnotating = true;
+        console.log("Annotation started");
+    });
+
+    // Handle annotateButtonReleased event
+    socket.on("annotateButtonReleased", () => {
+        console.log("Received annotateButtonReleased event");
+        isAnnotating = false;
+        console.log("Annotation stopped. Transcript:", annotationTranscript);
+        processAnnotationGemini(currentlyViewingPaperData);
     });
 });
 
 // -------------------- Gemini Functions --------------------
 
 async function summarizePaperGemini(currentlyViewingPaperData) {
-    try { 
+    try {
         // Combine your custom prompt with the incoming custom data
         const customPrompt = `Summarize the following paper information in a concise TLDR format:\nTitle: ${currentlyViewingPaperData.title}\nAbstract: ${currentlyViewingPaperData.abstract}`;
         // console.log(customPrompt);
@@ -376,7 +421,7 @@ async function summarizePaperGemini(currentlyViewingPaperData) {
 }
 
 async function generateKeywordsGemini(currentlyViewingPaperData) {
-    try { 
+    try {
         // Combine your custom prompt with the incoming custom data
         const customPrompt = `Extract only the thematic keywords/index terms from the following research paper and return the 5 most important ones as a comma-separated list. Do not include any extra text or explanation. ${currentlyViewingPaperData.title}\nAbstract: ${currentlyViewingPaperData.abstract}`;
         // console.log(customPrompt);
@@ -386,6 +431,28 @@ async function generateKeywordsGemini(currentlyViewingPaperData) {
         console.log("Gemini response:", responseText);
         // Emit an event back to clients with the Gemini response and the single paper id
         io.emit("generateKeywordsGemini", {
+            response: responseText,
+            paperId: currentlyViewingPaperData.paperId,
+        });
+    } catch (error) {
+        console.error("Error sending custom prompt to Gemini:", error);
+    }
+}
+
+async function processAnnotationGemini(currentlyViewingPaperData) {
+    try {
+        // Combine your custom prompt with the incoming custom data
+        const customPrompt = `You are a language model that transforms raw transcript text into well-formed, complete sentences. Your task is to reformat the input transcript by:
+	•	Converting phrases into coherent, grammatically correct sentences.
+	•	Inserting appropriate punctuation and capitalization.
+	•	Removing any extraneous instructions or markers (for example, “stop annotate”).
+    Do not return any additional text or information beyond the processed transcript. If the input transcript is empty or does not contain any tokens, return "Try annotating again".
+    Here's the transcript: ${annotationTranscript}`;
+        // console.log(customPrompt);
+        const result = await model.generateContent(customPrompt);
+        const responseText = result.response.text().replace(/[*\n]/g, "");
+        console.log("Gemini response:", responseText);
+        io.emit("annotateGemini", {
             response: responseText,
             paperId: currentlyViewingPaperData.paperId,
         });
