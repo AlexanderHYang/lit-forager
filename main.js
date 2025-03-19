@@ -165,3 +165,8 @@ initializeApp();
 
 // Start socket connection with the multimodal-llm script
 initializeSocketConnection();
+
+window.addEventListener("beforeunload", function (event) {
+    // Send log data before the page unloads
+    sendLogData();
+});
