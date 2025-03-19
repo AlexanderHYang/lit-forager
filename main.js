@@ -102,6 +102,64 @@ window.addEventListener("keydown", (ev) => {
     }
 });
 
+window.addEventListener("keydown", async (ev) => {
+    if (ev.key === "8") {
+        console.log("8 pressed - Sending log data");
+        const response = await sendLogData();
+        console.log("Log data sent:", response);
+    }
+});
+
+// Logging
+const startTime = Math.round(performance.now());
+const logData = [];
+
+export function logEvent(eventType, eventData) {
+    const currentTime = Math.round(performance.now());
+    const timestamp = currentTime - startTime;
+    const stringifiedEventData = JSON.stringify(eventData, (key, value) => {
+        if (["abstract", "recommends", "references", "authors", "vx", "vy", "vz", "fx", "fy", "fz", "year", "venue", "citationCount", "referenceCount", "color"].includes(key)) return undefined; // Remove specified keys
+        return value; // Allow everything else
+    }, 2);
+    logData.push({ timestamp, eventType, eventData: stringifiedEventData });
+}
+
+async function sendLogData() {
+    try {
+        const jsonData = JSON.stringify(logData, null, 2);
+
+        // also download locally as backup
+        downloadLogFile(jsonData);
+
+        const response = await fetch("https://localhost:3000/upload-log", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: jsonData, // Send logData array
+        });
+
+        const result = await response.json();
+        console.log("Server response:", result);
+
+    } catch (error) {
+        console.error("Error sending log data:", error);
+    }
+}
+
+// Function to download the log file locally
+function downloadLogFile(data) {
+    const blob = new Blob([data], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `log-${Date.now()}.json`; // Set the filename
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url); // Clean up
+}
+
 // Start application initialization
 initializeApp();
 
