@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import http from "http";
 import chalk from "chalk";
 import { Writable } from "stream";
@@ -40,6 +41,9 @@ const request = {
     config,
     interimResults: true,
 };
+
+// Logging...
+let logData = [];
 
 // Variables for managing the audio stream
 let recognizeStream = null;
@@ -323,6 +327,55 @@ const options = {
     // Optionally, add ca, passphrase, etc.
 };
 
+// Increase request body size limit
+app.use(express.json({ limit: "5000mb" })); // Adjust size as needed
+app.use(express.urlencoded({ limit: "5000mb", extended: true }));
+
+// Handle preflight requests (OPTIONS method)
+app.options("*", (req, res) => {
+    res.header("Access-Control-Allow-Origin", "https://localhost:5173");
+    res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    res.header("Access-Control-Allow-Headers", "Content-Type");
+    res.sendStatus(204);
+});
+
+// Endpoint to receive log data
+app.post("/upload-log", (req, res) => {
+    // Set CORS headers
+    res.header("Access-Control-Allow-Origin", "https://localhost:5173");
+    res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    res.header("Access-Control-Allow-Headers", "Content-Type");
+
+    try {
+        const logData = req.body; // Get log data from request body
+
+        if (!Array.isArray(logData)) {
+            return res.status(400).json({ error: "Invalid log data format" });
+        }
+
+        // Save logData to a file (optional)
+        const filePath = join(__dirname, "logs", `log-${Date.now()}.json`);
+        fs.writeFileSync(filePath, JSON.stringify(logData, null, 2));
+
+        console.log("Log data received and saved.");
+        
+        // Send response once
+        res.status(200).json({ message: "Log data received successfully", filePath });
+    } catch (error) {
+        console.error("Error processing log data:", error);
+        
+        // Send error response once
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+app.use(cors({
+    origin: "https://localhost:5173", // Allow only your frontend
+    methods: ["GET", "POST"], // Allow specific HTTP methods
+    allowedHeaders: ["Content-Type"] // Allow specific headers
+}));
+
+
 // Create an HTTPS server using your certificates
 const server = https.createServer(options, app);
 
@@ -331,6 +384,7 @@ const io = new Server(server, {
         origin: "*",
         methods: ["GET", "POST"],
     },
+    maxHttpBufferSize: 1e8, // 100MB
 });
 
 // Serve a simple HTML file for testing
@@ -396,6 +450,35 @@ io.on("connection", (socket) => {
         isAnnotating = false;
         console.log("Annotation stopped. Transcript:", annotationTranscript);
         processAnnotationGemini(currentlyViewingPaperData);
+    });
+
+    // Handle receiving log data
+    socket.on("sendLogDataStart", (data) => {
+        console.log("sendLogDataStart received:", data);
+        logData = []; // Update global log data
+    });
+
+    socket.on("sendLogDataChunk", (chunk) => {
+        console.log("sendLogDataChunk received");
+        logData.push(...chunk); // Append chunk to global log data
+    });
+
+    socket.on("sendLogDataEnd", () => {
+        console.log("sendLogDataEnd received");
+        console.log("last bit of data:", logData[logData.length - 1]);
+        console.log("logData length:", logData.length);
+    });
+
+    socket.on("message", (message) => {
+        console.log(`Received message of size: ${message.length} bytes`);
+    });
+
+    socket.on("close", (code, reason) => {
+        console.log(`Client disconnected. Code: ${code}, Reason: ${reason}`);
+    });
+
+    socket.on("error", (error) => {
+        console.error("WebSocket error:", error);
     });
 });
 

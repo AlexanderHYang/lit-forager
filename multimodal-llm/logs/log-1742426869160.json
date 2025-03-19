@@ -1,0 +1,697 @@
+[
+  {
+    "timestamp": 64,
+    "eventType": "Socket connected",
+    "eventData": "{\n  \"socketId\": \"HtmEB0tHOw0kIxbKAAAB\"\n}"
+  },
+  {
+    "timestamp": 1341,
+    "eventType": "createNodes() called",
+    "eventData": "{\n  \"paperData\": [\n    {\n      \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n      \"title\": \"Fashion-MNIST: a Novel Image Dataset for Benchmarking Machine Learning Algorithms\",\n      \"x\": 0,\n      \"y\": 0,\n      \"z\": 0,\n      \"index\": 0\n    }\n  ]\n}"
+  },
+  {
+    "timestamp": 1348,
+    "eventType": "sendAllNodesData() called",
+    "eventData": "{\n  \"paperData\": [\n    {\n      \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n      \"title\": \"Fashion-MNIST: a Novel Image Dataset for Benchmarking Machine Learning Algorithms\",\n      \"x\": 0,\n      \"y\": 0,\n      \"z\": 0,\n      \"index\": 0\n    }\n  ]\n}"
+  },
+  {
+    "timestamp": 2193,
+    "eventType": "clearNodeSelection() called",
+    "eventData": "{\n  \"selectedIds\": []\n}"
+  },
+  {
+    "timestamp": 4758,
+    "eventType": "node onPointerOverTrigger",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"position\": {\n    \"_isDirty\": false,\n    \"_x\": 0,\n    \"_y\": 0,\n    \"_z\": 0\n  }\n}"
+  },
+  {
+    "timestamp": 4758,
+    "eventType": "setHoverPlaneToNode() called",
+    "eventData": "{\n  \"hoverPlaneId\": null,\n  \"paperDetailsPanelId\": null,\n  \"hoverPlaneVisibility\": false,\n  \"nodeData\": {\n    \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n    \"title\": \"Fashion-MNIST: a Novel Image Dataset for Benchmarking Machine Learning Algorithms\",\n    \"x\": 0,\n    \"y\": 0,\n    \"z\": 0,\n    \"index\": 0\n  }\n}"
+  },
+  {
+    "timestamp": 4758,
+    "eventType": "setHoverPlaneToNode() finished",
+    "eventData": "{\n  \"hoverPlaneId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"paperDetailsPanelId\": null,\n  \"hoverPlaneVisibility\": true\n}"
+  },
+  {
+    "timestamp": 4778,
+    "eventType": "node onPointerOutTrigger",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"position\": {\n    \"_isDirty\": false,\n    \"_x\": 0,\n    \"_y\": 0,\n    \"_z\": 0\n  }\n}"
+  },
+  {
+    "timestamp": 4778,
+    "eventType": "setHoverPlaneToNode() called",
+    "eventData": "{\n  \"hoverPlaneId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"paperDetailsPanelId\": null,\n  \"hoverPlaneVisibility\": true,\n  \"nodeData\": null\n}"
+  },
+  {
+    "timestamp": 4778,
+    "eventType": "setHoverPlaneToNode() - hiding hover plane",
+    "eventData": "{}"
+  },
+  {
+    "timestamp": 4778,
+    "eventType": "setHoverPlaneToNode() finished",
+    "eventData": "{\n  \"hoverPlaneId\": null,\n  \"paperDetailsPanelId\": null,\n  \"hoverPlaneVisibility\": false\n}"
+  },
+  {
+    "timestamp": 5020,
+    "eventType": "node onPointerOverTrigger",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"position\": {\n    \"_isDirty\": false,\n    \"_x\": 0,\n    \"_y\": 0,\n    \"_z\": 0\n  }\n}"
+  },
+  {
+    "timestamp": 5020,
+    "eventType": "setHoverPlaneToNode() called",
+    "eventData": "{\n  \"hoverPlaneId\": null,\n  \"paperDetailsPanelId\": null,\n  \"hoverPlaneVisibility\": false,\n  \"nodeData\": {\n    \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n    \"title\": \"Fashion-MNIST: a Novel Image Dataset for Benchmarking Machine Learning Algorithms\",\n    \"x\": 0,\n    \"y\": 0,\n    \"z\": 0,\n    \"index\": 0\n  }\n}"
+  },
+  {
+    "timestamp": 5020,
+    "eventType": "setHoverPlaneToNode() finished",
+    "eventData": "{\n  \"hoverPlaneId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"paperDetailsPanelId\": null,\n  \"hoverPlaneVisibility\": true\n}"
+  },
+  {
+    "timestamp": 5233,
+    "eventType": "node onPickDownTrigger",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"position\": {\n    \"_isDirty\": false,\n    \"_x\": 0,\n    \"_y\": 0,\n    \"_z\": 0\n  }\n}"
+  },
+  {
+    "timestamp": 5235,
+    "eventType": "node drag onDragStartObservable",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"position\": {\n    \"_isDirty\": false,\n    \"_x\": 0,\n    \"_y\": 0,\n    \"_z\": 0\n  }\n}"
+  },
+  {
+    "timestamp": 5330,
+    "eventType": "node onPickUpTrigger",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"position\": {\n    \"_isDirty\": false,\n    \"_x\": 0,\n    \"_y\": 0,\n    \"_z\": 0\n  }\n}"
+  },
+  {
+    "timestamp": 5331,
+    "eventType": "node onPickUpTrigger - short click detected",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"position\": {\n    \"_isDirty\": false,\n    \"_x\": 0,\n    \"_y\": 0,\n    \"_z\": 0\n  }\n}"
+  },
+  {
+    "timestamp": 5331,
+    "eventType": "node drag onDragEndObservable",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"position\": {\n    \"_isDirty\": false,\n    \"_x\": 0,\n    \"_y\": 0,\n    \"_z\": 0\n  }\n}"
+  },
+  {
+    "timestamp": 5466,
+    "eventType": "node onPointerOutTrigger",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"position\": {\n    \"_isDirty\": false,\n    \"_x\": 0,\n    \"_y\": 0,\n    \"_z\": 0\n  }\n}"
+  },
+  {
+    "timestamp": 5466,
+    "eventType": "setHoverPlaneToNode() called",
+    "eventData": "{\n  \"hoverPlaneId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"paperDetailsPanelId\": null,\n  \"hoverPlaneVisibility\": true,\n  \"nodeData\": null\n}"
+  },
+  {
+    "timestamp": 5466,
+    "eventType": "setHoverPlaneToNode() - hiding hover plane",
+    "eventData": "{}"
+  },
+  {
+    "timestamp": 5466,
+    "eventType": "setHoverPlaneToNode() finished",
+    "eventData": "{\n  \"hoverPlaneId\": null,\n  \"paperDetailsPanelId\": null,\n  \"hoverPlaneVisibility\": false\n}"
+  },
+  {
+    "timestamp": 5990,
+    "eventType": "addRecommendationsFromSelectedPapers() called",
+    "eventData": "{\n  \"selectedIds\": [\n    \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\"\n  ]\n}"
+  },
+  {
+    "timestamp": 10778,
+    "eventType": "addPapersToGraph() called",
+    "eventData": "{\n  \"newPapers\": [\n    {\n      \"paperId\": \"0748ca9a1e35fccdf89a62022f4c2b6246d6dd81\",\n      \"title\": \"Number Recognition Through Color Distortion Using Convolutional Neural Networks\"\n    },\n    {\n      \"paperId\": \"6a0ff043003eef1c800e27a14c0cb6d774f5bf2d\",\n      \"title\": \"Shortcut Learning Susceptibility in Vision Classifiers\"\n    },\n    {\n      \"paperId\": \"42202cadb372e80b229c96f2670cd141d0d2d01b\",\n      \"title\": \"KAN-Mixers: a new deep learning architecture for image classification\"\n    },\n    {\n      \"paperId\": \"ff72ca0f93a1b8d351cda1a7f3df3f875b06f62e\",\n      \"title\": \"Building Efficient Lightweight CNN Models\"\n    },\n    {\n      \"paperId\": \"613a1791d1e7b8c74ed9d482951c8c2e9e90f5ee\",\n      \"title\": \"Exploration of hyperparameter tuning in handwritten digit recognition datasets using CNN\"\n    }\n  ],\n  \"prevPaperData\": [\n    {\n      \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n      \"title\": \"Fashion-MNIST: a Novel Image Dataset for Benchmarking Machine Learning Algorithms\",\n      \"x\": 0,\n      \"y\": 0,\n      \"z\": 0,\n      \"index\": 0\n    }\n  ]\n}"
+  },
+  {
+    "timestamp": 10778,
+    "eventType": "generateFibonacciLatticePositions() called",
+    "eventData": "{\n  \"n\": 5,\n  \"center\": {\n    \"_isDirty\": true,\n    \"_x\": 0,\n    \"_y\": 0,\n    \"_z\": 0\n  },\n  \"radius\": 0.2,\n  \"positions\": [\n    {\n      \"_isDirty\": true,\n      \"_x\": 0.058411139008582795,\n      \"_y\": -0.10482432370265984,\n      \"_z\": 0.16000000000000003\n    },\n    {\n      \"_isDirty\": true,\n      \"_x\": 0.1557299959937127,\n      \"_y\": 0.09668592631711312,\n      \"_z\": 0.08000000000000002\n    },\n    {\n      \"_isDirty\": true,\n      \"_x\": -0.11339873726534194,\n      \"_y\": 0.16474442748277088,\n      \"_z\": 1.2246467991473533e-17\n    },\n    {\n      \"_isDirty\": true,\n      \"_x\": -0.1459146700678658,\n      \"_y\": -0.11094552293349141,\n      \"_z\": -0.08\n    },\n    {\n      \"_isDirty\": true,\n      \"_x\": 0.07706050711183576,\n      \"_y\": -0.0919873808936134,\n      \"_z\": -0.16000000000000003\n    }\n  ]\n}"
+  },
+  {
+    "timestamp": 10778,
+    "eventType": "createNodes() called",
+    "eventData": "{\n  \"paperData\": [\n    {\n      \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n      \"title\": \"Fashion-MNIST: a Novel Image Dataset for Benchmarking Machine Learning Algorithms\",\n      \"x\": 0,\n      \"y\": 0,\n      \"z\": 0,\n      \"index\": 0\n    },\n    {\n      \"paperId\": \"0748ca9a1e35fccdf89a62022f4c2b6246d6dd81\",\n      \"title\": \"Number Recognition Through Color Distortion Using Convolutional Neural Networks\",\n      \"x\": 0.058411139008582795,\n      \"y\": -0.10482432370265984,\n      \"z\": 0.16000000000000003,\n      \"index\": 1\n    },\n    {\n      \"paperId\": \"6a0ff043003eef1c800e27a14c0cb6d774f5bf2d\",\n      \"title\": \"Shortcut Learning Susceptibility in Vision Classifiers\",\n      \"x\": 0.1557299959937127,\n      \"y\": 0.09668592631711312,\n      \"z\": 0.08000000000000002,\n      \"index\": 2\n    },\n    {\n      \"paperId\": \"42202cadb372e80b229c96f2670cd141d0d2d01b\",\n      \"title\": \"KAN-Mixers: a new deep learning architecture for image classification\",\n      \"x\": -0.11339873726534194,\n      \"y\": 0.16474442748277088,\n      \"z\": 1.2246467991473533e-17,\n      \"index\": 3\n    },\n    {\n      \"paperId\": \"ff72ca0f93a1b8d351cda1a7f3df3f875b06f62e\",\n      \"title\": \"Building Efficient Lightweight CNN Models\",\n      \"x\": -0.1459146700678658,\n      \"y\": -0.11094552293349141,\n      \"z\": -0.08,\n      \"index\": 4\n    },\n    {\n      \"paperId\": \"613a1791d1e7b8c74ed9d482951c8c2e9e90f5ee\",\n      \"title\": \"Exploration of hyperparameter tuning in handwritten digit recognition datasets using CNN\",\n      \"x\": 0.07706050711183576,\n      \"y\": -0.0919873808936134,\n      \"z\": -0.16000000000000003,\n      \"index\": 5\n    }\n  ]\n}"
+  },
+  {
+    "timestamp": 10790,
+    "eventType": "sendAllNodesData() called",
+    "eventData": "{\n  \"paperData\": [\n    {\n      \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n      \"title\": \"Fashion-MNIST: a Novel Image Dataset for Benchmarking Machine Learning Algorithms\",\n      \"x\": 0,\n      \"y\": 0,\n      \"z\": 0,\n      \"index\": 0\n    },\n    {\n      \"paperId\": \"0748ca9a1e35fccdf89a62022f4c2b6246d6dd81\",\n      \"title\": \"Number Recognition Through Color Distortion Using Convolutional Neural Networks\",\n      \"x\": 0.058411139008582795,\n      \"y\": -0.10482432370265984,\n      \"z\": 0.16000000000000003,\n      \"index\": 1\n    },\n    {\n      \"paperId\": \"6a0ff043003eef1c800e27a14c0cb6d774f5bf2d\",\n      \"title\": \"Shortcut Learning Susceptibility in Vision Classifiers\",\n      \"x\": 0.1557299959937127,\n      \"y\": 0.09668592631711312,\n      \"z\": 0.08000000000000002,\n      \"index\": 2\n    },\n    {\n      \"paperId\": \"42202cadb372e80b229c96f2670cd141d0d2d01b\",\n      \"title\": \"KAN-Mixers: a new deep learning architecture for image classification\",\n      \"x\": -0.11339873726534194,\n      \"y\": 0.16474442748277088,\n      \"z\": 1.2246467991473533e-17,\n      \"index\": 3\n    },\n    {\n      \"paperId\": \"ff72ca0f93a1b8d351cda1a7f3df3f875b06f62e\",\n      \"title\": \"Building Efficient Lightweight CNN Models\",\n      \"x\": -0.1459146700678658,\n      \"y\": -0.11094552293349141,\n      \"z\": -0.08,\n      \"index\": 4\n    },\n    {\n      \"paperId\": \"613a1791d1e7b8c74ed9d482951c8c2e9e90f5ee\",\n      \"title\": \"Exploration of hyperparameter tuning in handwritten digit recognition datasets using CNN\",\n      \"x\": 0.07706050711183576,\n      \"y\": -0.0919873808936134,\n      \"z\": -0.16000000000000003,\n      \"index\": 5\n    }\n  ]\n}"
+  },
+  {
+    "timestamp": 10791,
+    "eventType": "generateLinkData() finished",
+    "eventData": "{\n  \"newLinkData\": {\n    \"citationLinkData\": [\n      {\n        \"source\": \"42202cadb372e80b229c96f2670cd141d0d2d01b\",\n        \"target\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\"\n      }\n    ],\n    \"recommendationLinkData\": [\n      {\n        \"source\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n        \"target\": \"0748ca9a1e35fccdf89a62022f4c2b6246d6dd81\"\n      },\n      {\n        \"source\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n        \"target\": \"6a0ff043003eef1c800e27a14c0cb6d774f5bf2d\"\n      },\n      {\n        \"source\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n        \"target\": \"42202cadb372e80b229c96f2670cd141d0d2d01b\"\n      },\n      {\n        \"source\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n        \"target\": \"ff72ca0f93a1b8d351cda1a7f3df3f875b06f62e\"\n      },\n      {\n        \"source\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n        \"target\": \"613a1791d1e7b8c74ed9d482951c8c2e9e90f5ee\"\n      }\n    ],\n    \"authorLinkData\": [],\n    \"userLinkData\": []\n  }\n}"
+  },
+  {
+    "timestamp": 10791,
+    "eventType": "createLinks() called",
+    "eventData": "{\n  \"linkType\": \"recommendation\"\n}"
+  },
+  {
+    "timestamp": 10793,
+    "eventType": "addPapersToGraph() finished",
+    "eventData": "{\n  \"newPapers\": [\n    {\n      \"paperId\": \"0748ca9a1e35fccdf89a62022f4c2b6246d6dd81\",\n      \"title\": \"Number Recognition Through Color Distortion Using Convolutional Neural Networks\",\n      \"x\": 0.058411139008582795,\n      \"y\": -0.10482432370265984,\n      \"z\": 0.16000000000000003,\n      \"index\": 1\n    },\n    {\n      \"paperId\": \"6a0ff043003eef1c800e27a14c0cb6d774f5bf2d\",\n      \"title\": \"Shortcut Learning Susceptibility in Vision Classifiers\",\n      \"x\": 0.1557299959937127,\n      \"y\": 0.09668592631711312,\n      \"z\": 0.08000000000000002,\n      \"index\": 2\n    },\n    {\n      \"paperId\": \"42202cadb372e80b229c96f2670cd141d0d2d01b\",\n      \"title\": \"KAN-Mixers: a new deep learning architecture for image classification\",\n      \"x\": -0.11339873726534194,\n      \"y\": 0.16474442748277088,\n      \"z\": 1.2246467991473533e-17,\n      \"index\": 3\n    },\n    {\n      \"paperId\": \"ff72ca0f93a1b8d351cda1a7f3df3f875b06f62e\",\n      \"title\": \"Building Efficient Lightweight CNN Models\",\n      \"x\": -0.1459146700678658,\n      \"y\": -0.11094552293349141,\n      \"z\": -0.08,\n      \"index\": 4\n    },\n    {\n      \"paperId\": \"613a1791d1e7b8c74ed9d482951c8c2e9e90f5ee\",\n      \"title\": \"Exploration of hyperparameter tuning in handwritten digit recognition datasets using CNN\",\n      \"x\": 0.07706050711183576,\n      \"y\": -0.0919873808936134,\n      \"z\": -0.16000000000000003,\n      \"index\": 5\n    }\n  ],\n  \"currPaperData\": [\n    {\n      \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n      \"title\": \"Fashion-MNIST: a Novel Image Dataset for Benchmarking Machine Learning Algorithms\",\n      \"x\": 0,\n      \"y\": 0,\n      \"z\": 0,\n      \"index\": 0\n    },\n    {\n      \"paperId\": \"0748ca9a1e35fccdf89a62022f4c2b6246d6dd81\",\n      \"title\": \"Number Recognition Through Color Distortion Using Convolutional Neural Networks\",\n      \"x\": 0.058411139008582795,\n      \"y\": -0.10482432370265984,\n      \"z\": 0.16000000000000003,\n      \"index\": 1\n    },\n    {\n      \"paperId\": \"6a0ff043003eef1c800e27a14c0cb6d774f5bf2d\",\n      \"title\": \"Shortcut Learning Susceptibility in Vision Classifiers\",\n      \"x\": 0.1557299959937127,\n      \"y\": 0.09668592631711312,\n      \"z\": 0.08000000000000002,\n      \"index\": 2\n    },\n    {\n      \"paperId\": \"42202cadb372e80b229c96f2670cd141d0d2d01b\",\n      \"title\": \"KAN-Mixers: a new deep learning architecture for image classification\",\n      \"x\": -0.11339873726534194,\n      \"y\": 0.16474442748277088,\n      \"z\": 1.2246467991473533e-17,\n      \"index\": 3\n    },\n    {\n      \"paperId\": \"ff72ca0f93a1b8d351cda1a7f3df3f875b06f62e\",\n      \"title\": \"Building Efficient Lightweight CNN Models\",\n      \"x\": -0.1459146700678658,\n      \"y\": -0.11094552293349141,\n      \"z\": -0.08,\n      \"index\": 4\n    },\n    {\n      \"paperId\": \"613a1791d1e7b8c74ed9d482951c8c2e9e90f5ee\",\n      \"title\": \"Exploration of hyperparameter tuning in handwritten digit recognition datasets using CNN\",\n      \"x\": 0.07706050711183576,\n      \"y\": -0.0919873808936134,\n      \"z\": -0.16000000000000003,\n      \"index\": 5\n    }\n  ]\n}"
+  },
+  {
+    "timestamp": 10793,
+    "eventType": "setLinkType() called",
+    "eventData": "{\n  \"currLinkType\": \"recommendation\",\n  \"newLinkType\": \"recommendation\"\n}"
+  },
+  {
+    "timestamp": 10793,
+    "eventType": "setFullScreenUIText()",
+    "eventData": "{\n  \"text\": \"Link Type recommendation\"\n}"
+  },
+  {
+    "timestamp": 10793,
+    "eventType": "createLinks() called",
+    "eventData": "{\n  \"linkType\": \"recommendation\"\n}"
+  },
+  {
+    "timestamp": 11552,
+    "eventType": "node onPointerOverTrigger",
+    "eventData": "{\n  \"paperId\": \"0748ca9a1e35fccdf89a62022f4c2b6246d6dd81\",\n  \"position\": {\n    \"_isDirty\": false,\n    \"_x\": 0.017675033391726252,\n    \"_y\": -0.060200195783257415,\n    \"_z\": 0.09800950321132258\n  }\n}"
+  },
+  {
+    "timestamp": 11552,
+    "eventType": "setHoverPlaneToNode() called",
+    "eventData": "{\n  \"hoverPlaneId\": null,\n  \"paperDetailsPanelId\": null,\n  \"hoverPlaneVisibility\": false,\n  \"nodeData\": {\n    \"paperId\": \"0748ca9a1e35fccdf89a62022f4c2b6246d6dd81\",\n    \"title\": \"Number Recognition Through Color Distortion Using Convolutional Neural Networks\",\n    \"x\": 0.017675033391726252,\n    \"y\": -0.060200195783257415,\n    \"z\": 0.09800950321132258,\n    \"index\": 1\n  }\n}"
+  },
+  {
+    "timestamp": 11552,
+    "eventType": "setHoverPlaneToNode() finished",
+    "eventData": "{\n  \"hoverPlaneId\": \"0748ca9a1e35fccdf89a62022f4c2b6246d6dd81\",\n  \"paperDetailsPanelId\": null,\n  \"hoverPlaneVisibility\": true\n}"
+  },
+  {
+    "timestamp": 11563,
+    "eventType": "node onPointerOutTrigger",
+    "eventData": "{\n  \"paperId\": \"0748ca9a1e35fccdf89a62022f4c2b6246d6dd81\",\n  \"position\": {\n    \"_isDirty\": false,\n    \"_x\": 0.017675033391726252,\n    \"_y\": -0.060200195783257415,\n    \"_z\": 0.09800950321132258\n  }\n}"
+  },
+  {
+    "timestamp": 11563,
+    "eventType": "setHoverPlaneToNode() called",
+    "eventData": "{\n  \"hoverPlaneId\": \"0748ca9a1e35fccdf89a62022f4c2b6246d6dd81\",\n  \"paperDetailsPanelId\": null,\n  \"hoverPlaneVisibility\": true,\n  \"nodeData\": null\n}"
+  },
+  {
+    "timestamp": 11563,
+    "eventType": "setHoverPlaneToNode() - hiding hover plane",
+    "eventData": "{}"
+  },
+  {
+    "timestamp": 11563,
+    "eventType": "setHoverPlaneToNode() finished",
+    "eventData": "{\n  \"hoverPlaneId\": null,\n  \"paperDetailsPanelId\": null,\n  \"hoverPlaneVisibility\": false\n}"
+  },
+  {
+    "timestamp": 12152,
+    "eventType": "node onPointerOverTrigger",
+    "eventData": "{\n  \"paperId\": \"6a0ff043003eef1c800e27a14c0cb6d774f5bf2d\",\n  \"position\": {\n    \"_isDirty\": false,\n    \"_x\": 0.09491425920429389,\n    \"_y\": 0.06225411523965695,\n    \"_z\": 0.03458614265913876\n  }\n}"
+  },
+  {
+    "timestamp": 12152,
+    "eventType": "setHoverPlaneToNode() called",
+    "eventData": "{\n  \"hoverPlaneId\": null,\n  \"paperDetailsPanelId\": null,\n  \"hoverPlaneVisibility\": false,\n  \"nodeData\": {\n    \"paperId\": \"6a0ff043003eef1c800e27a14c0cb6d774f5bf2d\",\n    \"title\": \"Shortcut Learning Susceptibility in Vision Classifiers\",\n    \"x\": 0.09491425920429389,\n    \"y\": 0.06225411523965695,\n    \"z\": 0.03458614265913876,\n    \"index\": 2\n  }\n}"
+  },
+  {
+    "timestamp": 12152,
+    "eventType": "setHoverPlaneToNode() finished",
+    "eventData": "{\n  \"hoverPlaneId\": \"6a0ff043003eef1c800e27a14c0cb6d774f5bf2d\",\n  \"paperDetailsPanelId\": null,\n  \"hoverPlaneVisibility\": true\n}"
+  },
+  {
+    "timestamp": 12280,
+    "eventType": "node onPickDownTrigger",
+    "eventData": "{\n  \"paperId\": \"6a0ff043003eef1c800e27a14c0cb6d774f5bf2d\",\n  \"position\": {\n    \"_isDirty\": false,\n    \"_x\": 0.09490980039131389,\n    \"_y\": 0.06226434312277203,\n    \"_z\": 0.034458438342853004\n  }\n}"
+  },
+  {
+    "timestamp": 12281,
+    "eventType": "node drag onDragStartObservable",
+    "eventData": "{\n  \"paperId\": \"6a0ff043003eef1c800e27a14c0cb6d774f5bf2d\",\n  \"position\": {\n    \"_isDirty\": false,\n    \"_x\": 0.09490980039131389,\n    \"_y\": 0.06226434312277203,\n    \"_z\": 0.034458438342853004\n  }\n}"
+  },
+  {
+    "timestamp": 12346,
+    "eventType": "node onPickUpTrigger",
+    "eventData": "{\n  \"paperId\": \"6a0ff043003eef1c800e27a14c0cb6d774f5bf2d\",\n  \"position\": {\n    \"_isDirty\": false,\n    \"_x\": 0.09490625918837796,\n    \"_y\": 0.06226849146986413,\n    \"_z\": 0.034396194861631826\n  }\n}"
+  },
+  {
+    "timestamp": 12347,
+    "eventType": "node onPickUpTrigger - short click detected",
+    "eventData": "{\n  \"paperId\": \"6a0ff043003eef1c800e27a14c0cb6d774f5bf2d\",\n  \"position\": {\n    \"_isDirty\": false,\n    \"_x\": 0.09490625918837796,\n    \"_y\": 0.06226849146986413,\n    \"_z\": 0.034396194861631826\n  }\n}"
+  },
+  {
+    "timestamp": 12347,
+    "eventType": "node drag onDragEndObservable",
+    "eventData": "{\n  \"paperId\": \"6a0ff043003eef1c800e27a14c0cb6d774f5bf2d\",\n  \"position\": {\n    \"_isDirty\": false,\n    \"_x\": 0.09490625918837796,\n    \"_y\": 0.06226849146986413,\n    \"_z\": 0.034396194861631826\n  }\n}"
+  },
+  {
+    "timestamp": 12535,
+    "eventType": "node onPointerOutTrigger",
+    "eventData": "{\n  \"paperId\": \"6a0ff043003eef1c800e27a14c0cb6d774f5bf2d\",\n  \"position\": {\n    \"_isDirty\": false,\n    \"_x\": 0.0948952039580824,\n    \"_y\": 0.06227708814478018,\n    \"_z\": 0.034246066305090514\n  }\n}"
+  },
+  {
+    "timestamp": 12535,
+    "eventType": "setHoverPlaneToNode() called",
+    "eventData": "{\n  \"hoverPlaneId\": \"6a0ff043003eef1c800e27a14c0cb6d774f5bf2d\",\n  \"paperDetailsPanelId\": null,\n  \"hoverPlaneVisibility\": true,\n  \"nodeData\": null\n}"
+  },
+  {
+    "timestamp": 12535,
+    "eventType": "setHoverPlaneToNode() - hiding hover plane",
+    "eventData": "{}"
+  },
+  {
+    "timestamp": 12535,
+    "eventType": "setHoverPlaneToNode() finished",
+    "eventData": "{\n  \"hoverPlaneId\": null,\n  \"paperDetailsPanelId\": null,\n  \"hoverPlaneVisibility\": false\n}"
+  },
+  {
+    "timestamp": 13631,
+    "eventType": "addRecommendationsFromSelectedPapers() called",
+    "eventData": "{\n  \"selectedIds\": [\n    \"6a0ff043003eef1c800e27a14c0cb6d774f5bf2d\"\n  ]\n}"
+  },
+  {
+    "timestamp": 17696,
+    "eventType": "node onPointerOverTrigger",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"position\": {\n    \"_isDirty\": false,\n    \"_x\": -0.000537784852928818,\n    \"_y\": -0.00023014450681463415,\n    \"_z\": 0.00014164965515853675\n  }\n}"
+  },
+  {
+    "timestamp": 17696,
+    "eventType": "setHoverPlaneToNode() called",
+    "eventData": "{\n  \"hoverPlaneId\": null,\n  \"paperDetailsPanelId\": null,\n  \"hoverPlaneVisibility\": false,\n  \"nodeData\": {\n    \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n    \"title\": \"Fashion-MNIST: a Novel Image Dataset for Benchmarking Machine Learning Algorithms\",\n    \"x\": -0.000537784852928818,\n    \"y\": -0.00023014450681463415,\n    \"z\": 0.00014164965515853675,\n    \"index\": 0\n  }\n}"
+  },
+  {
+    "timestamp": 17697,
+    "eventType": "setHoverPlaneToNode() finished",
+    "eventData": "{\n  \"hoverPlaneId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"paperDetailsPanelId\": null,\n  \"hoverPlaneVisibility\": true\n}"
+  },
+  {
+    "timestamp": 17928,
+    "eventType": "node onPickDownTrigger",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"position\": {\n    \"_isDirty\": false,\n    \"_x\": -0.0005377626658679468,\n    \"_y\": -0.0002302558048486481,\n    \"_z\": 0.00014167249481540574\n  }\n}"
+  },
+  {
+    "timestamp": 17929,
+    "eventType": "node drag onDragStartObservable",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"position\": {\n    \"_isDirty\": false,\n    \"_x\": -0.0005377626658679468,\n    \"_y\": -0.0002302558048486481,\n    \"_z\": 0.00014167249481540574\n  }\n}"
+  },
+  {
+    "timestamp": 18079,
+    "eventType": "node drag onDragObservable (drag target changed)",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"nodePosition\": {\n    \"_isDirty\": false,\n    \"_x\": -0.0005377517502864708,\n    \"_y\": -0.00023031056724923,\n    \"_z\": 0.00014168373283877312\n  }\n}"
+  },
+  {
+    "timestamp": 18082,
+    "eventType": "node drag onPositionChangedObservable",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"position\": {\n    \"_isDirty\": true,\n    \"_x\": -0.0009351559092978694,\n    \"_y\": -0.00023028502125849794,\n    \"_z\": 0.00014140757882646156\n  }\n}"
+  },
+  {
+    "timestamp": 18095,
+    "eventType": "node drag onDragObservable (drag target changed)",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"nodePosition\": {\n    \"_isDirty\": false,\n    \"_x\": -0.0009351559092978694,\n    \"_y\": -0.00023028502125849794,\n    \"_z\": 0.00014140757882646156\n  }\n}"
+  },
+  {
+    "timestamp": 18098,
+    "eventType": "node drag onPositionChangedObservable",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"position\": {\n    \"_isDirty\": true,\n    \"_x\": -0.0031208342516551475,\n    \"_y\": -0.00023025748903488587,\n    \"_z\": 0.00013685008632396219\n  }\n}"
+  },
+  {
+    "timestamp": 18112,
+    "eventType": "node onPointerOutTrigger",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"position\": {\n    \"_isDirty\": false,\n    \"_x\": -0.0031208342516551475,\n    \"_y\": -0.00023025748903488587,\n    \"_z\": 0.00013685008632396219\n  }\n}"
+  },
+  {
+    "timestamp": 18112,
+    "eventType": "node drag onDragObservable (drag target changed)",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"nodePosition\": {\n    \"_isDirty\": false,\n    \"_x\": -0.0031208342516551475,\n    \"_y\": -0.00023025748903488587,\n    \"_z\": 0.00013685008632396219\n  }\n}"
+  },
+  {
+    "timestamp": 18114,
+    "eventType": "node drag onPositionChangedObservable",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"position\": {\n    \"_isDirty\": true,\n    \"_x\": -0.01017405384851049,\n    \"_y\": -0.00023014103733327087,\n    \"_z\": 0.00008983996046967675\n  }\n}"
+  },
+  {
+    "timestamp": 18129,
+    "eventType": "node drag onDragObservable (drag target changed)",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"nodePosition\": {\n    \"_isDirty\": false,\n    \"_x\": -0.01017405384851049,\n    \"_y\": -0.00023014103733327087,\n    \"_z\": 0.00008983996046967675\n  }\n}"
+  },
+  {
+    "timestamp": 18130,
+    "eventType": "node drag onPositionChangedObservable",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"position\": {\n    \"_isDirty\": true,\n    \"_x\": -0.024027315561449037,\n    \"_y\": -0.00022966943886454995,\n    \"_z\": -0.0001234079162028631\n  }\n}"
+  },
+  {
+    "timestamp": 18145,
+    "eventType": "node drag onDragObservable (drag target changed)",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"nodePosition\": {\n    \"_isDirty\": false,\n    \"_x\": -0.024027315561449037,\n    \"_y\": -0.00022966943886454995,\n    \"_z\": -0.0001234079162028631\n  }\n}"
+  },
+  {
+    "timestamp": 18148,
+    "eventType": "node drag onPositionChangedObservable",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"position\": {\n    \"_isDirty\": true,\n    \"_x\": -0.04245893530247162,\n    \"_y\": -0.00022862139537788774,\n    \"_z\": -0.0006090022496433942\n  }\n}"
+  },
+  {
+    "timestamp": 18162,
+    "eventType": "node drag onDragObservable (drag target changed)",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"nodePosition\": {\n    \"_isDirty\": false,\n    \"_x\": -0.04245893530247162,\n    \"_y\": -0.00022862139537788774,\n    \"_z\": -0.0006090022496433942\n  }\n}"
+  },
+  {
+    "timestamp": 18165,
+    "eventType": "node drag onPositionChangedObservable",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"position\": {\n    \"_isDirty\": true,\n    \"_x\": -0.06276247895953606,\n    \"_y\": -0.00022696326284527625,\n    \"_z\": -0.001384410627747142\n  }\n}"
+  },
+  {
+    "timestamp": 18178,
+    "eventType": "node drag onDragObservable (drag target changed)",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"nodePosition\": {\n    \"_isDirty\": false,\n    \"_x\": -0.06276247895953606,\n    \"_y\": -0.00022696326284527625,\n    \"_z\": -0.001384410627747142\n  }\n}"
+  },
+  {
+    "timestamp": 18181,
+    "eventType": "node drag onPositionChangedObservable",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"position\": {\n    \"_isDirty\": true,\n    \"_x\": -0.08239643148777435,\n    \"_y\": -0.0002248902406575888,\n    \"_z\": -0.0023582496495006618\n  }\n}"
+  },
+  {
+    "timestamp": 18195,
+    "eventType": "node drag onDragObservable (drag target changed)",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"nodePosition\": {\n    \"_isDirty\": false,\n    \"_x\": -0.08239643148777435,\n    \"_y\": -0.0002248902406575888,\n    \"_z\": -0.0023582496495006618\n  }\n}"
+  },
+  {
+    "timestamp": 18198,
+    "eventType": "node drag onPositionChangedObservable",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"position\": {\n    \"_isDirty\": true,\n    \"_x\": -0.10088371731040428,\n    \"_y\": 0.0013619716968820631,\n    \"_z\": -0.003488147775737756\n  }\n}"
+  },
+  {
+    "timestamp": 18211,
+    "eventType": "node drag onDragObservable (drag target changed)",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"nodePosition\": {\n    \"_isDirty\": false,\n    \"_x\": -0.10088371731040428,\n    \"_y\": 0.0013619716968820631,\n    \"_z\": -0.003488147775737756\n  }\n}"
+  },
+  {
+    "timestamp": 18215,
+    "eventType": "node drag onPositionChangedObservable",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"position\": {\n    \"_isDirty\": true,\n    \"_x\": -0.11877243838903855,\n    \"_y\": 0.005321113368539626,\n    \"_z\": -0.004806534182375484\n  }\n}"
+  },
+  {
+    "timestamp": 18230,
+    "eventType": "node drag onDragObservable (drag target changed)",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"nodePosition\": {\n    \"_isDirty\": false,\n    \"_x\": -0.11877243838903855,\n    \"_y\": 0.005321113368539626,\n    \"_z\": -0.004806534182375484\n  }\n}"
+  },
+  {
+    "timestamp": 18232,
+    "eventType": "node drag onPositionChangedObservable",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"position\": {\n    \"_isDirty\": true,\n    \"_x\": -0.13398516423699808,\n    \"_y\": 0.010461077069907003,\n    \"_z\": -0.006092052701955848\n  }\n}"
+  },
+  {
+    "timestamp": 18246,
+    "eventType": "node drag onDragObservable (drag target changed)",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"nodePosition\": {\n    \"_isDirty\": false,\n    \"_x\": -0.13398516423699808,\n    \"_y\": 0.010461077069907003,\n    \"_z\": -0.006092052701955848\n  }\n}"
+  },
+  {
+    "timestamp": 18248,
+    "eventType": "node drag onPositionChangedObservable",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"position\": {\n    \"_isDirty\": true,\n    \"_x\": -0.14627945668694925,\n    \"_y\": 0.016582492714791112,\n    \"_z\": -0.007263875827288442\n  }\n}"
+  },
+  {
+    "timestamp": 18262,
+    "eventType": "node drag onDragObservable (drag target changed)",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"nodePosition\": {\n    \"_isDirty\": false,\n    \"_x\": -0.14627945668694925,\n    \"_y\": 0.016582492714791112,\n    \"_z\": -0.007263875827288442\n  }\n}"
+  },
+  {
+    "timestamp": 18265,
+    "eventType": "node drag onPositionChangedObservable",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"position\": {\n    \"_isDirty\": true,\n    \"_x\": -0.15632288403508615,\n    \"_y\": 0.023190357698170953,\n    \"_z\": -0.008336783880463057\n  }\n}"
+  },
+  {
+    "timestamp": 18278,
+    "eventType": "node drag onDragObservable (drag target changed)",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"nodePosition\": {\n    \"_isDirty\": false,\n    \"_x\": -0.15632288403508615,\n    \"_y\": 0.023190357698170953,\n    \"_z\": -0.008336783880463057\n  }\n}"
+  },
+  {
+    "timestamp": 18282,
+    "eventType": "node drag onPositionChangedObservable",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"position\": {\n    \"_isDirty\": true,\n    \"_x\": -0.16445505119559717,\n    \"_y\": 0.02924921826836329,\n    \"_z\": -0.00928717994140666\n  }\n}"
+  },
+  {
+    "timestamp": 18295,
+    "eventType": "node drag onDragObservable (drag target changed)",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"nodePosition\": {\n    \"_isDirty\": false,\n    \"_x\": -0.16445505119559717,\n    \"_y\": 0.02924921826836329,\n    \"_z\": -0.00928717994140666\n  }\n}"
+  },
+  {
+    "timestamp": 18298,
+    "eventType": "node drag onPositionChangedObservable",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"position\": {\n    \"_isDirty\": true,\n    \"_x\": -0.17046125478742075,\n    \"_y\": 0.03424504862543803,\n    \"_z\": -0.010038904873749428\n  }\n}"
+  },
+  {
+    "timestamp": 18312,
+    "eventType": "node onPointerOverTrigger",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"position\": {\n    \"_isDirty\": false,\n    \"_x\": -0.17046125478742075,\n    \"_y\": 0.03424504862543803,\n    \"_z\": -0.010038904873749428\n  }\n}"
+  },
+  {
+    "timestamp": 18312,
+    "eventType": "setHoverPlaneToNode() called",
+    "eventData": "{\n  \"hoverPlaneId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"paperDetailsPanelId\": null,\n  \"hoverPlaneVisibility\": true,\n  \"nodeData\": {\n    \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n    \"title\": \"Fashion-MNIST: a Novel Image Dataset for Benchmarking Machine Learning Algorithms\",\n    \"x\": -0.17046125478742075,\n    \"y\": 0.03424504862543803,\n    \"z\": -0.010038904873749428,\n    \"index\": 0\n  }\n}"
+  },
+  {
+    "timestamp": 18312,
+    "eventType": "setHoverPlaneToNode() finished",
+    "eventData": "{\n  \"hoverPlaneId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"paperDetailsPanelId\": null,\n  \"hoverPlaneVisibility\": true\n}"
+  },
+  {
+    "timestamp": 18313,
+    "eventType": "node drag onDragObservable (drag target changed)",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"nodePosition\": {\n    \"_isDirty\": false,\n    \"_x\": -0.17046125478742075,\n    \"_y\": 0.03424504862543803,\n    \"_z\": -0.010038904873749428\n  }\n}"
+  },
+  {
+    "timestamp": 18315,
+    "eventType": "node drag onPositionChangedObservable",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"position\": {\n    \"_isDirty\": true,\n    \"_x\": -0.17423836387393427,\n    \"_y\": 0.03792319351252776,\n    \"_z\": -0.01053890588702839\n  }\n}"
+  },
+  {
+    "timestamp": 18332,
+    "eventType": "node drag onPositionChangedObservable",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"position\": {\n    \"_isDirty\": true,\n    \"_x\": -0.17612691469190073,\n    \"_y\": 0.03976226502475005,\n    \"_z\": -0.01078890639366787\n  }\n}"
+  },
+  {
+    "timestamp": 18348,
+    "eventType": "node drag onPositionChangedObservable",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"position\": {\n    \"_isDirty\": true,\n    \"_x\": -0.17707119382617426,\n    \"_y\": 0.04068180078086119,\n    \"_z\": -0.01091390664698761\n  }\n}"
+  },
+  {
+    "timestamp": 18365,
+    "eventType": "node drag onPositionChangedObservable",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"position\": {\n    \"_isDirty\": true,\n    \"_x\": -0.17754332966802072,\n    \"_y\": 0.041141568658916765,\n    \"_z\": -0.01097640677364748\n  }\n}"
+  },
+  {
+    "timestamp": 18382,
+    "eventType": "node drag onPositionChangedObservable",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"position\": {\n    \"_isDirty\": true,\n    \"_x\": -0.17777940131423425,\n    \"_y\": 0.04137145259794455,\n    \"_z\": -0.011007656836977416\n  }\n}"
+  },
+  {
+    "timestamp": 18398,
+    "eventType": "node drag onPositionChangedObservable",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"position\": {\n    \"_isDirty\": true,\n    \"_x\": -0.17789743341205072,\n    \"_y\": 0.041486394567458444,\n    \"_z\": -0.01102328163581174\n  }\n}"
+  },
+  {
+    "timestamp": 18413,
+    "eventType": "node onPickUpTrigger",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"position\": {\n    \"_isDirty\": false,\n    \"_x\": -0.17789743341205072,\n    \"_y\": 0.041486394567458444,\n    \"_z\": -0.01102328163581174\n  }\n}"
+  },
+  {
+    "timestamp": 18413,
+    "eventType": "node onPickUpTrigger - node is already being dragged",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"position\": {\n    \"_isDirty\": false,\n    \"_x\": -0.17789743341205072,\n    \"_y\": 0.041486394567458444,\n    \"_z\": -0.01102328163581174\n  }\n}"
+  },
+  {
+    "timestamp": 18414,
+    "eventType": "node drag onDragEndObservable",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"position\": {\n    \"_isDirty\": false,\n    \"_x\": -0.17789743341205072,\n    \"_y\": 0.041486394567458444,\n    \"_z\": -0.01102328163581174\n  }\n}"
+  },
+  {
+    "timestamp": 18557,
+    "eventType": "addPapersToGraph() called",
+    "eventData": "{\n  \"newPapers\": [\n    {\n      \"paperId\": \"ecbee484d208d406ab191623ddf6e52e5817c356\",\n      \"title\": \"Privacy Preserving Properties of Vision Classifiers\"\n    },\n    {\n      \"paperId\": \"cd18ea985c15101531c93d2bb09504b26d0fa770\",\n      \"title\": \"A Novel Non-iterative Training Method for CNN Classifiers Using Gram–Schmidt Process\"\n    },\n    {\n      \"paperId\": \"fcb82fa7d8a69c22068ff3b79acf1d006fc20b9b\",\n      \"title\": \"Do ImageNet-trained models learn shortcuts? The impact of frequency shortcuts on generalization\"\n    },\n    {\n      \"paperId\": \"f854ab4b025fbdae16aadbeeb53d8180fd598a44\",\n      \"title\": \"Elastic Representation: Mitigating Spurious Correlations for Group Robustness\"\n    },\n    {\n      \"paperId\": \"9976cbe6d10fef030b81e7f6cc79ac099f1d4fb0\",\n      \"title\": \"Advancements in Image Classification: From Machine Learning to Deep Learning\"\n    }\n  ],\n  \"prevPaperData\": [\n    {\n      \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n      \"title\": \"Fashion-MNIST: a Novel Image Dataset for Benchmarking Machine Learning Algorithms\",\n      \"x\": -0.17789743341205072,\n      \"y\": 0.041486394567458444,\n      \"z\": -0.01102328163581174,\n      \"index\": 0\n    },\n    {\n      \"paperId\": \"0748ca9a1e35fccdf89a62022f4c2b6246d6dd81\",\n      \"title\": \"Number Recognition Through Color Distortion Using Convolutional Neural Networks\",\n      \"x\": -0.11276853790330046,\n      \"y\": -0.022518048285781102,\n      \"z\": 0.0684062254936319,\n      \"index\": 1\n    },\n    {\n      \"paperId\": \"6a0ff043003eef1c800e27a14c0cb6d774f5bf2d\",\n      \"title\": \"Shortcut Learning Susceptibility in Vision Classifiers\",\n      \"x\": -0.06283390780422683,\n      \"y\": 0.05679360462252261,\n      \"z\": 0.01579294117353907,\n      \"index\": 2\n    },\n    {\n      \"paperId\": \"42202cadb372e80b229c96f2670cd141d0d2d01b\",\n      \"title\": \"KAN-Mixers: a new deep learning architecture for image classification\",\n      \"x\": -0.12149235679980049,\n      \"y\": 0.1425740280468134,\n      \"z\": 0.0008507083985970703,\n      \"index\": 3\n    },\n    {\n      \"paperId\": \"ff72ca0f93a1b8d351cda1a7f3df3f875b06f62e\",\n      \"title\": \"Building Efficient Lightweight CNN Models\",\n      \"x\": -0.17021638210556103,\n      \"y\": -0.0674009831083447,\n      \"z\": -0.05281088083056544,\n      \"index\": 4\n    },\n    {\n      \"paperId\": \"613a1791d1e7b8c74ed9d482951c8c2e9e90f5ee\",\n      \"title\": \"Exploration of hyperparameter tuning in handwritten digit recognition datasets using CNN\",\n      \"x\": -0.08329800282324325,\n      \"y\": 0.0012497907050303364,\n      \"z\": -0.07562006816286163,\n      \"index\": 5\n    }\n  ]\n}"
+  },
+  {
+    "timestamp": 18557,
+    "eventType": "generateFibonacciLatticePositions() called",
+    "eventData": "{\n  \"n\": 5,\n  \"center\": {\n    \"_isDirty\": true,\n    \"_x\": 0,\n    \"_y\": 0,\n    \"_z\": 0\n  },\n  \"radius\": 0.2,\n  \"positions\": [\n    {\n      \"_isDirty\": true,\n      \"_x\": -0.11340592467060398,\n      \"_y\": -0.039231317204566206,\n      \"_z\": 0.16000000000000003\n    },\n    {\n      \"_isDirty\": true,\n      \"_x\": 0.06803993576881462,\n      \"_y\": -0.1702074238703341,\n      \"_z\": 0.08000000000000002\n    },\n    {\n      \"_isDirty\": true,\n      \"_x\": 0.1819988559103192,\n      \"_y\": 0.08292416081779107,\n      \"_z\": 1.2246467991473533e-17\n    },\n    {\n      \"_isDirty\": true,\n      \"_x\": -0.08379300438289508,\n      \"_y\": 0.16302985130487033,\n      \"_z\": -0.08\n    },\n    {\n      \"_isDirty\": true,\n      \"_x\": -0.10401875920847585,\n      \"_y\": -0.05983391791224372,\n      \"_z\": -0.16000000000000003\n    }\n  ]\n}"
+  },
+  {
+    "timestamp": 18557,
+    "eventType": "createNodes() called",
+    "eventData": "{\n  \"paperData\": [\n    {\n      \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n      \"title\": \"Fashion-MNIST: a Novel Image Dataset for Benchmarking Machine Learning Algorithms\",\n      \"x\": -0.17789743341205072,\n      \"y\": 0.041486394567458444,\n      \"z\": -0.01102328163581174,\n      \"index\": 0\n    },\n    {\n      \"paperId\": \"0748ca9a1e35fccdf89a62022f4c2b6246d6dd81\",\n      \"title\": \"Number Recognition Through Color Distortion Using Convolutional Neural Networks\",\n      \"x\": -0.11276853790330046,\n      \"y\": -0.022518048285781102,\n      \"z\": 0.0684062254936319,\n      \"index\": 1\n    },\n    {\n      \"paperId\": \"6a0ff043003eef1c800e27a14c0cb6d774f5bf2d\",\n      \"title\": \"Shortcut Learning Susceptibility in Vision Classifiers\",\n      \"x\": -0.06283390780422683,\n      \"y\": 0.05679360462252261,\n      \"z\": 0.01579294117353907,\n      \"index\": 2\n    },\n    {\n      \"paperId\": \"42202cadb372e80b229c96f2670cd141d0d2d01b\",\n      \"title\": \"KAN-Mixers: a new deep learning architecture for image classification\",\n      \"x\": -0.12149235679980049,\n      \"y\": 0.1425740280468134,\n      \"z\": 0.0008507083985970703,\n      \"index\": 3\n    },\n    {\n      \"paperId\": \"ff72ca0f93a1b8d351cda1a7f3df3f875b06f62e\",\n      \"title\": \"Building Efficient Lightweight CNN Models\",\n      \"x\": -0.17021638210556103,\n      \"y\": -0.0674009831083447,\n      \"z\": -0.05281088083056544,\n      \"index\": 4\n    },\n    {\n      \"paperId\": \"613a1791d1e7b8c74ed9d482951c8c2e9e90f5ee\",\n      \"title\": \"Exploration of hyperparameter tuning in handwritten digit recognition datasets using CNN\",\n      \"x\": -0.08329800282324325,\n      \"y\": 0.0012497907050303364,\n      \"z\": -0.07562006816286163,\n      \"index\": 5\n    },\n    {\n      \"paperId\": \"ecbee484d208d406ab191623ddf6e52e5817c356\",\n      \"title\": \"Privacy Preserving Properties of Vision Classifiers\",\n      \"x\": -0.11340592467060398,\n      \"y\": -0.039231317204566206,\n      \"z\": 0.16000000000000003,\n      \"index\": 6\n    },\n    {\n      \"paperId\": \"cd18ea985c15101531c93d2bb09504b26d0fa770\",\n      \"title\": \"A Novel Non-iterative Training Method for CNN Classifiers Using Gram–Schmidt Process\",\n      \"x\": 0.06803993576881462,\n      \"y\": -0.1702074238703341,\n      \"z\": 0.08000000000000002,\n      \"index\": 7\n    },\n    {\n      \"paperId\": \"fcb82fa7d8a69c22068ff3b79acf1d006fc20b9b\",\n      \"title\": \"Do ImageNet-trained models learn shortcuts? The impact of frequency shortcuts on generalization\",\n      \"x\": 0.1819988559103192,\n      \"y\": 0.08292416081779107,\n      \"z\": 1.2246467991473533e-17,\n      \"index\": 8\n    },\n    {\n      \"paperId\": \"f854ab4b025fbdae16aadbeeb53d8180fd598a44\",\n      \"title\": \"Elastic Representation: Mitigating Spurious Correlations for Group Robustness\",\n      \"x\": -0.08379300438289508,\n      \"y\": 0.16302985130487033,\n      \"z\": -0.08,\n      \"index\": 9\n    },\n    {\n      \"paperId\": \"9976cbe6d10fef030b81e7f6cc79ac099f1d4fb0\",\n      \"title\": \"Advancements in Image Classification: From Machine Learning to Deep Learning\",\n      \"x\": -0.10401875920847585,\n      \"y\": -0.05983391791224372,\n      \"z\": -0.16000000000000003,\n      \"index\": 10\n    }\n  ]\n}"
+  },
+  {
+    "timestamp": 18571,
+    "eventType": "sendAllNodesData() called",
+    "eventData": "{\n  \"paperData\": [\n    {\n      \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n      \"title\": \"Fashion-MNIST: a Novel Image Dataset for Benchmarking Machine Learning Algorithms\",\n      \"x\": -0.17789743341205072,\n      \"y\": 0.041486394567458444,\n      \"z\": -0.01102328163581174,\n      \"index\": 0\n    },\n    {\n      \"paperId\": \"0748ca9a1e35fccdf89a62022f4c2b6246d6dd81\",\n      \"title\": \"Number Recognition Through Color Distortion Using Convolutional Neural Networks\",\n      \"x\": -0.11276853790330046,\n      \"y\": -0.022518048285781102,\n      \"z\": 0.0684062254936319,\n      \"index\": 1\n    },\n    {\n      \"paperId\": \"6a0ff043003eef1c800e27a14c0cb6d774f5bf2d\",\n      \"title\": \"Shortcut Learning Susceptibility in Vision Classifiers\",\n      \"x\": -0.06283390780422683,\n      \"y\": 0.05679360462252261,\n      \"z\": 0.01579294117353907,\n      \"index\": 2\n    },\n    {\n      \"paperId\": \"42202cadb372e80b229c96f2670cd141d0d2d01b\",\n      \"title\": \"KAN-Mixers: a new deep learning architecture for image classification\",\n      \"x\": -0.12149235679980049,\n      \"y\": 0.1425740280468134,\n      \"z\": 0.0008507083985970703,\n      \"index\": 3\n    },\n    {\n      \"paperId\": \"ff72ca0f93a1b8d351cda1a7f3df3f875b06f62e\",\n      \"title\": \"Building Efficient Lightweight CNN Models\",\n      \"x\": -0.17021638210556103,\n      \"y\": -0.0674009831083447,\n      \"z\": -0.05281088083056544,\n      \"index\": 4\n    },\n    {\n      \"paperId\": \"613a1791d1e7b8c74ed9d482951c8c2e9e90f5ee\",\n      \"title\": \"Exploration of hyperparameter tuning in handwritten digit recognition datasets using CNN\",\n      \"x\": -0.08329800282324325,\n      \"y\": 0.0012497907050303364,\n      \"z\": -0.07562006816286163,\n      \"index\": 5\n    },\n    {\n      \"paperId\": \"ecbee484d208d406ab191623ddf6e52e5817c356\",\n      \"title\": \"Privacy Preserving Properties of Vision Classifiers\",\n      \"x\": -0.11340592467060398,\n      \"y\": -0.039231317204566206,\n      \"z\": 0.16000000000000003,\n      \"index\": 6\n    },\n    {\n      \"paperId\": \"cd18ea985c15101531c93d2bb09504b26d0fa770\",\n      \"title\": \"A Novel Non-iterative Training Method for CNN Classifiers Using Gram–Schmidt Process\",\n      \"x\": 0.06803993576881462,\n      \"y\": -0.1702074238703341,\n      \"z\": 0.08000000000000002,\n      \"index\": 7\n    },\n    {\n      \"paperId\": \"fcb82fa7d8a69c22068ff3b79acf1d006fc20b9b\",\n      \"title\": \"Do ImageNet-trained models learn shortcuts? The impact of frequency shortcuts on generalization\",\n      \"x\": 0.1819988559103192,\n      \"y\": 0.08292416081779107,\n      \"z\": 1.2246467991473533e-17,\n      \"index\": 8\n    },\n    {\n      \"paperId\": \"f854ab4b025fbdae16aadbeeb53d8180fd598a44\",\n      \"title\": \"Elastic Representation: Mitigating Spurious Correlations for Group Robustness\",\n      \"x\": -0.08379300438289508,\n      \"y\": 0.16302985130487033,\n      \"z\": -0.08,\n      \"index\": 9\n    },\n    {\n      \"paperId\": \"9976cbe6d10fef030b81e7f6cc79ac099f1d4fb0\",\n      \"title\": \"Advancements in Image Classification: From Machine Learning to Deep Learning\",\n      \"x\": -0.10401875920847585,\n      \"y\": -0.05983391791224372,\n      \"z\": -0.16000000000000003,\n      \"index\": 10\n    }\n  ]\n}"
+  },
+  {
+    "timestamp": 18573,
+    "eventType": "generateLinkData() finished",
+    "eventData": "{\n  \"newLinkData\": {\n    \"citationLinkData\": [\n      {\n        \"source\": \"42202cadb372e80b229c96f2670cd141d0d2d01b\",\n        \"target\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\"\n      }\n    ],\n    \"recommendationLinkData\": [\n      {\n        \"source\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n        \"target\": \"0748ca9a1e35fccdf89a62022f4c2b6246d6dd81\"\n      },\n      {\n        \"source\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n        \"target\": \"6a0ff043003eef1c800e27a14c0cb6d774f5bf2d\"\n      },\n      {\n        \"source\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n        \"target\": \"42202cadb372e80b229c96f2670cd141d0d2d01b\"\n      },\n      {\n        \"source\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n        \"target\": \"ff72ca0f93a1b8d351cda1a7f3df3f875b06f62e\"\n      },\n      {\n        \"source\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n        \"target\": \"613a1791d1e7b8c74ed9d482951c8c2e9e90f5ee\"\n      },\n      {\n        \"source\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n        \"target\": \"9976cbe6d10fef030b81e7f6cc79ac099f1d4fb0\"\n      },\n      {\n        \"source\": \"6a0ff043003eef1c800e27a14c0cb6d774f5bf2d\",\n        \"target\": \"0748ca9a1e35fccdf89a62022f4c2b6246d6dd81\"\n      },\n      {\n        \"source\": \"6a0ff043003eef1c800e27a14c0cb6d774f5bf2d\",\n        \"target\": \"42202cadb372e80b229c96f2670cd141d0d2d01b\"\n      },\n      {\n        \"source\": \"6a0ff043003eef1c800e27a14c0cb6d774f5bf2d\",\n        \"target\": \"ff72ca0f93a1b8d351cda1a7f3df3f875b06f62e\"\n      },\n      {\n        \"source\": \"6a0ff043003eef1c800e27a14c0cb6d774f5bf2d\",\n        \"target\": \"613a1791d1e7b8c74ed9d482951c8c2e9e90f5ee\"\n      },\n      {\n        \"source\": \"6a0ff043003eef1c800e27a14c0cb6d774f5bf2d\",\n        \"target\": \"ecbee484d208d406ab191623ddf6e52e5817c356\"\n      },\n      {\n        \"source\": \"6a0ff043003eef1c800e27a14c0cb6d774f5bf2d\",\n        \"target\": \"cd18ea985c15101531c93d2bb09504b26d0fa770\"\n      },\n      {\n        \"source\": \"6a0ff043003eef1c800e27a14c0cb6d774f5bf2d\",\n        \"target\": \"fcb82fa7d8a69c22068ff3b79acf1d006fc20b9b\"\n      },\n      {\n        \"source\": \"6a0ff043003eef1c800e27a14c0cb6d774f5bf2d\",\n        \"target\": \"f854ab4b025fbdae16aadbeeb53d8180fd598a44\"\n      },\n      {\n        \"source\": \"6a0ff043003eef1c800e27a14c0cb6d774f5bf2d\",\n        \"target\": \"9976cbe6d10fef030b81e7f6cc79ac099f1d4fb0\"\n      }\n    ],\n    \"authorLinkData\": [\n      {\n        \"source\": \"6a0ff043003eef1c800e27a14c0cb6d774f5bf2d\",\n        \"target\": \"ecbee484d208d406ab191623ddf6e52e5817c356\"\n      },\n      {\n        \"source\": \"6a0ff043003eef1c800e27a14c0cb6d774f5bf2d\",\n        \"target\": \"ecbee484d208d406ab191623ddf6e52e5817c356\"\n      }\n    ],\n    \"userLinkData\": []\n  }\n}"
+  },
+  {
+    "timestamp": 18573,
+    "eventType": "createLinks() called",
+    "eventData": "{\n  \"linkType\": \"recommendation\"\n}"
+  },
+  {
+    "timestamp": 18574,
+    "eventType": "addPapersToGraph() finished",
+    "eventData": "{\n  \"newPapers\": [\n    {\n      \"paperId\": \"ecbee484d208d406ab191623ddf6e52e5817c356\",\n      \"title\": \"Privacy Preserving Properties of Vision Classifiers\",\n      \"x\": -0.11340592467060398,\n      \"y\": -0.039231317204566206,\n      \"z\": 0.16000000000000003,\n      \"index\": 6\n    },\n    {\n      \"paperId\": \"cd18ea985c15101531c93d2bb09504b26d0fa770\",\n      \"title\": \"A Novel Non-iterative Training Method for CNN Classifiers Using Gram–Schmidt Process\",\n      \"x\": 0.06803993576881462,\n      \"y\": -0.1702074238703341,\n      \"z\": 0.08000000000000002,\n      \"index\": 7\n    },\n    {\n      \"paperId\": \"fcb82fa7d8a69c22068ff3b79acf1d006fc20b9b\",\n      \"title\": \"Do ImageNet-trained models learn shortcuts? The impact of frequency shortcuts on generalization\",\n      \"x\": 0.1819988559103192,\n      \"y\": 0.08292416081779107,\n      \"z\": 1.2246467991473533e-17,\n      \"index\": 8\n    },\n    {\n      \"paperId\": \"f854ab4b025fbdae16aadbeeb53d8180fd598a44\",\n      \"title\": \"Elastic Representation: Mitigating Spurious Correlations for Group Robustness\",\n      \"x\": -0.08379300438289508,\n      \"y\": 0.16302985130487033,\n      \"z\": -0.08,\n      \"index\": 9\n    },\n    {\n      \"paperId\": \"9976cbe6d10fef030b81e7f6cc79ac099f1d4fb0\",\n      \"title\": \"Advancements in Image Classification: From Machine Learning to Deep Learning\",\n      \"x\": -0.10401875920847585,\n      \"y\": -0.05983391791224372,\n      \"z\": -0.16000000000000003,\n      \"index\": 10\n    }\n  ],\n  \"currPaperData\": [\n    {\n      \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n      \"title\": \"Fashion-MNIST: a Novel Image Dataset for Benchmarking Machine Learning Algorithms\",\n      \"x\": -0.17789743341205072,\n      \"y\": 0.041486394567458444,\n      \"z\": -0.01102328163581174,\n      \"index\": 0\n    },\n    {\n      \"paperId\": \"0748ca9a1e35fccdf89a62022f4c2b6246d6dd81\",\n      \"title\": \"Number Recognition Through Color Distortion Using Convolutional Neural Networks\",\n      \"x\": -0.11276853790330046,\n      \"y\": -0.022518048285781102,\n      \"z\": 0.0684062254936319,\n      \"index\": 1\n    },\n    {\n      \"paperId\": \"6a0ff043003eef1c800e27a14c0cb6d774f5bf2d\",\n      \"title\": \"Shortcut Learning Susceptibility in Vision Classifiers\",\n      \"x\": -0.06283390780422683,\n      \"y\": 0.05679360462252261,\n      \"z\": 0.01579294117353907,\n      \"index\": 2\n    },\n    {\n      \"paperId\": \"42202cadb372e80b229c96f2670cd141d0d2d01b\",\n      \"title\": \"KAN-Mixers: a new deep learning architecture for image classification\",\n      \"x\": -0.12149235679980049,\n      \"y\": 0.1425740280468134,\n      \"z\": 0.0008507083985970703,\n      \"index\": 3\n    },\n    {\n      \"paperId\": \"ff72ca0f93a1b8d351cda1a7f3df3f875b06f62e\",\n      \"title\": \"Building Efficient Lightweight CNN Models\",\n      \"x\": -0.17021638210556103,\n      \"y\": -0.0674009831083447,\n      \"z\": -0.05281088083056544,\n      \"index\": 4\n    },\n    {\n      \"paperId\": \"613a1791d1e7b8c74ed9d482951c8c2e9e90f5ee\",\n      \"title\": \"Exploration of hyperparameter tuning in handwritten digit recognition datasets using CNN\",\n      \"x\": -0.08329800282324325,\n      \"y\": 0.0012497907050303364,\n      \"z\": -0.07562006816286163,\n      \"index\": 5\n    },\n    {\n      \"paperId\": \"ecbee484d208d406ab191623ddf6e52e5817c356\",\n      \"title\": \"Privacy Preserving Properties of Vision Classifiers\",\n      \"x\": -0.11340592467060398,\n      \"y\": -0.039231317204566206,\n      \"z\": 0.16000000000000003,\n      \"index\": 6\n    },\n    {\n      \"paperId\": \"cd18ea985c15101531c93d2bb09504b26d0fa770\",\n      \"title\": \"A Novel Non-iterative Training Method for CNN Classifiers Using Gram–Schmidt Process\",\n      \"x\": 0.06803993576881462,\n      \"y\": -0.1702074238703341,\n      \"z\": 0.08000000000000002,\n      \"index\": 7\n    },\n    {\n      \"paperId\": \"fcb82fa7d8a69c22068ff3b79acf1d006fc20b9b\",\n      \"title\": \"Do ImageNet-trained models learn shortcuts? The impact of frequency shortcuts on generalization\",\n      \"x\": 0.1819988559103192,\n      \"y\": 0.08292416081779107,\n      \"z\": 1.2246467991473533e-17,\n      \"index\": 8\n    },\n    {\n      \"paperId\": \"f854ab4b025fbdae16aadbeeb53d8180fd598a44\",\n      \"title\": \"Elastic Representation: Mitigating Spurious Correlations for Group Robustness\",\n      \"x\": -0.08379300438289508,\n      \"y\": 0.16302985130487033,\n      \"z\": -0.08,\n      \"index\": 9\n    },\n    {\n      \"paperId\": \"9976cbe6d10fef030b81e7f6cc79ac099f1d4fb0\",\n      \"title\": \"Advancements in Image Classification: From Machine Learning to Deep Learning\",\n      \"x\": -0.10401875920847585,\n      \"y\": -0.05983391791224372,\n      \"z\": -0.16000000000000003,\n      \"index\": 10\n    }\n  ]\n}"
+  },
+  {
+    "timestamp": 18574,
+    "eventType": "setLinkType() called",
+    "eventData": "{\n  \"currLinkType\": \"recommendation\",\n  \"newLinkType\": \"recommendation\"\n}"
+  },
+  {
+    "timestamp": 18574,
+    "eventType": "setFullScreenUIText()",
+    "eventData": "{\n  \"text\": \"Link Type recommendation\"\n}"
+  },
+  {
+    "timestamp": 18574,
+    "eventType": "createLinks() called",
+    "eventData": "{\n  \"linkType\": \"recommendation\"\n}"
+  },
+  {
+    "timestamp": 18632,
+    "eventType": "node onPointerOverTrigger",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"position\": {\n    \"_isDirty\": false,\n    \"_x\": -0.17789743341205072,\n    \"_y\": 0.041486394567458444,\n    \"_z\": -0.01102328163581174\n  }\n}"
+  },
+  {
+    "timestamp": 18632,
+    "eventType": "setHoverPlaneToNode() called",
+    "eventData": "{\n  \"hoverPlaneId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"paperDetailsPanelId\": null,\n  \"hoverPlaneVisibility\": true,\n  \"nodeData\": {\n    \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n    \"title\": \"Fashion-MNIST: a Novel Image Dataset for Benchmarking Machine Learning Algorithms\",\n    \"x\": -0.17789743341205072,\n    \"y\": 0.041486394567458444,\n    \"z\": -0.01102328163581174,\n    \"index\": 0\n  }\n}"
+  },
+  {
+    "timestamp": 18632,
+    "eventType": "setHoverPlaneToNode() finished",
+    "eventData": "{\n  \"hoverPlaneId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"paperDetailsPanelId\": null,\n  \"hoverPlaneVisibility\": true\n}"
+  },
+  {
+    "timestamp": 18643,
+    "eventType": "node onPointerOutTrigger",
+    "eventData": "{\n  \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"position\": {\n    \"_isDirty\": false,\n    \"_x\": -0.17789743341205072,\n    \"_y\": 0.041486394567458444,\n    \"_z\": -0.01102328163581174\n  }\n}"
+  },
+  {
+    "timestamp": 18644,
+    "eventType": "setHoverPlaneToNode() called",
+    "eventData": "{\n  \"hoverPlaneId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n  \"paperDetailsPanelId\": null,\n  \"hoverPlaneVisibility\": true,\n  \"nodeData\": null\n}"
+  },
+  {
+    "timestamp": 18644,
+    "eventType": "setHoverPlaneToNode() - hiding hover plane",
+    "eventData": "{}"
+  },
+  {
+    "timestamp": 18644,
+    "eventType": "setHoverPlaneToNode() finished",
+    "eventData": "{\n  \"hoverPlaneId\": null,\n  \"paperDetailsPanelId\": null,\n  \"hoverPlaneVisibility\": false\n}"
+  },
+  {
+    "timestamp": 20683,
+    "eventType": "changeLinkType() called",
+    "eventData": "{\n  \"currentLinkType\": \"recommendation\",\n  \"newLinkType\": \"citation\"\n}"
+  },
+  {
+    "timestamp": 20683,
+    "eventType": "setFullScreenUIText()",
+    "eventData": "{\n  \"text\": \"Link Type citation\"\n}"
+  },
+  {
+    "timestamp": 20683,
+    "eventType": "createLinks() called",
+    "eventData": "{\n  \"linkType\": \"citation\"\n}"
+  },
+  {
+    "timestamp": 20819,
+    "eventType": "changeLinkType() called",
+    "eventData": "{\n  \"currentLinkType\": \"citation\",\n  \"newLinkType\": \"author\"\n}"
+  },
+  {
+    "timestamp": 20819,
+    "eventType": "setFullScreenUIText()",
+    "eventData": "{\n  \"text\": \"Link Type author\"\n}"
+  },
+  {
+    "timestamp": 20819,
+    "eventType": "createLinks() called",
+    "eventData": "{\n  \"linkType\": \"author\"\n}"
+  },
+  {
+    "timestamp": 20979,
+    "eventType": "changeLinkType() called",
+    "eventData": "{\n  \"currentLinkType\": \"author\",\n  \"newLinkType\": \"custom\"\n}"
+  },
+  {
+    "timestamp": 20979,
+    "eventType": "setFullScreenUIText()",
+    "eventData": "{\n  \"text\": \"Link Type custom\"\n}"
+  },
+  {
+    "timestamp": 20979,
+    "eventType": "createLinks() called",
+    "eventData": "{\n  \"linkType\": \"custom\"\n}"
+  },
+  {
+    "timestamp": 21081,
+    "eventType": "changeLinkType() called",
+    "eventData": "{\n  \"currentLinkType\": \"custom\",\n  \"newLinkType\": \"recommendation\"\n}"
+  },
+  {
+    "timestamp": 21081,
+    "eventType": "setFullScreenUIText()",
+    "eventData": "{\n  \"text\": \"Link Type recommendation\"\n}"
+  },
+  {
+    "timestamp": 21081,
+    "eventType": "createLinks() called",
+    "eventData": "{\n  \"linkType\": \"recommendation\"\n}"
+  },
+  {
+    "timestamp": 21233,
+    "eventType": "changeLinkType() called",
+    "eventData": "{\n  \"currentLinkType\": \"recommendation\",\n  \"newLinkType\": \"citation\"\n}"
+  },
+  {
+    "timestamp": 21233,
+    "eventType": "setFullScreenUIText()",
+    "eventData": "{\n  \"text\": \"Link Type citation\"\n}"
+  },
+  {
+    "timestamp": 21233,
+    "eventType": "createLinks() called",
+    "eventData": "{\n  \"linkType\": \"citation\"\n}"
+  },
+  {
+    "timestamp": 21604,
+    "eventType": "changeLinkType() called",
+    "eventData": "{\n  \"currentLinkType\": \"citation\",\n  \"newLinkType\": \"author\"\n}"
+  },
+  {
+    "timestamp": 21604,
+    "eventType": "setFullScreenUIText()",
+    "eventData": "{\n  \"text\": \"Link Type author\"\n}"
+  },
+  {
+    "timestamp": 21604,
+    "eventType": "createLinks() called",
+    "eventData": "{\n  \"linkType\": \"author\"\n}"
+  },
+  {
+    "timestamp": 22685,
+    "eventType": "changeLinkType() called",
+    "eventData": "{\n  \"currentLinkType\": \"author\",\n  \"newLinkType\": \"custom\"\n}"
+  },
+  {
+    "timestamp": 22685,
+    "eventType": "setFullScreenUIText()",
+    "eventData": "{\n  \"text\": \"Link Type custom\"\n}"
+  },
+  {
+    "timestamp": 22685,
+    "eventType": "createLinks() called",
+    "eventData": "{\n  \"linkType\": \"custom\"\n}"
+  }
+]
