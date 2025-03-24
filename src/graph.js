@@ -180,20 +180,20 @@ export function generateLinkData() {
 
     const eventData = {};
     eventData.citationLinkData = citationLinkData.map((link) => ({
-        source: link.source.paperId,
-        target: link.target.paperId,
+        source: { paperId: link.source.paperId, title: link.source.title },
+        target: { paperId: link.target.paperId, title: link.target.title },
     }));
     eventData.recommendationLinkData = recommendationLinkData.map((link) => ({
-        source: link.source.paperId,
-        target: link.target.paperId,
+        source: { paperId: link.source.paperId, title: link.source.title },
+        target: { paperId: link.target.paperId, title: link.target.title },
     }));
     eventData.authorLinkData = authorLinkData.map((link) => ({
-        source: link.source.paperId,
-        target: link.target.paperId,
+        source: { paperId: link.source.paperId, title: link.source.title },
+        target: { paperId: link.target.paperId, title: link.target.title },
     }));
     eventData.userLinkData = userLinkData.map((link) => ({
-        source: link.source.paperId,
-        target: link.target.paperId,
+        source: { paperId: link.source.paperId, title: link.source.title },
+        target: { paperId: link.target.paperId, title: link.target.title },
     }));
     logEvent("generateLinkData() finished", {newLinkData: eventData});
 }
