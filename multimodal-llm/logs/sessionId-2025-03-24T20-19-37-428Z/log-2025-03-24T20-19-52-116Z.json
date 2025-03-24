@@ -1,0 +1,7 @@
+[
+  {
+    "timestamp": 14662,
+    "eventType": "aboutToSendLogData, paperData:",
+    "eventData": "{\n  \"paperData\": [\n    {\n      \"paperId\": \"f9c602cc436a9ea2f9e7db48c77d924e09ce3c32\",\n      \"title\": \"Fashion-MNIST: a Novel Image Dataset for Benchmarking Machine Learning Algorithms\",\n      \"x\": 0,\n      \"y\": 0,\n      \"z\": 0,\n      \"index\": 0\n    }\n  ]\n}"
+  }
+]

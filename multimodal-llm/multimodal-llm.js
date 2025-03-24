@@ -347,14 +347,26 @@ app.post("/upload-log", (req, res) => {
     res.header("Access-Control-Allow-Headers", "Content-Type");
 
     try {
-        const logData = req.body; // Get log data from request body
+        const body = req.body; // Get request body
+        const sessionId = body.sessionId; // Get sessionId from request body
+        const logData = body.logData; // Get log data from request body
 
         if (!Array.isArray(logData)) {
             return res.status(400).json({ error: "Invalid log data format" });
         }
 
         // Save logData to a file (optional)
-        const filePath = join(__dirname, "logs", `log-${Date.now()}.json`);
+        const now = new Date();
+        const timestamp = now.toISOString().replace(/[:.]/g, '-');
+        const sessionFolderPath = join(__dirname, "logs", sessionId);
+        console.log("Session folder path:", sessionFolderPath);
+
+        // Check if the folder exists, create it if it doesn't
+        if (!fs.existsSync(sessionFolderPath)) {
+            fs.mkdirSync(sessionFolderPath, { recursive: true });
+        }
+
+        const filePath = join(sessionFolderPath, `log-${timestamp}.json`);
         fs.writeFileSync(filePath, JSON.stringify(logData, null, 2));
 
         console.log("Log data received and saved.");
@@ -450,35 +462,6 @@ io.on("connection", (socket) => {
         isAnnotating = false;
         console.log("Annotation stopped. Transcript:", annotationTranscript);
         processAnnotationGemini(currentlyViewingPaperData);
-    });
-
-    // Handle receiving log data
-    socket.on("sendLogDataStart", (data) => {
-        console.log("sendLogDataStart received:", data);
-        logData = []; // Update global log data
-    });
-
-    socket.on("sendLogDataChunk", (chunk) => {
-        console.log("sendLogDataChunk received");
-        logData.push(...chunk); // Append chunk to global log data
-    });
-
-    socket.on("sendLogDataEnd", () => {
-        console.log("sendLogDataEnd received");
-        console.log("last bit of data:", logData[logData.length - 1]);
-        console.log("logData length:", logData.length);
-    });
-
-    socket.on("message", (message) => {
-        console.log(`Received message of size: ${message.length} bytes`);
-    });
-
-    socket.on("close", (code, reason) => {
-        console.log(`Client disconnected. Code: ${code}, Reason: ${reason}`);
-    });
-
-    socket.on("error", (error) => {
-        console.error("WebSocket error:", error);
     });
 });
 
