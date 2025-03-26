@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import http from "http";
 import chalk from "chalk";
 import { Writable } from "stream";
@@ -40,6 +41,9 @@ const request = {
     config,
     interimResults: true,
 };
+
+// Logging...
+let logData = [];
 
 // Variables for managing the audio stream
 let recognizeStream = null;
@@ -328,6 +332,71 @@ const options = {
     // Optionally, add ca, passphrase, etc.
 };
 
+// Increase request body size limit
+app.use(express.json({ limit: "5000mb" })); // Adjust size as needed
+app.use(express.urlencoded({ limit: "5000mb", extended: true }));
+
+// Handle preflight requests (OPTIONS method)
+app.options("*", (req, res) => {
+    res.header("Access-Control-Allow-Origin", "https://localhost:5173");
+    res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    res.header("Access-Control-Allow-Headers", "Content-Type");
+    res.sendStatus(204);
+});
+
+// Endpoint to receive log data
+app.post("/upload-log", (req, res) => {
+    // Set CORS headers
+    res.header("Access-Control-Allow-Origin", "https://localhost:5173");
+    res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    res.header("Access-Control-Allow-Headers", "Content-Type");
+
+    try {
+        const body = req.body; // Get request body
+        const sessionId = body.sessionId; // Get sessionId from request body
+        const logData = body.logData; // Get log data from request body
+
+        if (!Array.isArray(logData)) {
+            return res.status(400).json({ error: "Invalid log data format" });
+        }
+
+        // Define the file path directly in the /logs/ folder
+        const filePath = join(__dirname, "logs", `${sessionId}.json`);
+
+        // Check if the file exists
+        if (fs.existsSync(filePath)) {
+            // If the file exists, read its content and append the new log data
+            const existingData = JSON.parse(fs.readFileSync(filePath, "utf8"));
+            if (Array.isArray(existingData)) {
+                existingData.push(...logData);
+                fs.writeFileSync(filePath, JSON.stringify(existingData, null, 2));
+            } else {
+                return res.status(500).json({ error: "Existing log file format is invalid" });
+            }
+        } else {
+            // If the file doesn't exist, create it with the new log data
+            fs.writeFileSync(filePath, JSON.stringify(logData, null, 2));
+        }
+
+        console.log("Log data received and appended.");
+        
+        // Send response once
+        res.status(200).json({ message: "Log data received successfully", filePath });
+    } catch (error) {
+        console.error("Error processing log data:", error);
+        
+        // Send error response once
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+app.use(cors({
+    origin: "https://localhost:5173", // Allow only your frontend
+    methods: ["GET", "POST"], // Allow specific HTTP methods
+    allowedHeaders: ["Content-Type"] // Allow specific headers
+}));
+
+
 // Create an HTTPS server using your certificates
 const server = https.createServer(options, app);
 
@@ -336,6 +405,7 @@ const io = new Server(server, {
         origin: "*",
         methods: ["GET", "POST"],
     },
+    maxHttpBufferSize: 1e8, // 100MB
 });
 
 // Serve a simple HTML file for testing

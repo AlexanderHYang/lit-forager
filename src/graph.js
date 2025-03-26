@@ -25,6 +25,7 @@ import {
 } from "./graphics.js"; // Import shared scene from graphics.js
 
 import { socket } from "./socket-connection.js";
+import { logEvent } from "../main.js";
 
 // Shared graph data
 export const paperData = [];
@@ -153,6 +154,7 @@ export function startSimulationRendering() {
  * Creates link data from paperData.
  */
 export function generateLinkData() {
+    // logEvent("generateLinkData() called", {previousLinkData: {citationLinkData, recommendationLinkData, authorLinkData, userLinkData}});
     // even though links are initially created as index-based
     // they are later transformed into object-based via updateLines(),
     // anu.js or d3 must do this internally
@@ -193,6 +195,25 @@ export function generateLinkData() {
             }
         });
     });
+
+    const eventData = {};
+    eventData.citationLinkData = citationLinkData.map((link) => ({
+        source: { paperId: link.source.paperId, title: link.source.title },
+        target: { paperId: link.target.paperId, title: link.target.title },
+    }));
+    eventData.recommendationLinkData = recommendationLinkData.map((link) => ({
+        source: { paperId: link.source.paperId, title: link.source.title },
+        target: { paperId: link.target.paperId, title: link.target.title },
+    }));
+    eventData.authorLinkData = authorLinkData.map((link) => ({
+        source: { paperId: link.source.paperId, title: link.source.title },
+        target: { paperId: link.target.paperId, title: link.target.title },
+    }));
+    eventData.userLinkData = userLinkData.map((link) => ({
+        source: { paperId: link.source.paperId, title: link.source.title },
+        target: { paperId: link.target.paperId, title: link.target.title },
+    }));
+    logEvent("generateLinkData() finished", {newLinkData: eventData});
 }
 
 const scaleC = d3.scaleOrdinal(anu.ordinalChromatic("d310").toColor4());
@@ -201,6 +222,7 @@ const scaleC = d3.scaleOrdinal(anu.ordinalChromatic("d310").toColor4());
  * Creates and updates nodes in the Babylon.js scene.
  */
 export function createNodes() {
+    logEvent("createNodes() called", {paperData: paperData});
     if (!scene) return;
 
     if (nodes) {
@@ -251,6 +273,7 @@ export function createNodes() {
         .action(
             (d, n, i) =>
                 new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOverTrigger, () => {
+                    logEvent("node onPointerOverTrigger", {paperId: d.paperId, position: n.position});
                     //ExecudeCodeAction allows us to execute a given function
                     setHoverPlaneToNode(d, n);
                     isPointerOver[d.paperId] = true;
@@ -260,6 +283,7 @@ export function createNodes() {
         .action(
             (d, n, i) =>
                 new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOutTrigger, () => {
+                    logEvent("node onPointerOutTrigger", {paperId: d.paperId, position: n.position});
                     //Same as above but in reverse
                     console.log("pointer out");
                     isPointerOver[d.paperId] = false;
@@ -272,10 +296,12 @@ export function createNodes() {
         .action(
             (d, n, i) =>
                 new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickDownTrigger, () => {
+                    logEvent("node onPickDownTrigger", {paperId: d.paperId, position: n.position});
                     pickStartTime[d.paperId] = performance.now();
                     shouldDrag[d.paperId] = false;
                     setTimeout(() => {
                         if (isDragging[d.paperId] && !shouldDrag[d.paperId]) {
+                            logEvent("node onPickDownTrigger - long press detected", {paperId: d.paperId, position: n.position});
                             updatePaperPanelToNode(d, n);
                         }
                     }, CLICK_DELAY_THRESHOLD);
@@ -285,12 +311,14 @@ export function createNodes() {
         .action(
             (d, n, i) =>
                 new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickUpTrigger, () => {
+                    logEvent("node onPickUpTrigger", {paperId: d.paperId, position: n.position});
                     console.log("pick up");
 
                     if (!shouldDrag[d.paperId]) {
                         const pickDuration = performance.now() - pickStartTime[d.paperId];
 
                         if (pickDuration < CLICK_DELAY_THRESHOLD) {
+                            logEvent("node onPickUpTrigger - short click detected", {paperId: d.paperId, position: n.position});
                             // only process click if it is short
 
                             if (d.paperId === paperDetailsPanelId) {
@@ -307,6 +335,8 @@ export function createNodes() {
                                 highlighter.removeMesh(n);
                             }
                         }
+                    } else {
+                        logEvent("node onPickUpTrigger - node is already being dragged", {paperId: d.paperId, position: n.position});
                     }
                 })
         );
@@ -323,6 +353,7 @@ export function createNodes() {
         dragBehavior.detachCameraControls = true;
 
         dragBehavior.onDragStartObservable.add((data) => {
+            logEvent("node drag onDragStartObservable", {paperId: d.paperId, position: n.position});
             isDragging[d.paperId] = true;
             initialPosition = n.position.clone();
         });
@@ -344,11 +375,14 @@ export function createNodes() {
                 pinnedNodeIds.push(d.paperId);
             }
 
+            logEvent("node drag onPositionChangedObservable", {paperId: d.paperId, position: n.position});
+
             // check distance to other currently dragged nodes
             paperData.forEach((other) => {
                 if (other.paperId !== d.paperId && (false || isDragging[other.paperId])) {
                     let dist = new Vector3(other.x, other.y, other.z).subtract(n.position).length();
                     if (dist < 0.05) {
+                        logEvent("node drag onPositionChangedObservable - node proximity connection detected", {paperId: d.paperId, otherPaperId: other.paperId, position: n.position, otherPosition: new Vector3(other.x, other.y, other.z), distance: dist});
                         console.log("Node connection gesture detected");
                         connectNodes(d.paperId, other.paperId);
                         excludeFromNodeConnection.push(d.paperId);
@@ -358,11 +392,13 @@ export function createNodes() {
             });
         });
         dragBehavior.onDragObservable.add((data) => {
+            logEvent("node drag onDragObservable (drag target changed)", {paperId: d.paperId, nodePosition: n.position});
             if (shouldDrag[d.paperId]) {
                 simulation.alpha(0.1);
             }
         });
         dragBehavior.onDragEndObservable.add(() => {
+            logEvent("node drag onDragEndObservable", {paperId: d.paperId, position: n.position});
             // Reset node position when drag ended
             console.log("drag end");
             initialPosition = null;
@@ -419,6 +455,7 @@ let updateLines = (data) => {
 };
 
 function createLinksFromData(data, color) {
+    // logEvent("createLinksFromData() called", {data: data, color: color});
     if (links) {
         links.run((d, n, i) => {
             n.dispose();
@@ -442,6 +479,7 @@ function createLinksFromData(data, color) {
     simulation.force("link", forceLink(data).distance(0.1).strength(2));
 }
 function createLinks() {
+    logEvent("createLinks() called", {linkType: linkType});
     if (linkType === "recommendation") {
         createLinksFromData(recommendationLinkData, linkColorMap[linkType]);
     } else if (linkType === "citation") {
@@ -475,6 +513,7 @@ export function ticked() {
 }
 
 export function clearNodeSelection() {
+    logEvent("clearNodeSelection() called", {selectedIds: selectedIds});
     console.log("clearNodeSelection() called");
     selectedIds.length = 0;
     nodes.run((d, n, i) => {
@@ -483,6 +522,7 @@ export function clearNodeSelection() {
 }
 
 export function unpinNodes() {
+    logEvent("unpinNodes() called", {pinnedNodeIds: pinnedNodeIds});
     console.log("unpinNodes() called");
     pinnedNodeIds.length = 0;
     paperData.forEach((d) => {
@@ -496,7 +536,9 @@ export function unpinNodes() {
  * Fetches recommendations and adds new nodes.
  */
 export async function addRecommendationsFromSelectedPapers() {
+    logEvent("addRecommendationsFromSelectedPapers() called", {selectedIds: selectedIds});
     if (waitingForAPI) {
+        logEvent("addRecommendationsFromSelectedPapers() - not requesting, waiting for API", {selectedIds: selectedIds});
         console.log("not requesting, already waiting for API");
         return;
     }
@@ -541,6 +583,7 @@ export async function addRecommendationsFromSelectedPapers() {
         addPapersToGraph(newPapers);
         setLinkType("recommendation");
     } catch (error) {
+        logEvent("addRecommendationsFromSelectedPapers() failed", {error: error});
         console.error("addRecommendationsFromSelectedPapers() failed with error:", error);
         setFullScreenUIText("No available papers to add");
     }
@@ -561,7 +604,11 @@ export async function addRecommendationsFromSelectedPapers() {
  * Adds new papers to the graph.
  */
 export function addPapersToGraph(newPapers) {
-    if (!newPapers || newPapers.length === 0) return;
+    logEvent("addPapersToGraph() called", {newPapers: newPapers, prevPaperData: paperData});
+    if (!newPapers || newPapers.length === 0) {
+        logEvent("addPapersToGraph() failed - newPapers must be a valid non-empty list", {newPapers: newPapers});
+        return;
+    }
 
     // Notes:
     // 1) Nodes might need to be locked in place prior to adding to simulation,
@@ -640,12 +687,15 @@ export function addPapersToGraph(newPapers) {
     }, 3000);
 
     simulation.alpha(0.2);
+
+    logEvent("addPapersToGraph() finished", {newPapers: newPapers, currPaperData: paperData});
 }
 
 /**
  * Removes selected nodes from the graph.
  */
 export function removeSelectedNodesFromGraph() {
+    logEvent("removeSelectedNodesFromGraph() called", {selectedIds: selectedIds});
     removeNodesFromGraph(selectedIds);
     removedPaperIds.push(...selectedIds);
     selectedIds.length = 0;
@@ -655,6 +705,7 @@ export function removeSelectedNodesFromGraph() {
  * Removes nodes from the graph.
  */
 export function removeNodesFromGraph(idsToRemove) {
+    logEvent("removeNodesFromGraph() called", {idsToRemove: idsToRemove, paperData: paperData});
     console.log("remove nodes from graph called");
     console.log("idsToRemove", idsToRemove);
     console.log("paperData", paperData);
@@ -706,6 +757,8 @@ export function removeNodesFromGraph(idsToRemove) {
     createNodes();
     // createLinksFromData(useCitationLinks ? citationLinkData : recommendationLinkData);
     createLinks();
+
+    logEvent("removeNodesFromGraph() finished", {newPaperData: paperData});
 }
 
 /**
@@ -718,14 +771,19 @@ export function changeLinkType() {
     // // ticked();
 
     if (linkType === "recommendation") {
+        logEvent("changeLinkType() called", {currentLinkType: linkType, newLinkType: "citation"});
         linkType = "citation";
     } else if (linkType === "citation") {
+        logEvent("changeLinkType() called", {currentLinkType: linkType, newLinkType: "author"});
         linkType = "author";
     } else if (linkType === "author") {
+        logEvent("changeLinkType() called", {currentLinkType: linkType, newLinkType: "custom"});
         linkType = "custom";
     } else if (linkType === "custom") {
+        logEvent("changeLinkType() called", {currentLinkType: linkType, newLinkType: "recommendation"});
         linkType = "recommendation";
     } else {
+        logEvent("changeLinkType() called - invalid link type", {linkType: linkType});
         console.error("Invalid link type:", linkType);
     }
     setFullScreenUIText(`Link Type ${linkType}`);
@@ -733,12 +791,14 @@ export function changeLinkType() {
 }
 
 export function setLinkType(type) {
+    logEvent("setLinkType() called", {currLinkType: linkType, newLinkType: type});
     if (
         type !== "recommendation" &&
         type !== "citation" &&
         type !== "author" &&
         linkType !== "custom"
     ) {
+        logEvent("setLinkType() called - invalid link type", {linkType: type});
         console.error("Invalid link type:", type);
         return;
     }
@@ -748,12 +808,15 @@ export function setLinkType(type) {
 }
 
 export async function addCitationsFromSelectedPaper() {
+    logEvent("addCitationsFromSelectedPaper() called", {selectedIds: selectedIds, currPaperData: paperData});
     if (selectedIds.length !== 1) {
+        logEvent("addCitationsFromSelectedPaper() failed - must select exactly one paper", {selectedIds: selectedIds});
         console.error("Error: Must select exactly one paper to fetch citations for.");
         return;
     }
 
     if (waitingForAPI) {
+        logEvent("addCitationsFromSelectedPaper() - not requesting, waiting for API", {selectedIds: selectedIds});
         console.log("not requesting, already waiting for API");
         return;
     }
@@ -787,6 +850,7 @@ export async function addCitationsFromSelectedPaper() {
         addPapersToGraph(newPapers);
         setLinkType("citation");
     } catch (error) {
+        logEvent("addCitationsFromSelectedPaper() failed", {error: error});
         console.error("addCitationsFromSelectedPaper() failed with error:", error);
         setFullScreenUIText("No available papers to add");
     }
@@ -801,15 +865,20 @@ export async function addCitationsFromSelectedPaper() {
             }
         }
     });
+
+    logEvent("addCitationsFromSelectedPaper() finished", {selectedIds: selectedIds, paperData: paperData});
 }
 
 export async function addReferencesFromSelectedPaper() {
+    logEvent("addReferencesFromSelectedPaper() called", {selectedIds: selectedIds, currPaperData: paperData});
     if (selectedIds.length !== 1) {
+        logEvent("addReferencesFromSelectedPaper() failed - must select exactly one paper", {selectedIds: selectedIds});
         console.error("Error: Must select exactly one paper to fetch references for.");
         return;
     }
 
     if (waitingForAPI) {
+        logEvent("addReferencesFromSelectedPaper() - not requesting, waiting for API", {selectedIds: selectedIds});
         console.log("not requesting, already waiting for API");
         return;
     }
@@ -844,6 +913,7 @@ export async function addReferencesFromSelectedPaper() {
         addPapersToGraph(newPapers);
         setLinkType("citation");
     } catch (error) {
+        logEvent("addReferencesFromSelectedPaper() failed", {error: error});
         console.error("addReferencesFromSelectedPaper() failed with error:", error);
         setFullScreenUIText("No available papers to add");
     }
@@ -858,16 +928,21 @@ export async function addReferencesFromSelectedPaper() {
             }
         }
     });
+
+    logEvent("addReferencesFromSelectedPaper() finished", {selectedIds: selectedIds, paperData: paperData});
 }
 
 export async function addPapersFromAuthor(authorId) {
+    logEvent("addPapersFromAuthor() called", {authorId: authorId, currPaperData: paperData});
     if (!authorId) {
+        logEvent("addPapersFromAuthor() failed - authorId must be a non-empty string", {authorId: authorId});
         console.error("Error: authorId must be a non-empty string.");
         setFullScreenUIText("No available papers to add");
         return;
     }
 
     if (waitingForAPI) {
+        logEvent("addPapersFromAuthor() - not requesting, waiting for API", {authorId: authorId});
         console.log("not requesting, already waiting for API");
         return;
     }
@@ -898,6 +973,7 @@ export async function addPapersFromAuthor(authorId) {
         addPapersToGraph(newPapers);
         setLinkType("author");
     } catch (error) {
+        logEvent("addPapersFromAuthor() failed", {error: error});
         console.error("addReferencesFromSelectedPaper() failed with error:", error);
         setFullScreenUIText("No available papers to add");
     }
@@ -912,10 +988,14 @@ export async function addPapersFromAuthor(authorId) {
             }
         }
     });
+
+    logEvent("addPapersFromAuthor() finished", {authorId: authorId, selectedIds: selectedIds, paperData: paperData});
 }
 
 export async function restoreDeletedPapers() {
+    logEvent("restoreDeletedPapers() called", {removedPaperIds: removedPaperIds, currPaperData: paperData});
     if (waitingForAPI) {
+        logEvent("restoreDeletedPapers() - not requesting, waiting for API", {removedPaperIds: removedPaperIds});
         console.log("not requesting, already waiting for API");
         return;
     }
@@ -925,12 +1005,16 @@ export async function restoreDeletedPapers() {
         addPapersToGraph(deletedPapers);
         removedPaperIds.length = 0;
     } catch (error) {
+        logEvent("restoreDeletedPapers() failed", {error: error});
         console.error("restoreDeletedPapers() failed with error:", error);
     }
     waitingForAPI = false;
+
+    logEvent("restoreDeletedPapers() finished", {removedPaperIds: removedPaperIds, paperData: paperData});
 }
 
 function regenerateUserLinkData() {
+    const oldUserLinkData = userLinkData.slice();
     userLinkData.length = 0;
     userConnections.forEach(([a, b]) => {
         if (paperIds.includes(a) && paperIds.includes(b)) {
@@ -940,12 +1024,16 @@ function regenerateUserLinkData() {
             });
         }
     });
+
+    logEvent("regenerateUserLinkData() called", {oldUserLinkData: oldUserLinkData, newUserLinkData: userLinkData});
 }
 
 export function connectSelectedNodes() {
+    logEvent("connectSelectedNodes() called", {selectedIds: selectedIds});
     console.log("connectSelectedNodes() called");
 
     if (selectedIds.length !== 2) {
+        logEvent("connectSelectedNodes() failed - must select exactly two papers", {selectedIds: selectedIds});
         console.error("Error: Must select exactly two papers to connect.");
         return;
     }
@@ -957,10 +1045,12 @@ export function connectSelectedNodes() {
 }
 
 export function connectNodes(paperId1, paperId2) {
+    logEvent("connectNodes() called", {paperId1: paperId1, paperId2: paperId2, paper1Position: paperData.find((d) => d.paperId === paperId1), paper2Position: paperData.find((d) => d.paperId === paperId2)});
     if (
         excludeFromNodeConnection.includes(paperId1) ||
         excludeFromNodeConnection.includes(paperId2)
     ) {
+        logEvent("connectNodes() failed - nodes excluded from connection", {paperId1: paperId1, paperId2: paperId2, excludeFromNodeConnection: excludeFromNodeConnection});
         console.log("nodes excluded from connection");
         return;
     }
@@ -970,15 +1060,19 @@ export function connectNodes(paperId1, paperId2) {
         ([a, b]) => (a === paperId1 && b === paperId2) || (a === paperId2 && b === paperId1)
     );
     if (i !== -1) {
+        logEvent("connectNodes() - nodes already connected", {paperId1: paperId1, paperId2: paperId2, userConnections: userConnections});
         if (linkType === "custom") {
+            logEvent("connectNodes() - removing existing connection", {paperId1: paperId1, paperId2: paperId2});
             console.log("nodes already connected");
             userConnections.splice(i, 1);
             regenerateUserLinkData();
             createLinks();
         } else {
+            logEvent("connectNodes() - nodes already connected, but not custom link type, switching to linkType = custom", {paperId1: paperId1, paperId2: paperId2, prevLinkType: linkType});
             linkType = "custom";
         }
     } else {
+        logEvent("connectNodes() - creating new connection", {paperId1: paperId1, paperId2: paperId2});
         userConnections.push([paperId1, paperId2]);
         const p1 = paperData.find((d) => d.paperId === paperId1);
         const p2 = paperData.find((d) => d.paperId === paperId2);
@@ -1007,10 +1101,12 @@ function generateFibonacciLatticePositions(n, center, radius) {
             )
         );
     }
+    logEvent("generateFibonacciLatticePositions() called", {n: n, center: center, radius: radius, positions: positions});
     return positions;
 }
 
 export async function createClustersFromGemini(response) {
+    logEvent("createClustersFromGemini() called", {response: response});
     console.log("createClustersFromGemini() called");
 
     try {
@@ -1050,7 +1146,7 @@ export async function createClustersFromGemini(response) {
             ids.forEach((id, j) => {
                 const d = paperData.find((d) => d.paperId === id);
                 const startPos = new BABYLON.Vector3(d.x, d.y, d.z);
-                const endPos = new BABYLON.Vector3(positions[j].x, positions[j].y, positions[j].z);
+                const endPos = j > 0 ? positions[j].clone() : clusterCenters[i].clone();
                 animateNodeData(d, startPos, endPos, 1000); // 1000ms = 1s animation
             });
         });
@@ -1069,17 +1165,16 @@ export async function createClustersFromGemini(response) {
         // create links between elements in cluster
         userConnections.length = 0;
         clusterAssignments.forEach((cluster) => {
+            const id0 = cluster[0]
             cluster.forEach((id1, i) => {
-                cluster.forEach((id2, j) => {
-                    if (j > i) {
-                        let k = userConnections.findIndex(
-                            ([a, b]) => (a === id1 && b === id2) || (a === id2 && b === id1)
-                        );
-                        if (k === -1) {
-                            userConnections.push([id1, id2]);
-                        }
+                if (i > 0) {
+                    let k = userConnections.findIndex(
+                        ([a, b]) => (a === id0 && b === id1) || (a === id1 && b === id0)
+                    );
+                    if (k === -1) {
+                        userConnections.push([id0, id1]);
                     }
-                });
+                }
             });
         });
 
@@ -1087,12 +1182,16 @@ export async function createClustersFromGemini(response) {
         regenerateUserLinkData();
         createLinks();
     } catch (error) {
+        logEvent("createClustersFromGemini() failed", {error: error});
         console.error("createClustersFromGemini() failed with error:", error);
         return;
     }
+
+    logEvent("createClustersFromGemini() finished", {response: response, paperData: paperData});
 }
 
 export async function testCreateClusters() {
+    logEvent("testCreateClusters() called", {});
     console.log("test createClusters() called");
 
     const clusterAssignments = [[], [], []];
@@ -1144,23 +1243,24 @@ export async function testCreateClusters() {
     // create links between elements in cluster
     userConnections.length = 0;
     clusterAssignments.forEach((cluster) => {
+        const id0 = cluster[0]
         cluster.forEach((id1, i) => {
-            cluster.forEach((id2, j) => {
-                if (j > i) {
-                    let k = userConnections.findIndex(
-                        ([a, b]) => (a === id1 && b === id2) || (a === id2 && b === id1)
-                    );
-                    if (k === -1) {
-                        userConnections.push([id1, id2]);
-                    }
+            if (i > 0) {
+                let k = userConnections.findIndex(
+                    ([a, b]) => (a === id0 && b === id1) || (a === id1 && b === id0)
+                );
+                if (k === -1) {
+                    userConnections.push([id0, id1]);
                 }
-            });
+            }
         });
     });
 
     linkType = "custom";
     regenerateUserLinkData();
     createLinks();
+
+    logEvent("testCreateClusters() finished", {paperData: paperData});
 }
 
 function animateNodeData(d, startPos, endPos, duration = 1000) {
@@ -1185,6 +1285,7 @@ function animateNodeData(d, startPos, endPos, duration = 1000) {
 }
 
 export function sendAllNodesData() {
+    logEvent("sendAllNodesData() called", {paperData: paperData});
     const payload = [];
     paperData.forEach((d) => {
         payload.push({ paperId: d.paperId, title: d.title, abstract: d.abstract });
@@ -1195,6 +1296,7 @@ export function sendAllNodesData() {
         socket.emit("sendAllNodesData", payload);
         console.log("Emitted 'sendAllNodesData' event with payload:", payload);
     } else {
+        logEvent("sendAllNodesData() failed - socket not available or not connected", {});
         console.error(
             "Socket is not available or not connected. 'sendAllNodesData' event not emitted."
         );
@@ -1203,6 +1305,7 @@ export function sendAllNodesData() {
 
 export function sendCurrentlyViewingNodeData() {
     const currentlyViewingPaper = paperData.find((d) => paperDetailsPanelId === d.paperId);
+    logEvent("sendCurrentlyViewingNodeData() called", {currentlyViewingPaper: currentlyViewingPaper});
     if (currentlyViewingPaper) {
         const payload = {
             paperId: currentlyViewingPaper.paperId,
@@ -1215,6 +1318,7 @@ export function sendCurrentlyViewingNodeData() {
             socket.emit("sendCurrentlyViewingNodeData", payload);
             // console.log("Emitted 'sendCurrentlyViewingNodeData' event with payload:", payload);
         } else {
+            logEvent("sendCurrentlyViewingNodeData() failed - socket not available or not connected", {});
             console.error(
                 "Socket is not available or not connected. 'sendCurrentlyViewingNodeData' event not emitted."
             );
@@ -1226,6 +1330,7 @@ export function sendCurrentlyViewingNodeData() {
  * Adds a summary for a given paper and updates the global mapping.
  */
 export function addSummaryForPaper(summary, paperId) {
+    logEvent("addSummaryForPaper() called", {summary: summary, paperId: paperId});
     paperSummaryMap[paperId] = summary;
     updateInsightsAndNotesText(paperId);
 }
@@ -1234,11 +1339,13 @@ export function addSummaryForPaper(summary, paperId) {
  * Adds keywords for a given paper and updates the global mapping.
  */
 export function addKeywordsForPaper(keywords, paperId) {
+    logEvent("addKeywordsForPaper() called", {keywords: keywords, paperId: paperId});
     paperKeywordsMap[paperId] = keywords;
     updateInsightsAndNotesText(paperId);
 }
 
 export function addAnnotationsForPaper(annotations, paperId) {
+    logEvent("addAnnotationsForPaper() called", {annotations: annotations, paperId: paperId});
     paperAnnotationsMap[paperId] = annotations;
     updateInsightsAndNotesText(paperId);
 }

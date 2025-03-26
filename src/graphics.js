@@ -46,6 +46,7 @@ import "@babylonjs/inspector";
 import { timeout } from "d3";
 import { removeItem } from "./utils";
 import { socket } from "./socket-connection";
+import { logEvent } from "../main";
 // Create the Babylon.js engine and scene
 const app = document.querySelector("#app");
 const canvas = document.createElement("canvas");
@@ -205,7 +206,6 @@ const hoverPlaneGUI = await hoverPlaneTexture.parseFromSnippetAsync("0AQMY9");
 const titlePanelBackground = hoverPlaneTexture.getControlByName("titlePanelBackground");
 const titleStackPanel = titlePanelBackground.getChildByName("titleStackPanel");
 const titleTextBlock = titleStackPanel.getChildByName("titleTextBlock");
-console.log(titleTextBlock);
 
 const clusterPanelBackground = hoverPlaneTexture.getControlByName("clusterPanelBackground");
 const clusterStackPanel = clusterPanelBackground.getChildByName("clusterStackPanel");
@@ -240,7 +240,9 @@ export function updateHoverPlaneText(text) {
     titleTextBlock.text = text;
 }
 export function setHoverPlaneToNode(d, n) {
+    logEvent("setHoverPlaneToNode() called", {hoverPlaneId: hoverPlaneId, paperDetailsPanelId: paperDetailsPanelId, hoverPlaneVisibility: hoverPlane.isVisible, nodeData: d});
     if (n === null || d === null) {
+        logEvent("setHoverPlaneToNode() - hiding hover plane", {});
         hoverPlane.isVisible = false;
         hoverPlaneId = null;
     } else {
@@ -264,6 +266,8 @@ export function setHoverPlaneToNode(d, n) {
             hoverPlane.isVisible = true;
         }
     }
+
+    logEvent("setHoverPlaneToNode() finished", {hoverPlaneId: hoverPlaneId, paperDetailsPanelId: paperDetailsPanelId, hoverPlaneVisibility: hoverPlane.isVisible});
 }
 
 // UI Manager and NearMenu
@@ -271,10 +275,12 @@ export const guiManager = new GUI.GUI3DManager(scene);
 export const handMenu = new GUI.HandMenu(xr.baseExperience, "menu");
 
 function hideMenu(menu) {
+    // logEvent("hideMenu", {menuName: menu.name});
     menu.scaling = new Vector3(0, 0, 0);
     menu.isPickable = false;
 }
 function showMenu(menu) {
+    // logEvent("showMenu", {menuName: menu.name});
     menu.scaling = new Vector3(0.06, 0.06, 0.06);
     menu.isPickable = true;
 }
@@ -314,44 +320,52 @@ export const clearAnnotationButton = createButton("clearAnnotationButton", "Clea
 
 // Attach UI button behaviors
 recommendButton.onPointerClickObservable.add(() => {
+    logEvent("recommendButtonPressed", {});
     console.log("Recommend button pressed");
     hideMenu(handMenu);
     showMenu(recommendationsMenu);
 });
 
 deleteButton.onPointerClickObservable.add(() => {
+    logEvent("deleteButtonPressed", {});
     console.log("Delete button pressed");
     removeSelectedNodesFromGraph();
 });
 clearSelectionButton.onPointerClickObservable.add(() => {
+    logEvent("clearSelectionButtonPressed", {});
     console.log("Clear Selection button pressed");
     clearNodeSelection();
 });
 unpinNodesButton.onPointerClickObservable.add(() => {
+    logEvent("unpinNodesButtonPressed", {});
     console.log("Unpin Nodes button pressed");
     unpinNodes();
 });
 toggleLinksButton.onPointerClickObservable.add(() => {
+    logEvent("toggleLinksButtonPressed", {});
     console.log("Toggle Links button pressed");
     changeLinkType();
 });
 createClustersButton.onPointerClickObservable.add(() => {
+    logEvent("createClustersButtonPressed", {});
     console.log("Create Cluster button pressed");
     socket.emit("createClustersButtonPressed", {});
 });
 summarizeButton.onPointerClickObservable.add(() => {
+    logEvent("summarizeButtonPressed", {});
     console.log("Summarize Button pressed");
     socket.emit("summarizeButtonPressed", {});
 });
-
 keywordsButton.onPointerClickObservable.add(() => {
+    logEvent("keywordsButtonPressed", {});
     console.log("Keywords Button pressed");
     socket.emit("keywordsButtonPressed", {});
 });
 
 annotateButton.onToggleObservable.add(() => {
+    logEvent("annotateButtonPressed", {isToggled: annotateButton.isToggled});
     // Set alpha mode regardless of toggle state
-
+    
     if (annotateButton.isToggled) {
         console.log("Annotate Button toggled on");
         annotateButton.plateMaterial.alphaMode = BABYLON.Engine.ALPHA_ONEONE;
@@ -371,17 +385,16 @@ clearAnnotationButton.onPointerClickObservable.add(() => {
     console.log("Clear Annotation Button pressed");
     clearAnnotationsForPaper(paperDetailsPanelId);
 });
-
 handMenu.addButton(annotateButton);
 handMenu.addButton(clearAnnotationButton);
-handMenu.addButton(recommendButton);
 handMenu.addButton(deleteButton);
-handMenu.addButton(clearSelectionButton);
 handMenu.addButton(unpinNodesButton);
 handMenu.addButton(toggleLinksButton);
 handMenu.addButton(createClustersButton);
 handMenu.addButton(summarizeButton);
 handMenu.addButton(keywordsButton);
+handMenu.addButton(clearSelectionButton);
+handMenu.addButton(recommendButton);
 
 // add extra hand menus
 const recommendationsMenu = new GUI.HandMenu(xr.baseExperience, "recommendationsMenu");
@@ -411,18 +424,22 @@ recommendationsMenu.addButton(recByCitationButton);
 recommendationsMenu.addButton(recByThematicButton);
 
 recByThematicButton.onPointerClickObservable.add(() => {
+    logEvent("recByThematicButtonPressed", {selectedIds: selectedIds});
     console.log("Recommend by thematic button pressed");
     addRecommendationsFromSelectedPapers();
 });
 recByCitationButton.onPointerClickObservable.add(() => {
+    logEvent("recByCitationButtonPressed", {selectedIds: selectedIds});
     console.log("Recommend by citation button pressed");
     addCitationsFromSelectedPaper();
 });
 recByReferenceButton.onPointerClickObservable.add(() => {
+    logEvent("recByReferenceButtonPressed", {selectedIds: selectedIds});
     console.log("Recommend by reference button pressed");
     addReferencesFromSelectedPaper();
 });
 recByAuthorButton.onPointerClickObservable.add(() => {
+    logEvent("recByAuthorButtonPressed", {});
     console.log("Recommend by author button pressed");
     // addPapersFromAuthor();
     generateAuthorButtons();
@@ -430,6 +447,7 @@ recByAuthorButton.onPointerClickObservable.add(() => {
     showMenu(authorMenu);
 });
 recBackButton.onPointerClickObservable.add(() => {
+    logEvent("recBackButtonPressed", {});
     console.log("Recommend back button pressed");
     hideMenu(recommendationsMenu);
     showMenu(handMenu);
@@ -484,6 +502,7 @@ authorMenu.backPlateMargin = 0.1;
 authorMenu.scaling = new Vector3(0.06, 0.06, 0.06);
 
 function generateAuthorButtons() {
+    logEvent("generateAuthorButtons()", {selectedIds: selectedIds});
     if (selectedIds.length !== 1) {
         console.error("Error: Must have exactly one selected node to generate author buttons");
         return;
@@ -498,9 +517,11 @@ function generateAuthorButtons() {
     });
 
     if (authorData === null) {
+        logEvent("generateAuthorButtons() - no author data found", {});
         console.error("Error: Could not find author data for selected node");
         return;
     }
+    authorData = authorData.slice(0,10);
     authorData.forEach((author) => {
         const authorButton = createButton(`author_${author.authorId}`, author.name);
         authorButton.onPointerClickObservable.add(() => {
@@ -518,6 +539,8 @@ function generateAuthorButtons() {
         showMenu(recommendationsMenu);
     });
     authorMenu.addButton(authorBackButton);
+
+    logEvent("generateAuthorButtons() finished", {authors: authorData});
 }
 
 hideMenu(authorMenu);
@@ -586,6 +609,7 @@ scene.onBeforeRenderObservable.add(() => {
 
 // Function to update paper details
 export function updatePaperPanelToNode(d, n) {
+    logEvent("updatePaperPanelToNode()", {paperDetailsPanelId: paperDetailsPanelId, paperDetailsPanelVisibility: paperDetailsPanel.isVisible, nodeData: d});
     // remove old highlight, add node to selectedIds
     if (paperDetailsPanelId !== null) {
         nodes.run((d, n) => {
@@ -657,10 +681,13 @@ export function updatePaperPanelToNode(d, n) {
         highlighter.addMesh(n, Color3.Blue());
         sendCurrentlyViewingNodeData();
     }
+
+    logEvent("updatePaperPanelToNode() finished", {paperDetailsPanelId: paperDetailsPanelId, paperDetailsPanelVisibility: paperDetailsPanel.isVisible});
 }
 
 // New function to update the insights text based on a given node
 export function updateInsightsAndNotesText(paperId, cleared) {
+    logEvent("updateInsightsAndNotesText()", {paperId: paperId});
     const insights = paperSummaryMap[paperId];
     const keywords = paperKeywordsMap[paperId];
     const annotations = paperAnnotationsMap[paperId];
@@ -695,6 +722,8 @@ export function updateInsightsAndNotesText(paperId, cleared) {
         notesTextBlock.text = "";
         notesPanelBackground.isVisible = false;
     }
+
+    logEvent("updateInsightsAndNotesText() finished", {paperId: paperId, insights: insights, keywords: keywords, annotations: annotations});
 }
 
 // emulating full screen ui
@@ -731,6 +760,7 @@ scene.onBeforeRenderObservable.add(() => {
 
 let timeoutTime = null;
 export function setFullScreenUIText(text) {
+    logEvent("setFullScreenUIText()", {text: text});
     fullscreenUIPlane.isVisible = true;
     fullscreenUITextBlock.text = text;
     timeoutTime = performance.now() + 2900;
