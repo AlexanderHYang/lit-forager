@@ -68,37 +68,55 @@ export let paperAnnotationsMap = {};
 // Initialize force simulation
 export let simulation;
 
+const seedPaperIDs = [
+    "0ffd57884d7957f6b5634b9fa24843dc3759668f",
+    "944da0eb2aba11aaed51bba35d6e25bda33b2571",
+    "644482c6c6ca800ccc4ef07505e34dbde8cefcb4",
+];
+
 /**
  * Fetches the initial set of papers.
  */
 export async function fetchInitialPapers() {
     waitingForAPI = true;
     try {
-        let data = await APIUtils.getDetailsForMultiplePapers([
-            "f9c602cc436a9ea2f9e7db48c77d924e09ce3c32",
-        ]);
+        let data = await APIUtils.getDetailsForMultiplePapers(seedPaperIDs);
         if (!Array.isArray(data)) {
-            data = [
-                {
-                    paperId: "f9c602cc436a9ea2f9e7db48c77d924e09ce3c32",
-                    references: [],
-                    recommends: [],
-                },
-            ];
+            // Fallback: create a paper object for each seed ID if API returns a single object.
+            data = seedPaperIDs.map(id => ({
+                paperId: id,
+                references: [],
+                recommends: [],
+            }));
         }
         paperData.push(...data);
     } catch (error) {
         console.error("Failed to fetch initial papers", error);
-        paperData.push({
-            paperId: "f9c602cc436a9ea2f9e7db48c77d924e09ce3c32",
-            references: [],
-            recommends: [],
+        // Fallback: create a paper object for each seed ID on error.
+        seedPaperIDs.forEach(id => {
+            paperData.push({
+                paperId: id,
+                references: [],
+                recommends: [],
+            });
         });
     }
-    paperIds.push("f9c602cc436a9ea2f9e7db48c77d924e09ce3c32");
-    paperData[0].x = 0;
-    paperData[0].y = 0;
-    paperData[0].z = 0;
+    // Store all seed paper IDs.
+    paperIds.push(...seedPaperIDs);
+    
+    // Position papers: if one seed, center it, otherwise distribute using Fibonacci lattice.
+    if (seedPaperIDs.length === 1) {
+        paperData[0].x = 0;
+        paperData[0].y = 0;
+        paperData[0].z = 0;
+    } else {
+        const positions = generateFibonacciLatticePositions(seedPaperIDs.length, new Vector3(0, 0, 0), 0.1);
+        for (let i = 0; i < paperData.length; i++) {
+            paperData[i].x = positions[i].x;
+            paperData[i].y = positions[i].y;
+            paperData[i].z = positions[i].z;
+        }
+    }
     waitingForAPI = false;
 }
 
@@ -1223,4 +1241,9 @@ export function addKeywordsForPaper(keywords, paperId) {
 export function addAnnotationsForPaper(annotations, paperId) {
     paperAnnotationsMap[paperId] = annotations;
     updateInsightsAndNotesText(paperId);
+}
+
+export function clearAnnotationsForPaper(paperId) {
+    paperAnnotationsMap[paperId] = null;
+    updateInsightsAndNotesText(paperId, true);
 }

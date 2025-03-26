@@ -40,6 +40,7 @@ import {
     connectSelectedNodes,
     testCreateClusters,
     sendCurrentlyViewingNodeData,
+    clearAnnotationsForPaper
 } from "./graph";
 import "@babylonjs/inspector";
 import { timeout } from "d3";
@@ -117,6 +118,68 @@ xrSessionManager.onXRSessionEnded.add(() => {
     currentlyInXr = false;
     currCam = camera;
     console.log("XR Session Ended");
+});
+
+const xrHandFeature = xrFeatureManager.enableFeature(
+    BABYLON.WebXRFeatureName.HAND_TRACKING,
+    "latest",
+    {
+        xrInput: xr.input,
+    }
+);
+
+let clusterStartTime = null;
+let clusterTriggered = false;
+
+xrHandFeature.onHandAddedObservable.add(() => {
+    scene.onBeforeRenderObservable.add(() => {
+        const now = performance.now();
+        const leftHand = xrHandFeature.getHandByHandedness("left");
+        const rightHand = xrHandFeature.getHandByHandedness("right");
+
+        if (leftHand && rightHand) {
+            const joints = [
+                BABYLON.WebXRHandJoint.THUMB_TIP,
+                BABYLON.WebXRHandJoint.INDEX_FINGER_TIP,
+                BABYLON.WebXRHandJoint.MIDDLE_FINGER_TIP,
+                BABYLON.WebXRHandJoint.RING_FINGER_TIP,
+                BABYLON.WebXRHandJoint.PINKY_FINGER_TIP,
+            ];
+            let allFingersClose = true;
+
+            for (const jointName of joints) {
+                const leftTip = leftHand.getJointMesh(jointName);
+                const rightTip = rightHand.getJointMesh(jointName);
+                if (leftTip && rightTip) {
+                    const distance = BABYLON.Vector3.Distance(leftTip.position, rightTip.position);
+                    if (distance >= 0.05) {
+                        allFingersClose = false;
+                        break;
+                    }
+                }
+            }
+
+            if (allFingersClose) {
+                if (!clusterTriggered) {
+                    if (clusterStartTime === null) {
+                        clusterStartTime = now;
+                    } else if (now - clusterStartTime >= 1000) {
+                        console.log("Cluster event has been triggered");
+                        clusterTriggered = true;
+                        socket.emit("createClustersButtonPressed", {});
+                    }
+                }
+            } else {
+                // Reset once fingers are apart (allowing a new trigger when closed again)
+                clusterStartTime = null;
+                clusterTriggered = false;
+            }
+        } else {
+            // Reset if one of the hands is not available
+            clusterStartTime = null;
+            clusterTriggered = false;
+        }
+    });
 });
 
 // Highlight Layer and hover plane
@@ -247,6 +310,7 @@ export const summarizeButton = createButton("summarizeButton", "Summarize Paper"
 export const keywordsButton = createButton("keywordsButton", "Generate Keywords");
 export const annotateButton = createButton("annotateButton", "Annotate", false);
 annotateButton.isToggleButton = true;
+export const clearAnnotationButton = createButton("clearAnnotationButton", "Clear Annotation");
 
 // Attach UI button behaviors
 recommendButton.onPointerClickObservable.add(() => {
@@ -287,23 +351,29 @@ keywordsButton.onPointerClickObservable.add(() => {
 
 annotateButton.onToggleObservable.add(() => {
     // Set alpha mode regardless of toggle state
-    
 
     if (annotateButton.isToggled) {
         console.log("Annotate Button toggled on");
         annotateButton.plateMaterial.alphaMode = BABYLON.Engine.ALPHA_ONEONE;
-        annotateButton.plateMaterial.diffuseColor = new BABYLON.Color3(0, 255, 255); 
+        annotateButton.plateMaterial.diffuseColor = new BABYLON.Color3(0, 255, 255);
         annotateButton.text = "Listening...";
         socket.emit("annotateButtonPressed", {});
     } else {
         console.log("Annotate Button toggled off");
         annotateButton.plateMaterial.alphaMode = 2;
-        annotateButton.plateMaterial.diffuseColor = new BABYLON.Color3(0.4, 0.4, 0.4); 
+        annotateButton.plateMaterial.diffuseColor = new BABYLON.Color3(0.4, 0.4, 0.4);
         annotateButton.text = "Annotate";
         socket.emit("annotateButtonReleased", {});
     }
 });
 
+clearAnnotationButton.onPointerClickObservable.add(() => {
+    console.log("Clear Annotation Button pressed");
+    clearAnnotationsForPaper(paperDetailsPanelId);
+});
+
+handMenu.addButton(annotateButton);
+handMenu.addButton(clearAnnotationButton);
 handMenu.addButton(recommendButton);
 handMenu.addButton(deleteButton);
 handMenu.addButton(clearSelectionButton);
@@ -312,7 +382,7 @@ handMenu.addButton(toggleLinksButton);
 handMenu.addButton(createClustersButton);
 handMenu.addButton(summarizeButton);
 handMenu.addButton(keywordsButton);
-handMenu.addButton(annotateButton);
+
 // add extra hand menus
 const recommendationsMenu = new GUI.HandMenu(xr.baseExperience, "recommendationsMenu");
 
@@ -590,7 +660,7 @@ export function updatePaperPanelToNode(d, n) {
 }
 
 // New function to update the insights text based on a given node
-export function updateInsightsAndNotesText(paperId) {
+export function updateInsightsAndNotesText(paperId, cleared) {
     const insights = paperSummaryMap[paperId];
     const keywords = paperKeywordsMap[paperId];
     const annotations = paperAnnotationsMap[paperId];
@@ -618,6 +688,10 @@ export function updateInsightsAndNotesText(paperId) {
         notesTextBlock.text += annotations + " ";
         notesPanelBackground.isVisible = true;
     } else {
+        notesTextBlock.text = "";
+        notesPanelBackground.isVisible = false;
+    }
+    if (cleared) {
         notesTextBlock.text = "";
         notesPanelBackground.isVisible = false;
     }

@@ -182,6 +182,11 @@ const speechCallback = (stream) => {
                 optional: ["annotate", "notes", "annotating"],
                 eventType: "stopAnnotate",
             },
+            {
+                required: "clear",
+                optional: ["annotate", "annotation", "annotating"],
+                eventType: "clearAnnotation",
+            },
         ];
 
         keywordCombinations.forEach((combo) => {

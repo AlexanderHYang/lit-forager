@@ -5,14 +5,17 @@ import {
     addSummaryForPaper,
     addKeywordsForPaper,
     addAnnotationsForPaper,
+    clearAnnotationsForPaper,
     removeSelectedNodesFromGraph,
     clearNodeSelection,
     unpinNodes,
     addCitationsFromSelectedPaper,
     addReferencesFromSelectedPaper,
     restoreDeletedPapers,
-    createClustersFromGemini
+    createClustersFromGemini,
 } from "./graph.js";
+
+import { paperDetailsPanelId } from "./graphics.js";
 
 // Declare a socket variable to be used globally
 let socket;
@@ -82,7 +85,7 @@ export function initializeSocketConnection() {
     socket.on("createClustersGemini", (data) => {
         console.log("Received socket.io event for createClustersGemini:", data);
         createClustersFromGemini(data.clusters);
-    })
+    });
 
     socket.on("deletePaper", (data) => {
         console.log("Received socket.io event:", data);
@@ -102,6 +105,11 @@ export function initializeSocketConnection() {
     socket.on("restoreDeletedPapers", (data) => {
         console.log("Received socket.io event:", data);
         restoreDeletedPapers();
+    });
+
+    socket.on("clearAnnotation", (data) => {
+        console.log("Received socket.io event:", data);
+        clearAnnotationsForPaper(paperDetailsPanelId);
     });
 
     return socket;
