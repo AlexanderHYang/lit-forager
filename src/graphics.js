@@ -317,15 +317,15 @@ annotateButton.onToggleObservable.add(() => {
     }
 });
 
-handMenu.addButton(recommendButton);
+handMenu.addButton(annotateButton);
+handMenu.addButton(keywordsButton);
+handMenu.addButton(summarizeButton);
+handMenu.addButton(createClustersButton);
 handMenu.addButton(deleteButton);
-handMenu.addButton(clearSelectionButton);
 handMenu.addButton(unpinNodesButton);
 handMenu.addButton(toggleLinksButton);
-handMenu.addButton(createClustersButton);
-handMenu.addButton(summarizeButton);
-handMenu.addButton(keywordsButton);
-handMenu.addButton(annotateButton);
+handMenu.addButton(clearSelectionButton);
+handMenu.addButton(recommendButton);
 // add extra hand menus
 const recommendationsMenu = new GUI.HandMenu(xr.baseExperience, "recommendationsMenu");
 
@@ -451,6 +451,7 @@ function generateAuthorButtons() {
         console.error("Error: Could not find author data for selected node");
         return;
     }
+    authorData = authorData.slice(0,10);
     authorData.forEach((author) => {
         const authorButton = createButton(`author_${author.authorId}`, author.name);
         authorButton.onPointerClickObservable.add(() => {

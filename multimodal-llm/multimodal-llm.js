@@ -355,21 +355,25 @@ app.post("/upload-log", (req, res) => {
             return res.status(400).json({ error: "Invalid log data format" });
         }
 
-        // Save logData to a file (optional)
-        const now = new Date();
-        const timestamp = now.toISOString().replace(/[:.]/g, '-');
-        const sessionFolderPath = join(__dirname, "logs", sessionId);
-        console.log("Session folder path:", sessionFolderPath);
+        // Define the file path directly in the /logs/ folder
+        const filePath = join(__dirname, "logs", `${sessionId}.json`);
 
-        // Check if the folder exists, create it if it doesn't
-        if (!fs.existsSync(sessionFolderPath)) {
-            fs.mkdirSync(sessionFolderPath, { recursive: true });
+        // Check if the file exists
+        if (fs.existsSync(filePath)) {
+            // If the file exists, read its content and append the new log data
+            const existingData = JSON.parse(fs.readFileSync(filePath, "utf8"));
+            if (Array.isArray(existingData)) {
+                existingData.push(...logData);
+                fs.writeFileSync(filePath, JSON.stringify(existingData, null, 2));
+            } else {
+                return res.status(500).json({ error: "Existing log file format is invalid" });
+            }
+        } else {
+            // If the file doesn't exist, create it with the new log data
+            fs.writeFileSync(filePath, JSON.stringify(logData, null, 2));
         }
 
-        const filePath = join(sessionFolderPath, `log-${timestamp}.json`);
-        fs.writeFileSync(filePath, JSON.stringify(logData, null, 2));
-
-        console.log("Log data received and saved.");
+        console.log("Log data received and appended.");
         
         // Send response once
         res.status(200).json({ message: "Log data received successfully", filePath });

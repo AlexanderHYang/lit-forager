@@ -1128,7 +1128,7 @@ export async function createClustersFromGemini(response) {
             ids.forEach((id, j) => {
                 const d = paperData.find((d) => d.paperId === id);
                 const startPos = new BABYLON.Vector3(d.x, d.y, d.z);
-                const endPos = new BABYLON.Vector3(positions[j].x, positions[j].y, positions[j].z);
+                const endPos = j > 0 ? positions[j].clone() : clusterCenters[i].clone();
                 animateNodeData(d, startPos, endPos, 1000); // 1000ms = 1s animation
             });
         });
@@ -1147,17 +1147,16 @@ export async function createClustersFromGemini(response) {
         // create links between elements in cluster
         userConnections.length = 0;
         clusterAssignments.forEach((cluster) => {
+            const id0 = cluster[0]
             cluster.forEach((id1, i) => {
-                cluster.forEach((id2, j) => {
-                    if (j > i) {
-                        let k = userConnections.findIndex(
-                            ([a, b]) => (a === id1 && b === id2) || (a === id2 && b === id1)
-                        );
-                        if (k === -1) {
-                            userConnections.push([id1, id2]);
-                        }
+                if (i > 0) {
+                    let k = userConnections.findIndex(
+                        ([a, b]) => (a === id0 && b === id1) || (a === id1 && b === id0)
+                    );
+                    if (k === -1) {
+                        userConnections.push([id0, id1]);
                     }
-                });
+                }
             });
         });
 
@@ -1226,17 +1225,16 @@ export async function testCreateClusters() {
     // create links between elements in cluster
     userConnections.length = 0;
     clusterAssignments.forEach((cluster) => {
+        const id0 = cluster[0]
         cluster.forEach((id1, i) => {
-            cluster.forEach((id2, j) => {
-                if (j > i) {
-                    let k = userConnections.findIndex(
-                        ([a, b]) => (a === id1 && b === id2) || (a === id2 && b === id1)
-                    );
-                    if (k === -1) {
-                        userConnections.push([id1, id2]);
-                    }
+            if (i > 0) {
+                let k = userConnections.findIndex(
+                    ([a, b]) => (a === id0 && b === id1) || (a === id1 && b === id0)
+                );
+                if (k === -1) {
+                    userConnections.push([id0, id1]);
                 }
-            });
+            }
         });
     });
 

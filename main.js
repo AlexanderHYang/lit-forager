@@ -161,7 +161,7 @@ async function sendLogData() {
         const stringifiedData = JSON.stringify(jsonData, null, 2);
 
         // also download locally as backup
-        downloadLogFile(stringifiedData);
+        // downloadLogFile(stringifiedData);
 
         const response = await fetch("https://localhost:3000/upload-log", {
             method: "POST",
