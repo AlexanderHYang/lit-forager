@@ -657,7 +657,9 @@ export function updatePaperPanelToNode(d, n) {
 
         // Modifying the UI elements for each paper
         titleBlock.text = d.title;
-        authorBlock.text = `${d.authors.map((a) => a.name).join(", ")}`;
+        authorBlock.text = d.authors.length > 10 
+            ? `${d.authors.slice(0, 10).map(a => a.name).join(", ")} ...`
+            : `${d.authors.map(a => a.name).join(", ")}`;
 
         const metadata = `Citation count: ${d.citationCount}\nYear: ${d.year}\nVenue: ${d.venue}`;
         metadataTextBlock.text = metadata;

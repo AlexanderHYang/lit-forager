@@ -67,6 +67,8 @@ export let paperKeywordsMap = {};
 export let paperAnnotationsMap = {};
 
 // Initialize force simulation
+
+// Paper with 2000+ authors: "8b16f29a47a86fbd2b3daaf5bcb6356528ba32c0"
 export let simulation;
 
 const seedPaperIDs = [
