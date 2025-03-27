@@ -40,7 +40,7 @@ import {
     connectSelectedNodes,
     testCreateClusters,
     sendCurrentlyViewingNodeData,
-    clearAnnotationsForPaper
+    clearAnnotationsForPaper,
 } from "./graph";
 import "@babylonjs/inspector";
 import { timeout } from "d3";
@@ -243,7 +243,12 @@ export function updateHoverPlaneText(text) {
     titleTextBlock.text = text;
 }
 export function setHoverPlaneToNode(d, n) {
-    logEvent("setHoverPlaneToNode() called", {hoverPlaneId: hoverPlaneId, paperDetailsPanelId: paperDetailsPanelId, hoverPlaneVisibility: hoverPlane.isVisible, nodeData: d});
+    logEvent("setHoverPlaneToNode() called", {
+        hoverPlaneId: hoverPlaneId,
+        paperDetailsPanelId: paperDetailsPanelId,
+        hoverPlaneVisibility: hoverPlane.isVisible,
+        nodeData: d,
+    });
     if (n === null || d === null) {
         logEvent("setHoverPlaneToNode() - hiding hover plane", {});
         hoverPlane.isVisible = false;
@@ -270,7 +275,11 @@ export function setHoverPlaneToNode(d, n) {
         }
     }
 
-    logEvent("setHoverPlaneToNode() finished", {hoverPlaneId: hoverPlaneId, paperDetailsPanelId: paperDetailsPanelId, hoverPlaneVisibility: hoverPlane.isVisible});
+    logEvent("setHoverPlaneToNode() finished", {
+        hoverPlaneId: hoverPlaneId,
+        paperDetailsPanelId: paperDetailsPanelId,
+        hoverPlaneVisibility: hoverPlane.isVisible,
+    });
 }
 
 // UI Manager and NearMenu
@@ -303,7 +312,7 @@ handMenu.scaling = new Vector3(0.06, 0.06, 0.06);
 // Helper function to create UI buttons
 const createButton = (name, text, shareMaterial = true) => {
     const button = new GUI.TouchHolographicButton(name, shareMaterial);
-    button.wrap
+    button.wrap;
     button.text = text;
     guiManager.addControl(button);
     return button;
@@ -368,9 +377,9 @@ keywordsButton.onPointerClickObservable.add(() => {
 });
 
 annotateButton.onToggleObservable.add(() => {
-    logEvent("annotateButtonPressed", {isToggled: annotateButton.isToggled});
+    logEvent("annotateButtonPressed", { isToggled: annotateButton.isToggled });
     // Set alpha mode regardless of toggle state
-    
+
     if (annotateButton.isToggled) {
         console.log("Annotate Button toggled on");
         annotateButton.plateMaterial.alphaMode = BABYLON.Engine.ALPHA_ONEONE;
@@ -430,17 +439,17 @@ recommendationsMenu.addButton(recByCitationButton);
 recommendationsMenu.addButton(recByThematicButton);
 
 recByThematicButton.onPointerClickObservable.add(() => {
-    logEvent("recByThematicButtonPressed", {selectedIds: selectedIds});
+    logEvent("recByThematicButtonPressed", { selectedIds: selectedIds });
     console.log("Recommend by thematic button pressed");
     addRecommendationsFromSelectedPapers();
 });
 recByCitationButton.onPointerClickObservable.add(() => {
-    logEvent("recByCitationButtonPressed", {selectedIds: selectedIds});
+    logEvent("recByCitationButtonPressed", { selectedIds: selectedIds });
     console.log("Recommend by citation button pressed");
     addCitationsFromSelectedPaper();
 });
 recByReferenceButton.onPointerClickObservable.add(() => {
-    logEvent("recByReferenceButtonPressed", {selectedIds: selectedIds});
+    logEvent("recByReferenceButtonPressed", { selectedIds: selectedIds });
     console.log("Recommend by reference button pressed");
     addReferencesFromSelectedPaper();
 });
@@ -508,7 +517,7 @@ authorMenu.backPlateMargin = 0.1;
 authorMenu.scaling = new Vector3(0.06, 0.06, 0.06);
 
 function generateAuthorButtons() {
-    logEvent("generateAuthorButtons()", {selectedIds: selectedIds});
+    logEvent("generateAuthorButtons()", { selectedIds: selectedIds });
     if (selectedIds.length !== 1) {
         console.error("Error: Must have exactly one selected node to generate author buttons");
         return;
@@ -527,7 +536,7 @@ function generateAuthorButtons() {
         console.error("Error: Could not find author data for selected node");
         return;
     }
-    authorData = authorData.slice(0,10);
+    authorData = authorData.slice(0, 10);
     authorData.forEach((author) => {
         const authorButton = createButton(`author_${author.authorId}`, author.name);
         authorButton.onPointerClickObservable.add(() => {
@@ -546,7 +555,7 @@ function generateAuthorButtons() {
     });
     authorMenu.addButton(authorBackButton);
 
-    logEvent("generateAuthorButtons() finished", {authors: authorData});
+    logEvent("generateAuthorButtons() finished", { authors: authorData });
 }
 
 hideMenu(authorMenu);
@@ -615,7 +624,11 @@ scene.onBeforeRenderObservable.add(() => {
 
 // Function to update paper details
 export function updatePaperPanelToNode(d, n) {
-    logEvent("updatePaperPanelToNode()", {paperDetailsPanelId: paperDetailsPanelId, paperDetailsPanelVisibility: paperDetailsPanel.isVisible, nodeData: d});
+    logEvent("updatePaperPanelToNode()", {
+        paperDetailsPanelId: paperDetailsPanelId,
+        paperDetailsPanelVisibility: paperDetailsPanel.isVisible,
+        nodeData: d,
+    });
     // remove old highlight, add node to selectedIds
     if (paperDetailsPanelId !== null) {
         nodes.run((d, n) => {
@@ -663,9 +676,13 @@ export function updatePaperPanelToNode(d, n) {
 
         // Modifying the UI elements for each paper
         titleBlock.text = d.title;
-        authorBlock.text = d.authors.length > 10 
-            ? `${d.authors.slice(0, 10).map(a => a.name).join(", ")} ...`
-            : `${d.authors.map(a => a.name).join(", ")}`;
+        authorBlock.text =
+            d.authors.length > 10
+                ? `${d.authors
+                      .slice(0, 10)
+                      .map((a) => a.name)
+                      .join(", ")} ...`
+                : `${d.authors.map((a) => a.name).join(", ")}`;
 
         const metadata = `Citation count: ${d.citationCount}\nYear: ${d.year}\nVenue: ${d.venue}`;
         metadataTextBlock.text = metadata;
@@ -690,12 +707,15 @@ export function updatePaperPanelToNode(d, n) {
         sendCurrentlyViewingNodeData();
     }
 
-    logEvent("updatePaperPanelToNode() finished", {paperDetailsPanelId: paperDetailsPanelId, paperDetailsPanelVisibility: paperDetailsPanel.isVisible});
+    logEvent("updatePaperPanelToNode() finished", {
+        paperDetailsPanelId: paperDetailsPanelId,
+        paperDetailsPanelVisibility: paperDetailsPanel.isVisible,
+    });
 }
 
 // New function to update the insights text based on a given node
 export function updateInsightsAndNotesText(paperId, cleared) {
-    logEvent("updateInsightsAndNotesText()", {paperId: paperId});
+    logEvent("updateInsightsAndNotesText()", { paperId: paperId });
     const insights = paperSummaryMap[paperId];
     const keywords = paperKeywordsMap[paperId];
     const annotations = paperAnnotationsMap[paperId];
@@ -720,7 +740,7 @@ export function updateInsightsAndNotesText(paperId, cleared) {
     }
 
     if (annotations && annotations.trim() !== "") {
-        notesTextBlock.text += annotations + " ";
+        notesTextBlock.text = annotations;
         notesPanelBackground.isVisible = true;
     } else {
         notesTextBlock.text = "";
@@ -731,7 +751,12 @@ export function updateInsightsAndNotesText(paperId, cleared) {
         notesPanelBackground.isVisible = false;
     }
 
-    logEvent("updateInsightsAndNotesText() finished", {paperId: paperId, insights: insights, keywords: keywords, annotations: annotations});
+    logEvent("updateInsightsAndNotesText() finished", {
+        paperId: paperId,
+        insights: insights,
+        keywords: keywords,
+        annotations: annotations,
+    });
 }
 
 // emulating full screen ui
@@ -768,7 +793,7 @@ scene.onBeforeRenderObservable.add(() => {
 
 let timeoutTime = null;
 export function setFullScreenUIText(text) {
-    logEvent("setFullScreenUIText()", {text: text});
+    logEvent("setFullScreenUIText()", { text: text });
     fullscreenUIPlane.isVisible = true;
     fullscreenUITextBlock.text = text;
     timeoutTime = performance.now() + 2900;
