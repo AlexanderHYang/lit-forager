@@ -303,6 +303,7 @@ handMenu.scaling = new Vector3(0.06, 0.06, 0.06);
 // Helper function to create UI buttons
 const createButton = (name, text, shareMaterial = true) => {
     const button = new GUI.TouchHolographicButton(name, shareMaterial);
+    button.wrap
     button.text = text;
     guiManager.addControl(button);
     return button;
@@ -311,7 +312,7 @@ const createButton = (name, text, shareMaterial = true) => {
 // Exported UI buttons
 export const recommendButton = createButton("recommend", "Recommend Papers");
 export const deleteButton = createButton("delete", "Delete Papers");
-export const clearSelectionButton = createButton("clearSelection", "Clear Selected \n Papers");
+export const clearSelectionButton = createButton("clearSelection", "Clear Selection");
 export const unpinNodesButton = createButton("unpinNodes", "Unpin Papers");
 export const toggleLinksButton = createButton("toggleLinks", "Change Link Type");
 export const createClustersButton = createButton("createClusters", "Cluster Papers");
@@ -416,10 +417,10 @@ guiManager.addControl(recommendationsMenu);
 recommendationsMenu.backPlateMargin = 0.1;
 recommendationsMenu.scaling = new Vector3(0.06, 0.06, 0.06);
 
-const recByThematicButton = createButton("recByThematic", "Recommend by \n Thematic Similarity");
-const recByCitationButton = createButton("recByCitation", "Recommend by \n Citation");
-const recByReferenceButton = createButton("recByReference", "Recommend by \n Reference");
-const recByAuthorButton = createButton("recByAuthor", "Recommend by \n Author");
+const recByThematicButton = createButton("recByThematic", "By Thematic Similarity");
+const recByCitationButton = createButton("recByCitation", "By Citation");
+const recByReferenceButton = createButton("recByReference", "By Reference");
+const recByAuthorButton = createButton("recByAuthor", "By Authors");
 const recBackButton = createButton("recBack", "Back");
 
 recommendationsMenu.addButton(recBackButton);
