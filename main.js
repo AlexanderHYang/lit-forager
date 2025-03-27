@@ -27,7 +27,7 @@ import {
 } from "./src/graph.js";
 import { getAuthorsPapers, getCitationsForPaper, getReferencesForPaper } from "./src/api.js";
 import { io } from "socket.io-client";
-import { initializeSocketConnection, socket } from "./src/socket-connection.js";
+import { initializeSocketConnection, socket, host } from "./src/socket-connection.js";
 
 const sessionStart = new Date();
 const sessionStartString = sessionStart.toISOString().replace(/[:.]/g, '-'); // Replace colons and dots to make it filename-safe
@@ -163,7 +163,8 @@ async function sendLogData() {
         // also download locally as backup
         // downloadLogFile(stringifiedData);
 
-        const response = await fetch("https://localhost:3000/upload-log", {
+        const address = `https://${host}:3000/upload-log`;
+        const response = await fetch(address, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

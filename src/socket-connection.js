@@ -20,10 +20,12 @@ import { paperDetailsPanelId } from "./graphics.js";
 
 // Declare a socket variable to be used globally
 let socket;
+export let host;
 
 export function initializeSocketConnection() {
     // Use the current hostname and connect on port 3000 over HTTPS
-    const host = window.location.hostname;
+    host = window.location.hostname;
+    console.log(host);
     socket = io(`https://${host}:3000`, {
         // Set to auto-reconnect up to 5 times
         reconnectionAttempts: 1,
