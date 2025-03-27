@@ -71,10 +71,17 @@ export let paperAnnotationsMap = {};
 // Paper with 2000+ authors: "8b16f29a47a86fbd2b3daaf5bcb6356528ba32c0"
 export let simulation;
 
+// const seedPaperIDs = [
+//     "0ffd57884d7957f6b5634b9fa24843dc3759668f",
+//     "944da0eb2aba11aaed51bba35d6e25bda33b2571",
+//     "644482c6c6ca800ccc4ef07505e34dbde8cefcb4",
+// ];
+
+// VIS Papers
 const seedPaperIDs = [
-    "0ffd57884d7957f6b5634b9fa24843dc3759668f",
-    "944da0eb2aba11aaed51bba35d6e25bda33b2571",
-    "644482c6c6ca800ccc4ef07505e34dbde8cefcb4",
+    "0cd9b2ef1ead9bea120ac67503140df60b7d1cf6",  // A Taxonomy and Survey of Dynamic Graph Visualization
+    "86970a858d82be78e932f6cd9e7cacaf04f0eaa1",  // Can animation support the visualisation of dynamic graphs?
+    "002e39678d29717c01849f315a3155bbcf61aa3a",  // Up close and personal: Collaborative work on a high-resolution multitouch wall display
 ];
 
 /**
@@ -86,7 +93,7 @@ export async function fetchInitialPapers() {
         let data = await APIUtils.getDetailsForMultiplePapers(seedPaperIDs);
         if (!Array.isArray(data)) {
             // Fallback: create a paper object for each seed ID if API returns a single object.
-            data = seedPaperIDs.map(id => ({
+            data = seedPaperIDs.map((id) => ({
                 paperId: id,
                 references: [],
                 recommends: [],
@@ -96,7 +103,7 @@ export async function fetchInitialPapers() {
     } catch (error) {
         console.error("Failed to fetch initial papers", error);
         // Fallback: create a paper object for each seed ID on error.
-        seedPaperIDs.forEach(id => {
+        seedPaperIDs.forEach((id) => {
             paperData.push({
                 paperId: id,
                 references: [],
@@ -106,14 +113,18 @@ export async function fetchInitialPapers() {
     }
     // Store all seed paper IDs.
     paperIds.push(...seedPaperIDs);
-    
+
     // Position papers: if one seed, center it, otherwise distribute using Fibonacci lattice.
     if (seedPaperIDs.length === 1) {
         paperData[0].x = 0;
         paperData[0].y = 0;
         paperData[0].z = 0;
     } else {
-        const positions = generateFibonacciLatticePositions(seedPaperIDs.length, new Vector3(0, 0, 0), 0.1);
+        const positions = generateFibonacciLatticePositions(
+            seedPaperIDs.length,
+            new Vector3(0, 0, 0),
+            0.1
+        );
         for (let i = 0; i < paperData.length; i++) {
             paperData[i].x = positions[i].x;
             paperData[i].y = positions[i].y;
@@ -215,7 +226,7 @@ export function generateLinkData() {
         source: { paperId: link.source.paperId, title: link.source.title },
         target: { paperId: link.target.paperId, title: link.target.title },
     }));
-    logEvent("generateLinkData() finished", {newLinkData: eventData});
+    logEvent("generateLinkData() finished", { newLinkData: eventData });
 }
 
 const scaleC = d3.scaleOrdinal(anu.ordinalChromatic("d310").toColor4());
@@ -224,7 +235,7 @@ const scaleC = d3.scaleOrdinal(anu.ordinalChromatic("d310").toColor4());
  * Creates and updates nodes in the Babylon.js scene.
  */
 export function createNodes() {
-    logEvent("createNodes() called", {paperData: paperData});
+    logEvent("createNodes() called", { paperData: paperData });
     if (!scene) return;
 
     if (nodes) {
@@ -275,7 +286,10 @@ export function createNodes() {
         .action(
             (d, n, i) =>
                 new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOverTrigger, () => {
-                    logEvent("node onPointerOverTrigger", {paperId: d.paperId, position: n.position});
+                    logEvent("node onPointerOverTrigger", {
+                        paperId: d.paperId,
+                        position: n.position,
+                    });
                     //ExecudeCodeAction allows us to execute a given function
                     setHoverPlaneToNode(d, n);
                     isPointerOver[d.paperId] = true;
@@ -285,7 +299,10 @@ export function createNodes() {
         .action(
             (d, n, i) =>
                 new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOutTrigger, () => {
-                    logEvent("node onPointerOutTrigger", {paperId: d.paperId, position: n.position});
+                    logEvent("node onPointerOutTrigger", {
+                        paperId: d.paperId,
+                        position: n.position,
+                    });
                     //Same as above but in reverse
                     console.log("pointer out");
                     isPointerOver[d.paperId] = false;
@@ -298,12 +315,18 @@ export function createNodes() {
         .action(
             (d, n, i) =>
                 new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickDownTrigger, () => {
-                    logEvent("node onPickDownTrigger", {paperId: d.paperId, position: n.position});
+                    logEvent("node onPickDownTrigger", {
+                        paperId: d.paperId,
+                        position: n.position,
+                    });
                     pickStartTime[d.paperId] = performance.now();
                     shouldDrag[d.paperId] = false;
                     setTimeout(() => {
                         if (isDragging[d.paperId] && !shouldDrag[d.paperId]) {
-                            logEvent("node onPickDownTrigger - long press detected", {paperId: d.paperId, position: n.position});
+                            logEvent("node onPickDownTrigger - long press detected", {
+                                paperId: d.paperId,
+                                position: n.position,
+                            });
                             updatePaperPanelToNode(d, n);
                         }
                     }, CLICK_DELAY_THRESHOLD);
@@ -313,14 +336,17 @@ export function createNodes() {
         .action(
             (d, n, i) =>
                 new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickUpTrigger, () => {
-                    logEvent("node onPickUpTrigger", {paperId: d.paperId, position: n.position});
+                    logEvent("node onPickUpTrigger", { paperId: d.paperId, position: n.position });
                     console.log("pick up");
 
                     if (!shouldDrag[d.paperId]) {
                         const pickDuration = performance.now() - pickStartTime[d.paperId];
 
                         if (pickDuration < CLICK_DELAY_THRESHOLD) {
-                            logEvent("node onPickUpTrigger - short click detected", {paperId: d.paperId, position: n.position});
+                            logEvent("node onPickUpTrigger - short click detected", {
+                                paperId: d.paperId,
+                                position: n.position,
+                            });
                             // only process click if it is short
 
                             if (d.paperId === paperDetailsPanelId) {
@@ -338,7 +364,10 @@ export function createNodes() {
                             }
                         }
                     } else {
-                        logEvent("node onPickUpTrigger - node is already being dragged", {paperId: d.paperId, position: n.position});
+                        logEvent("node onPickUpTrigger - node is already being dragged", {
+                            paperId: d.paperId,
+                            position: n.position,
+                        });
                     }
                 })
         );
@@ -355,7 +384,10 @@ export function createNodes() {
         dragBehavior.detachCameraControls = true;
 
         dragBehavior.onDragStartObservable.add((data) => {
-            logEvent("node drag onDragStartObservable", {paperId: d.paperId, position: n.position});
+            logEvent("node drag onDragStartObservable", {
+                paperId: d.paperId,
+                position: n.position,
+            });
             isDragging[d.paperId] = true;
             initialPosition = n.position.clone();
         });
@@ -377,14 +409,26 @@ export function createNodes() {
                 pinnedNodeIds.push(d.paperId);
             }
 
-            logEvent("node drag onPositionChangedObservable", {paperId: d.paperId, position: n.position});
+            logEvent("node drag onPositionChangedObservable", {
+                paperId: d.paperId,
+                position: n.position,
+            });
 
             // check distance to other currently dragged nodes
             paperData.forEach((other) => {
                 if (other.paperId !== d.paperId && (false || isDragging[other.paperId])) {
                     let dist = new Vector3(other.x, other.y, other.z).subtract(n.position).length();
                     if (dist < 0.05) {
-                        logEvent("node drag onPositionChangedObservable - node proximity connection detected", {paperId: d.paperId, otherPaperId: other.paperId, position: n.position, otherPosition: new Vector3(other.x, other.y, other.z), distance: dist});
+                        logEvent(
+                            "node drag onPositionChangedObservable - node proximity connection detected",
+                            {
+                                paperId: d.paperId,
+                                otherPaperId: other.paperId,
+                                position: n.position,
+                                otherPosition: new Vector3(other.x, other.y, other.z),
+                                distance: dist,
+                            }
+                        );
                         console.log("Node connection gesture detected");
                         connectNodes(d.paperId, other.paperId);
                         excludeFromNodeConnection.push(d.paperId);
@@ -394,13 +438,16 @@ export function createNodes() {
             });
         });
         dragBehavior.onDragObservable.add((data) => {
-            logEvent("node drag onDragObservable (drag target changed)", {paperId: d.paperId, nodePosition: n.position});
+            logEvent("node drag onDragObservable (drag target changed)", {
+                paperId: d.paperId,
+                nodePosition: n.position,
+            });
             if (shouldDrag[d.paperId]) {
                 simulation.alpha(0.1);
             }
         });
         dragBehavior.onDragEndObservable.add(() => {
-            logEvent("node drag onDragEndObservable", {paperId: d.paperId, position: n.position});
+            logEvent("node drag onDragEndObservable", { paperId: d.paperId, position: n.position });
             // Reset node position when drag ended
             console.log("drag end");
             initialPosition = null;
@@ -481,7 +528,7 @@ function createLinksFromData(data, color) {
     simulation.force("link", forceLink(data).distance(0.1).strength(2));
 }
 function createLinks() {
-    logEvent("createLinks() called", {linkType: linkType});
+    logEvent("createLinks() called", { linkType: linkType });
     if (linkType === "recommendation") {
         createLinksFromData(recommendationLinkData, linkColorMap[linkType]);
     } else if (linkType === "citation") {
@@ -515,7 +562,7 @@ export function ticked() {
 }
 
 export function clearNodeSelection() {
-    logEvent("clearNodeSelection() called", {selectedIds: selectedIds});
+    logEvent("clearNodeSelection() called", { selectedIds: selectedIds });
     console.log("clearNodeSelection() called");
     selectedIds.length = 0;
     nodes.run((d, n, i) => {
@@ -524,7 +571,7 @@ export function clearNodeSelection() {
 }
 
 export function unpinNodes() {
-    logEvent("unpinNodes() called", {pinnedNodeIds: pinnedNodeIds});
+    logEvent("unpinNodes() called", { pinnedNodeIds: pinnedNodeIds });
     console.log("unpinNodes() called");
     pinnedNodeIds.length = 0;
     paperData.forEach((d) => {
@@ -538,9 +585,11 @@ export function unpinNodes() {
  * Fetches recommendations and adds new nodes.
  */
 export async function addRecommendationsFromSelectedPapers() {
-    logEvent("addRecommendationsFromSelectedPapers() called", {selectedIds: selectedIds});
+    logEvent("addRecommendationsFromSelectedPapers() called", { selectedIds: selectedIds });
     if (waitingForAPI) {
-        logEvent("addRecommendationsFromSelectedPapers() - not requesting, waiting for API", {selectedIds: selectedIds});
+        logEvent("addRecommendationsFromSelectedPapers() - not requesting, waiting for API", {
+            selectedIds: selectedIds,
+        });
         console.log("not requesting, already waiting for API");
         return;
     }
@@ -585,7 +634,7 @@ export async function addRecommendationsFromSelectedPapers() {
         addPapersToGraph(newPapers);
         setLinkType("recommendation");
     } catch (error) {
-        logEvent("addRecommendationsFromSelectedPapers() failed", {error: error});
+        logEvent("addRecommendationsFromSelectedPapers() failed", { error: error });
         console.error("addRecommendationsFromSelectedPapers() failed with error:", error);
         setFullScreenUIText("No available papers to add");
     }
@@ -606,9 +655,11 @@ export async function addRecommendationsFromSelectedPapers() {
  * Adds new papers to the graph.
  */
 export function addPapersToGraph(newPapers) {
-    logEvent("addPapersToGraph() called", {newPapers: newPapers, prevPaperData: paperData});
+    logEvent("addPapersToGraph() called", { newPapers: newPapers, prevPaperData: paperData });
     if (!newPapers || newPapers.length === 0) {
-        logEvent("addPapersToGraph() failed - newPapers must be a valid non-empty list", {newPapers: newPapers});
+        logEvent("addPapersToGraph() failed - newPapers must be a valid non-empty list", {
+            newPapers: newPapers,
+        });
         return;
     }
 
@@ -690,14 +741,14 @@ export function addPapersToGraph(newPapers) {
 
     simulation.alpha(0.2);
 
-    logEvent("addPapersToGraph() finished", {newPapers: newPapers, currPaperData: paperData});
+    logEvent("addPapersToGraph() finished", { newPapers: newPapers, currPaperData: paperData });
 }
 
 /**
  * Removes selected nodes from the graph.
  */
 export function removeSelectedNodesFromGraph() {
-    logEvent("removeSelectedNodesFromGraph() called", {selectedIds: selectedIds});
+    logEvent("removeSelectedNodesFromGraph() called", { selectedIds: selectedIds });
     removeNodesFromGraph(selectedIds);
     removedPaperIds.push(...selectedIds);
     selectedIds.length = 0;
@@ -707,7 +758,7 @@ export function removeSelectedNodesFromGraph() {
  * Removes nodes from the graph.
  */
 export function removeNodesFromGraph(idsToRemove) {
-    logEvent("removeNodesFromGraph() called", {idsToRemove: idsToRemove, paperData: paperData});
+    logEvent("removeNodesFromGraph() called", { idsToRemove: idsToRemove, paperData: paperData });
     console.log("remove nodes from graph called");
     console.log("idsToRemove", idsToRemove);
     console.log("paperData", paperData);
@@ -760,7 +811,7 @@ export function removeNodesFromGraph(idsToRemove) {
     // createLinksFromData(useCitationLinks ? citationLinkData : recommendationLinkData);
     createLinks();
 
-    logEvent("removeNodesFromGraph() finished", {newPaperData: paperData});
+    logEvent("removeNodesFromGraph() finished", { newPaperData: paperData });
 }
 
 /**
@@ -773,19 +824,22 @@ export function changeLinkType() {
     // // ticked();
 
     if (linkType === "recommendation") {
-        logEvent("changeLinkType() called", {currentLinkType: linkType, newLinkType: "citation"});
+        logEvent("changeLinkType() called", { currentLinkType: linkType, newLinkType: "citation" });
         linkType = "citation";
     } else if (linkType === "citation") {
-        logEvent("changeLinkType() called", {currentLinkType: linkType, newLinkType: "author"});
+        logEvent("changeLinkType() called", { currentLinkType: linkType, newLinkType: "author" });
         linkType = "author";
     } else if (linkType === "author") {
-        logEvent("changeLinkType() called", {currentLinkType: linkType, newLinkType: "custom"});
+        logEvent("changeLinkType() called", { currentLinkType: linkType, newLinkType: "custom" });
         linkType = "custom";
     } else if (linkType === "custom") {
-        logEvent("changeLinkType() called", {currentLinkType: linkType, newLinkType: "recommendation"});
+        logEvent("changeLinkType() called", {
+            currentLinkType: linkType,
+            newLinkType: "recommendation",
+        });
         linkType = "recommendation";
     } else {
-        logEvent("changeLinkType() called - invalid link type", {linkType: linkType});
+        logEvent("changeLinkType() called - invalid link type", { linkType: linkType });
         console.error("Invalid link type:", linkType);
     }
     setFullScreenUIText(`Link Type ${linkType}`);
@@ -793,14 +847,14 @@ export function changeLinkType() {
 }
 
 export function setLinkType(type) {
-    logEvent("setLinkType() called", {currLinkType: linkType, newLinkType: type});
+    logEvent("setLinkType() called", { currLinkType: linkType, newLinkType: type });
     if (
         type !== "recommendation" &&
         type !== "citation" &&
         type !== "author" &&
         linkType !== "custom"
     ) {
-        logEvent("setLinkType() called - invalid link type", {linkType: type});
+        logEvent("setLinkType() called - invalid link type", { linkType: type });
         console.error("Invalid link type:", type);
         return;
     }
@@ -810,15 +864,22 @@ export function setLinkType(type) {
 }
 
 export async function addCitationsFromSelectedPaper() {
-    logEvent("addCitationsFromSelectedPaper() called", {selectedIds: selectedIds, currPaperData: paperData});
+    logEvent("addCitationsFromSelectedPaper() called", {
+        selectedIds: selectedIds,
+        currPaperData: paperData,
+    });
     if (selectedIds.length !== 1) {
-        logEvent("addCitationsFromSelectedPaper() failed - must select exactly one paper", {selectedIds: selectedIds});
+        logEvent("addCitationsFromSelectedPaper() failed - must select exactly one paper", {
+            selectedIds: selectedIds,
+        });
         console.error("Error: Must select exactly one paper to fetch citations for.");
         return;
     }
 
     if (waitingForAPI) {
-        logEvent("addCitationsFromSelectedPaper() - not requesting, waiting for API", {selectedIds: selectedIds});
+        logEvent("addCitationsFromSelectedPaper() - not requesting, waiting for API", {
+            selectedIds: selectedIds,
+        });
         console.log("not requesting, already waiting for API");
         return;
     }
@@ -852,7 +913,7 @@ export async function addCitationsFromSelectedPaper() {
         addPapersToGraph(newPapers);
         setLinkType("citation");
     } catch (error) {
-        logEvent("addCitationsFromSelectedPaper() failed", {error: error});
+        logEvent("addCitationsFromSelectedPaper() failed", { error: error });
         console.error("addCitationsFromSelectedPaper() failed with error:", error);
         setFullScreenUIText("No available papers to add");
     }
@@ -868,19 +929,29 @@ export async function addCitationsFromSelectedPaper() {
         }
     });
 
-    logEvent("addCitationsFromSelectedPaper() finished", {selectedIds: selectedIds, paperData: paperData});
+    logEvent("addCitationsFromSelectedPaper() finished", {
+        selectedIds: selectedIds,
+        paperData: paperData,
+    });
 }
 
 export async function addReferencesFromSelectedPaper() {
-    logEvent("addReferencesFromSelectedPaper() called", {selectedIds: selectedIds, currPaperData: paperData});
+    logEvent("addReferencesFromSelectedPaper() called", {
+        selectedIds: selectedIds,
+        currPaperData: paperData,
+    });
     if (selectedIds.length !== 1) {
-        logEvent("addReferencesFromSelectedPaper() failed - must select exactly one paper", {selectedIds: selectedIds});
+        logEvent("addReferencesFromSelectedPaper() failed - must select exactly one paper", {
+            selectedIds: selectedIds,
+        });
         console.error("Error: Must select exactly one paper to fetch references for.");
         return;
     }
 
     if (waitingForAPI) {
-        logEvent("addReferencesFromSelectedPaper() - not requesting, waiting for API", {selectedIds: selectedIds});
+        logEvent("addReferencesFromSelectedPaper() - not requesting, waiting for API", {
+            selectedIds: selectedIds,
+        });
         console.log("not requesting, already waiting for API");
         return;
     }
@@ -915,7 +986,7 @@ export async function addReferencesFromSelectedPaper() {
         addPapersToGraph(newPapers);
         setLinkType("citation");
     } catch (error) {
-        logEvent("addReferencesFromSelectedPaper() failed", {error: error});
+        logEvent("addReferencesFromSelectedPaper() failed", { error: error });
         console.error("addReferencesFromSelectedPaper() failed with error:", error);
         setFullScreenUIText("No available papers to add");
     }
@@ -931,20 +1002,25 @@ export async function addReferencesFromSelectedPaper() {
         }
     });
 
-    logEvent("addReferencesFromSelectedPaper() finished", {selectedIds: selectedIds, paperData: paperData});
+    logEvent("addReferencesFromSelectedPaper() finished", {
+        selectedIds: selectedIds,
+        paperData: paperData,
+    });
 }
 
 export async function addPapersFromAuthor(authorId) {
-    logEvent("addPapersFromAuthor() called", {authorId: authorId, currPaperData: paperData});
+    logEvent("addPapersFromAuthor() called", { authorId: authorId, currPaperData: paperData });
     if (!authorId) {
-        logEvent("addPapersFromAuthor() failed - authorId must be a non-empty string", {authorId: authorId});
+        logEvent("addPapersFromAuthor() failed - authorId must be a non-empty string", {
+            authorId: authorId,
+        });
         console.error("Error: authorId must be a non-empty string.");
         setFullScreenUIText("No available papers to add");
         return;
     }
 
     if (waitingForAPI) {
-        logEvent("addPapersFromAuthor() - not requesting, waiting for API", {authorId: authorId});
+        logEvent("addPapersFromAuthor() - not requesting, waiting for API", { authorId: authorId });
         console.log("not requesting, already waiting for API");
         return;
     }
@@ -975,7 +1051,7 @@ export async function addPapersFromAuthor(authorId) {
         addPapersToGraph(newPapers);
         setLinkType("author");
     } catch (error) {
-        logEvent("addPapersFromAuthor() failed", {error: error});
+        logEvent("addPapersFromAuthor() failed", { error: error });
         console.error("addReferencesFromSelectedPaper() failed with error:", error);
         setFullScreenUIText("No available papers to add");
     }
@@ -991,13 +1067,22 @@ export async function addPapersFromAuthor(authorId) {
         }
     });
 
-    logEvent("addPapersFromAuthor() finished", {authorId: authorId, selectedIds: selectedIds, paperData: paperData});
+    logEvent("addPapersFromAuthor() finished", {
+        authorId: authorId,
+        selectedIds: selectedIds,
+        paperData: paperData,
+    });
 }
 
 export async function restoreDeletedPapers() {
-    logEvent("restoreDeletedPapers() called", {removedPaperIds: removedPaperIds, currPaperData: paperData});
+    logEvent("restoreDeletedPapers() called", {
+        removedPaperIds: removedPaperIds,
+        currPaperData: paperData,
+    });
     if (waitingForAPI) {
-        logEvent("restoreDeletedPapers() - not requesting, waiting for API", {removedPaperIds: removedPaperIds});
+        logEvent("restoreDeletedPapers() - not requesting, waiting for API", {
+            removedPaperIds: removedPaperIds,
+        });
         console.log("not requesting, already waiting for API");
         return;
     }
@@ -1007,12 +1092,15 @@ export async function restoreDeletedPapers() {
         addPapersToGraph(deletedPapers);
         removedPaperIds.length = 0;
     } catch (error) {
-        logEvent("restoreDeletedPapers() failed", {error: error});
+        logEvent("restoreDeletedPapers() failed", { error: error });
         console.error("restoreDeletedPapers() failed with error:", error);
     }
     waitingForAPI = false;
 
-    logEvent("restoreDeletedPapers() finished", {removedPaperIds: removedPaperIds, paperData: paperData});
+    logEvent("restoreDeletedPapers() finished", {
+        removedPaperIds: removedPaperIds,
+        paperData: paperData,
+    });
 }
 
 function regenerateUserLinkData() {
@@ -1027,15 +1115,20 @@ function regenerateUserLinkData() {
         }
     });
 
-    logEvent("regenerateUserLinkData() called", {oldUserLinkData: oldUserLinkData, newUserLinkData: userLinkData});
+    logEvent("regenerateUserLinkData() called", {
+        oldUserLinkData: oldUserLinkData,
+        newUserLinkData: userLinkData,
+    });
 }
 
 export function connectSelectedNodes() {
-    logEvent("connectSelectedNodes() called", {selectedIds: selectedIds});
+    logEvent("connectSelectedNodes() called", { selectedIds: selectedIds });
     console.log("connectSelectedNodes() called");
 
     if (selectedIds.length !== 2) {
-        logEvent("connectSelectedNodes() failed - must select exactly two papers", {selectedIds: selectedIds});
+        logEvent("connectSelectedNodes() failed - must select exactly two papers", {
+            selectedIds: selectedIds,
+        });
         console.error("Error: Must select exactly two papers to connect.");
         return;
     }
@@ -1047,12 +1140,21 @@ export function connectSelectedNodes() {
 }
 
 export function connectNodes(paperId1, paperId2) {
-    logEvent("connectNodes() called", {paperId1: paperId1, paperId2: paperId2, paper1Position: paperData.find((d) => d.paperId === paperId1), paper2Position: paperData.find((d) => d.paperId === paperId2)});
+    logEvent("connectNodes() called", {
+        paperId1: paperId1,
+        paperId2: paperId2,
+        paper1Position: paperData.find((d) => d.paperId === paperId1),
+        paper2Position: paperData.find((d) => d.paperId === paperId2),
+    });
     if (
         excludeFromNodeConnection.includes(paperId1) ||
         excludeFromNodeConnection.includes(paperId2)
     ) {
-        logEvent("connectNodes() failed - nodes excluded from connection", {paperId1: paperId1, paperId2: paperId2, excludeFromNodeConnection: excludeFromNodeConnection});
+        logEvent("connectNodes() failed - nodes excluded from connection", {
+            paperId1: paperId1,
+            paperId2: paperId2,
+            excludeFromNodeConnection: excludeFromNodeConnection,
+        });
         console.log("nodes excluded from connection");
         return;
     }
@@ -1062,19 +1164,32 @@ export function connectNodes(paperId1, paperId2) {
         ([a, b]) => (a === paperId1 && b === paperId2) || (a === paperId2 && b === paperId1)
     );
     if (i !== -1) {
-        logEvent("connectNodes() - nodes already connected", {paperId1: paperId1, paperId2: paperId2, userConnections: userConnections});
+        logEvent("connectNodes() - nodes already connected", {
+            paperId1: paperId1,
+            paperId2: paperId2,
+            userConnections: userConnections,
+        });
         if (linkType === "custom") {
-            logEvent("connectNodes() - removing existing connection", {paperId1: paperId1, paperId2: paperId2});
+            logEvent("connectNodes() - removing existing connection", {
+                paperId1: paperId1,
+                paperId2: paperId2,
+            });
             console.log("nodes already connected");
             userConnections.splice(i, 1);
             regenerateUserLinkData();
             createLinks();
         } else {
-            logEvent("connectNodes() - nodes already connected, but not custom link type, switching to linkType = custom", {paperId1: paperId1, paperId2: paperId2, prevLinkType: linkType});
+            logEvent(
+                "connectNodes() - nodes already connected, but not custom link type, switching to linkType = custom",
+                { paperId1: paperId1, paperId2: paperId2, prevLinkType: linkType }
+            );
             linkType = "custom";
         }
     } else {
-        logEvent("connectNodes() - creating new connection", {paperId1: paperId1, paperId2: paperId2});
+        logEvent("connectNodes() - creating new connection", {
+            paperId1: paperId1,
+            paperId2: paperId2,
+        });
         userConnections.push([paperId1, paperId2]);
         const p1 = paperData.find((d) => d.paperId === paperId1);
         const p2 = paperData.find((d) => d.paperId === paperId2);
@@ -1103,12 +1218,17 @@ function generateFibonacciLatticePositions(n, center, radius) {
             )
         );
     }
-    logEvent("generateFibonacciLatticePositions() called", {n: n, center: center, radius: radius, positions: positions});
+    logEvent("generateFibonacciLatticePositions() called", {
+        n: n,
+        center: center,
+        radius: radius,
+        positions: positions,
+    });
     return positions;
 }
 
 export async function createClustersFromGemini(response) {
-    logEvent("createClustersFromGemini() called", {response: response});
+    logEvent("createClustersFromGemini() called", { response: response });
     console.log("createClustersFromGemini() called");
 
     try {
@@ -1167,7 +1287,7 @@ export async function createClustersFromGemini(response) {
         // create links between elements in cluster
         userConnections.length = 0;
         clusterAssignments.forEach((cluster) => {
-            const id0 = cluster[0]
+            const id0 = cluster[0];
             cluster.forEach((id1, i) => {
                 if (i > 0) {
                     let k = userConnections.findIndex(
@@ -1184,12 +1304,12 @@ export async function createClustersFromGemini(response) {
         regenerateUserLinkData();
         createLinks();
     } catch (error) {
-        logEvent("createClustersFromGemini() failed", {error: error});
+        logEvent("createClustersFromGemini() failed", { error: error });
         console.error("createClustersFromGemini() failed with error:", error);
         return;
     }
 
-    logEvent("createClustersFromGemini() finished", {response: response, paperData: paperData});
+    logEvent("createClustersFromGemini() finished", { response: response, paperData: paperData });
 }
 
 export async function testCreateClusters() {
@@ -1245,7 +1365,7 @@ export async function testCreateClusters() {
     // create links between elements in cluster
     userConnections.length = 0;
     clusterAssignments.forEach((cluster) => {
-        const id0 = cluster[0]
+        const id0 = cluster[0];
         cluster.forEach((id1, i) => {
             if (i > 0) {
                 let k = userConnections.findIndex(
@@ -1262,7 +1382,7 @@ export async function testCreateClusters() {
     regenerateUserLinkData();
     createLinks();
 
-    logEvent("testCreateClusters() finished", {paperData: paperData});
+    logEvent("testCreateClusters() finished", { paperData: paperData });
 }
 
 function animateNodeData(d, startPos, endPos, duration = 1000) {
@@ -1287,7 +1407,7 @@ function animateNodeData(d, startPos, endPos, duration = 1000) {
 }
 
 export function sendAllNodesData() {
-    logEvent("sendAllNodesData() called", {paperData: paperData});
+    logEvent("sendAllNodesData() called", { paperData: paperData });
     const payload = [];
     paperData.forEach((d) => {
         payload.push({ paperId: d.paperId, title: d.title, abstract: d.abstract });
@@ -1307,7 +1427,9 @@ export function sendAllNodesData() {
 
 export function sendCurrentlyViewingNodeData() {
     const currentlyViewingPaper = paperData.find((d) => paperDetailsPanelId === d.paperId);
-    logEvent("sendCurrentlyViewingNodeData() called", {currentlyViewingPaper: currentlyViewingPaper});
+    logEvent("sendCurrentlyViewingNodeData() called", {
+        currentlyViewingPaper: currentlyViewingPaper,
+    });
     if (currentlyViewingPaper) {
         const payload = {
             paperId: currentlyViewingPaper.paperId,
@@ -1320,7 +1442,10 @@ export function sendCurrentlyViewingNodeData() {
             socket.emit("sendCurrentlyViewingNodeData", payload);
             // console.log("Emitted 'sendCurrentlyViewingNodeData' event with payload:", payload);
         } else {
-            logEvent("sendCurrentlyViewingNodeData() failed - socket not available or not connected", {});
+            logEvent(
+                "sendCurrentlyViewingNodeData() failed - socket not available or not connected",
+                {}
+            );
             console.error(
                 "Socket is not available or not connected. 'sendCurrentlyViewingNodeData' event not emitted."
             );
@@ -1332,7 +1457,7 @@ export function sendCurrentlyViewingNodeData() {
  * Adds a summary for a given paper and updates the global mapping.
  */
 export function addSummaryForPaper(summary, paperId) {
-    logEvent("addSummaryForPaper() called", {summary: summary, paperId: paperId});
+    logEvent("addSummaryForPaper() called", { summary: summary, paperId: paperId });
     paperSummaryMap[paperId] = summary;
     updateInsightsAndNotesText(paperId);
 }
@@ -1341,19 +1466,23 @@ export function addSummaryForPaper(summary, paperId) {
  * Adds keywords for a given paper and updates the global mapping.
  */
 export function addKeywordsForPaper(keywords, paperId) {
-    logEvent("addKeywordsForPaper() called", {keywords: keywords, paperId: paperId});
+    logEvent("addKeywordsForPaper() called", { keywords: keywords, paperId: paperId });
     paperKeywordsMap[paperId] = keywords;
     updateInsightsAndNotesText(paperId);
 }
 
 export function addAnnotationsForPaper(annotations, paperId) {
-    logEvent("addAnnotationsForPaper() called", {annotations: annotations, paperId: paperId});
-    paperAnnotationsMap[paperId] = annotations;
+    logEvent("addAnnotationsForPaper() called", { annotations, paperId });
+    if (!paperAnnotationsMap[paperId] || paperAnnotationsMap[paperId].trim() === "") {
+        paperAnnotationsMap[paperId] = annotations + " ";
+    } else {
+        paperAnnotationsMap[paperId] += annotations + " ";
+    }
     updateInsightsAndNotesText(paperId);
 }
 
 export function clearAnnotationsForPaper(paperId) {
-    logEvent("clearAnnotationsForPaper() called", {paperId: paperId});
-    paperAnnotationsMap[paperId] = null;
+    logEvent("clearAnnotationsForPaper() called", { paperId: paperId });
+    paperAnnotationsMap[paperId] = "";
     updateInsightsAndNotesText(paperId, true);
 }
