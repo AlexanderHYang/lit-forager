@@ -47,6 +47,7 @@ import { timeout } from "d3";
 import { removeItem } from "./utils";
 import { socket } from "./socket-connection";
 import { logEvent } from "../main";
+// import { log } from "console";
 // Create the Babylon.js engine and scene
 const app = document.querySelector("#app");
 const canvas = document.createElement("canvas");
@@ -165,8 +166,10 @@ xrHandFeature.onHandAddedObservable.add(() => {
                     if (clusterStartTime === null) {
                         clusterStartTime = now;
                     } else if (now - clusterStartTime >= 1000) {
+                        logEvent("Cluster hand gesture triggered", {});
                         console.log("Cluster event has been triggered");
                         clusterTriggered = true;
+                        logEvent("socket - emit CreateClustersButtonPressed", {});
                         socket.emit("createClustersButtonPressed", {});
                     }
                 }
@@ -306,15 +309,16 @@ const createButton = (name, text, shareMaterial = true) => {
 };
 
 // Exported UI buttons
-export const recommendButton = createButton("recommend", "Recommend");
-export const deleteButton = createButton("delete", "Delete");
-export const clearSelectionButton = createButton("clearSelection", "Clear Selection");
-export const unpinNodesButton = createButton("unpinNodes", "Unpin Nodes");
+export const recommendButton = createButton("recommend", "Recommend Papers");
+export const deleteButton = createButton("delete", "Delete Papers");
+export const clearSelectionButton = createButton("clearSelection", "Clear Selected Papers");
+export const unpinNodesButton = createButton("unpinNodes", "Unpin Papers");
 export const toggleLinksButton = createButton("toggleLinks", "Change Link Type");
-export const createClustersButton = createButton("createClusters", "Create Clusters");
+export const createClustersButton = createButton("createClusters", "Cluster Papers");
 export const summarizeButton = createButton("summarizeButton", "Summarize Paper");
 export const keywordsButton = createButton("keywordsButton", "Generate Keywords");
-export const annotateButton = createButton("annotateButton", "Annotate", false);
+
+export const annotateButton = createButton("annotateButton", "Start Annotating", false);
 annotateButton.isToggleButton = true;
 export const clearAnnotationButton = createButton("clearAnnotationButton", "Clear Annotation");
 
@@ -370,18 +374,19 @@ annotateButton.onToggleObservable.add(() => {
         console.log("Annotate Button toggled on");
         annotateButton.plateMaterial.alphaMode = BABYLON.Engine.ALPHA_ONEONE;
         annotateButton.plateMaterial.diffuseColor = new BABYLON.Color3(0, 255, 255);
-        annotateButton.text = "Listening...";
+        annotateButton.text = "Listening... (Stop Annotating)";
         socket.emit("annotateButtonPressed", {});
     } else {
         console.log("Annotate Button toggled off");
         annotateButton.plateMaterial.alphaMode = 2;
         annotateButton.plateMaterial.diffuseColor = new BABYLON.Color3(0.4, 0.4, 0.4);
-        annotateButton.text = "Annotate";
+        annotateButton.text = "Start Annotating";
         socket.emit("annotateButtonReleased", {});
     }
 });
 
 clearAnnotationButton.onPointerClickObservable.add(() => {
+    logEvent("clearAnnotationButtonPressed", {});
     console.log("Clear Annotation Button pressed");
     clearAnnotationsForPaper(paperDetailsPanelId);
 });
@@ -411,10 +416,10 @@ guiManager.addControl(recommendationsMenu);
 recommendationsMenu.backPlateMargin = 0.1;
 recommendationsMenu.scaling = new Vector3(0.06, 0.06, 0.06);
 
-const recByThematicButton = createButton("recByThematic", "By Thematic");
-const recByCitationButton = createButton("recByCitation", "By Citation");
-const recByReferenceButton = createButton("recByReference", "By Reference");
-const recByAuthorButton = createButton("recByAuthor", "By Author");
+const recByThematicButton = createButton("recByThematic", "Recommend by Thematic Similarity");
+const recByCitationButton = createButton("recByCitation", "Recommend by Citation");
+const recByReferenceButton = createButton("recByReference", "Recommend by Reference");
+const recByAuthorButton = createButton("recByAuthor", "Recommend by Author");
 const recBackButton = createButton("recBack", "Back");
 
 recommendationsMenu.addButton(recBackButton);

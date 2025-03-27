@@ -123,7 +123,7 @@ const speechCallback = (stream) => {
             },
             {
                 required: "change",
-                optional: ["links", "link", "link type"],
+                optional: ["links", "link", "link type", "connection", "connections", "connection type"],
                 eventType: "toggleLinks",
             },
             {
@@ -138,7 +138,7 @@ const speechCallback = (stream) => {
             },
             {
                 required: "keyword",
-                optional: ["summarize", "generate"],
+                optional: ["summarize", "generate", "create", "extract", "find"],
                 eventType: "generateKeywords",
             },
             {
@@ -173,22 +173,27 @@ const speechCallback = (stream) => {
             },
             {
                 required: "cluster",
-                optional: ["papers", "nodes"],
+                optional: ["papers", "nodes", "create"],
+                eventType: "createClusters",
+            },
+            {
+                required: "clusters",
+                optional: ["create", "generate", "organize"],
                 eventType: "createClusters",
             },
             {
                 required: "start",
-                optional: ["annotate", "notes", "annotating"],
+                optional: ["annotate", "notes", "annotating", "annotation"],
                 eventType: "startAnnotate",
             },
             {
                 required: "stop",
-                optional: ["annotate", "notes", "annotating"],
+                optional: ["annotate", "notes", "annotating", "annotation"],
                 eventType: "stopAnnotate",
             },
             {
                 required: "clear",
-                optional: ["annotate", "annotation", "annotating"],
+                optional: ["annotate", "annotation", "annotating", "notes", "note", "annotations"],
                 eventType: "clearAnnotation",
             },
         ];

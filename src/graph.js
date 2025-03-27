@@ -1353,6 +1353,7 @@ export function addAnnotationsForPaper(annotations, paperId) {
 }
 
 export function clearAnnotationsForPaper(paperId) {
+    logEvent("clearAnnotationsForPaper() called", {paperId: paperId});
     paperAnnotationsMap[paperId] = null;
     updateInsightsAndNotesText(paperId, true);
 }
