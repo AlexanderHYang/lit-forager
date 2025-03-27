@@ -164,6 +164,7 @@ async function sendLogData() {
         // downloadLogFile(stringifiedData);
 
         const address = `https://${host}:3000/upload-log`;
+        console.log("Sending log data to:", address);
         const response = await fetch(address, {
             method: "POST",
             headers: {

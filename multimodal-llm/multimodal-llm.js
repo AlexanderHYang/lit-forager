@@ -343,7 +343,7 @@ app.use(express.urlencoded({ limit: "5000mb", extended: true }));
 
 // Handle preflight requests (OPTIONS method)
 app.options("*", (req, res) => {
-    res.header("Access-Control-Allow-Origin", "https://localhost:5173");
+    res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
     res.header("Access-Control-Allow-Headers", "Content-Type");
     res.sendStatus(204);
@@ -352,7 +352,7 @@ app.options("*", (req, res) => {
 // Endpoint to receive log data
 app.post("/upload-log", (req, res) => {
     // Set CORS headers
-    res.header("Access-Control-Allow-Origin", "https://localhost:5173");
+    res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
     res.header("Access-Control-Allow-Headers", "Content-Type");
 
@@ -396,7 +396,7 @@ app.post("/upload-log", (req, res) => {
 });
 
 app.use(cors({
-    origin: "https://localhost:5173", // Allow only your frontend
+    origin: "*", // Allow only your frontend
     methods: ["GET", "POST"], // Allow specific HTTP methods
     allowedHeaders: ["Content-Type"] // Allow specific headers
 }));
