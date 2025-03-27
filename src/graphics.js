@@ -311,7 +311,7 @@ const createButton = (name, text, shareMaterial = true) => {
 // Exported UI buttons
 export const recommendButton = createButton("recommend", "Recommend Papers");
 export const deleteButton = createButton("delete", "Delete Papers");
-export const clearSelectionButton = createButton("clearSelection", "Clear Selected Papers");
+export const clearSelectionButton = createButton("clearSelection", "Clear Selected \n Papers");
 export const unpinNodesButton = createButton("unpinNodes", "Unpin Papers");
 export const toggleLinksButton = createButton("toggleLinks", "Change Link Type");
 export const createClustersButton = createButton("createClusters", "Cluster Papers");
@@ -374,7 +374,7 @@ annotateButton.onToggleObservable.add(() => {
         console.log("Annotate Button toggled on");
         annotateButton.plateMaterial.alphaMode = BABYLON.Engine.ALPHA_ONEONE;
         annotateButton.plateMaterial.diffuseColor = new BABYLON.Color3(0, 255, 255);
-        annotateButton.text = "Listening... (Stop Annotating)";
+        annotateButton.text = "Stop Annotating";
         socket.emit("annotateButtonPressed", {});
     } else {
         console.log("Annotate Button toggled off");
@@ -416,10 +416,10 @@ guiManager.addControl(recommendationsMenu);
 recommendationsMenu.backPlateMargin = 0.1;
 recommendationsMenu.scaling = new Vector3(0.06, 0.06, 0.06);
 
-const recByThematicButton = createButton("recByThematic", "Recommend by Thematic Similarity");
-const recByCitationButton = createButton("recByCitation", "Recommend by Citation");
-const recByReferenceButton = createButton("recByReference", "Recommend by Reference");
-const recByAuthorButton = createButton("recByAuthor", "Recommend by Author");
+const recByThematicButton = createButton("recByThematic", "Recommend by \n Thematic Similarity");
+const recByCitationButton = createButton("recByCitation", "Recommend by \n Citation");
+const recByReferenceButton = createButton("recByReference", "Recommend by \n Reference");
+const recByAuthorButton = createButton("recByAuthor", "Recommend by \n Author");
 const recBackButton = createButton("recBack", "Back");
 
 recommendationsMenu.addButton(recBackButton);
