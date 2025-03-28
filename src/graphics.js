@@ -675,7 +675,7 @@ export function updatePaperPanelToNode(d, n) {
         paperDetailsPanelId = d.paperId;
 
         // Modifying the UI elements for each paper
-        titleBlock.text = d.title;
+        titleBlock.text = d.title ? d.title : "No title available";
         authorBlock.text =
             d.authors.length > 10
                 ? `${d.authors
@@ -688,7 +688,7 @@ export function updatePaperPanelToNode(d, n) {
         metadataTextBlock.text = metadata;
 
         // Limit the abstract to 2000 characters
-        let abstractText = d.abstract;
+        let abstractText = d.abstract ? d.abstract : "No abstract available";
         if (abstractText?.length > 1800) {
             let limited = abstractText.substring(0, 1800);
             // Cut off at the last space to avoid breaking words
