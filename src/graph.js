@@ -71,18 +71,39 @@ export let paperAnnotationsMap = {};
 // Paper with 2000+ authors: "8b16f29a47a86fbd2b3daaf5bcb6356528ba32c0"
 export let simulation;
 
-// const seedPaperIDs = [
-//     "0ffd57884d7957f6b5634b9fa24843dc3759668f",
-//     "944da0eb2aba11aaed51bba35d6e25bda33b2571",
-//     "644482c6c6ca800ccc4ef07505e34dbde8cefcb4",
-// ];
+const seedPaperIDs = [
+    "0ffd57884d7957f6b5634b9fa24843dc3759668f",
+    "944da0eb2aba11aaed51bba35d6e25bda33b2571",
+    "644482c6c6ca800ccc4ef07505e34dbde8cefcb4",
+];
 
 // VIS Papers
-const seedPaperIDs = [
-    "0cd9b2ef1ead9bea120ac67503140df60b7d1cf6",  // A Taxonomy and Survey of Dynamic Graph Visualization
-    "86970a858d82be78e932f6cd9e7cacaf04f0eaa1",  // Can animation support the visualisation of dynamic graphs?
-    "002e39678d29717c01849f315a3155bbcf61aa3a",  // Up close and personal: Collaborative work on a high-resolution multitouch wall display
-];
+// const seedPaperIDs = [
+//     "0cd9b2ef1ead9bea120ac67503140df60b7d1cf6",  // A Taxonomy and Survey of Dynamic Graph Visualization
+//     "7fa0d8b0090289c00887ef4e66983ba6cfd3d2be",  // Animation, Small Multiples, and the Effect of Mental Map Preservation in Dynamic Graphs
+//     "002e39678d29717c01849f315a3155bbcf61aa3a",  // Up close and personal: Collaborative work on a high-resolution multitouch wall display
+// ];
+
+// HCI Papers
+// const seedPaperIDs = [
+//     "a49f11cbf5eb48c20e6a8e486db46aa2f8765fb7",  // "Empathy machine": how virtual reality affects human rights attitudes
+//     "e5176c8b05a986aecd89d34eb24684078c7ac21f",  // A Survey on Applications of Augmented, Mixed and Virtual Reality for Nature and Environment
+//     "dab8f7dc0f470513e4694d7c2f948a08425e4d60",  // Have We Taken On Too Much?: A Critical Review of the Sustainable HCI Landscape
+// ];
+
+// CV Papers
+// const seedPaperIDs = [
+//     "0c00a328fa7cd56ee60338c54e89bd48310db80b",  // Beyond a Gaussian Denoiser: Residual Learning of Deep CNN for Image Denoising
+//     "c4e6b18b5573329a5b62f297f6ab9565f841e11b",  // Attention-Based Adaptive Selection of Operations for Image Restoration in the Presence of Unknown Combined Distortions
+//     "f506d18f8b74aeb4e8280a147d2e76d2447bfba0",  // Towards the automated restoration of old photographic prints: a survey
+// ];
+
+// NLP Papers
+// const seedPaperIDs = [
+//     "a82c1d1ccaa3a3d1d6ee6677de0eed2e93ddb6e8",  // Bottom-Up and Top-Down Attention for Image Captioning and Visual Question Answering
+//     "7289a240c9425bc7cad87b3b835e5f0cac22f488",  // DVQA: Understanding Data Visualizations via Question Answering
+//     "1b6e810ce0afd0dd093f789d2b2742d047e316d5",  // Chain of Thought Prompting Elicits Reasoning in Large Language Models
+// ];
 
 /**
  * Fetches the initial set of papers.
