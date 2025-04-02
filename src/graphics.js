@@ -449,8 +449,8 @@ handMenu.addButton(recommendButton);
 const recommendationsMenu = new GUI.HandMenu(xr.baseExperience, "recommendationsMenu");
 
 const recommendationsMenuBehavior = recommendationsMenu.handConstraintBehavior;
-recommendationsMenuBehavior.palmUpStrictness = 0.8;
-recommendationsMenuBehavior.handConstraintVisibility = BABYLON.HandConstraintVisibility.PALM_UP;
+recommendationsMenuBehavior.palmUpStrictness = 0.9;
+recommendationsMenuBehavior.handConstraintVisibility = BABYLON.HandConstraintVisibility.PALM_AND_GAZE;
 recommendationsMenuBehavior.targetZone = BABYLON.HandConstraintZone.ULNAR_SIDE;
 recommendationsMenuBehavior.nodeOrientationMode = BABYLON.HandConstraintOrientation.HAND_ROTATION;
 recommendationsMenuBehavior.targetOffset = 0.15;
@@ -619,7 +619,7 @@ paperDetailsPanel.material = panelMaterial;
 
 // Create an AdvancedDynamicTexture for the panel
 const panelTexture = AdvancedDynamicTexture.CreateForMesh(paperDetailsPanel, 1024, 3072);
-let loadedGUI = await panelTexture.parseFromSnippetAsync("#R4A2E9#20");
+let loadedGUI = await panelTexture.parseFromSnippetAsync("#R4A2E9#21");
 
 let paperDetailPanelBackground = panelTexture.getControlByName("paperDetailPanelBackground");
 let paperDetailStackPanel = paperDetailPanelBackground.getChildByName("paperDetailStackPanel");
