@@ -10,6 +10,7 @@ import {
     MeshBuilder,
     DebugLayer,
 } from "@babylonjs/core";
+import {GridMaterial, GradientMaterial} from "@babylonjs/materials";
 import {
     AdvancedDynamicTexture,
     Rectangle,
@@ -82,7 +83,11 @@ light.groundColor = new Color3(1, 1, 1);
 export const CoT_babylon = anu.create("cot", "cot");
 export const CoT = anu.selectName("cot", scene);
 
-export const env = scene.createDefaultEnvironment();
+// export const env = scene.createDefaultEnvironment();
+export const env = scene.createDefaultEnvironment({
+    createGround: true,
+    createSkybox: false,
+});
 
 // Assuming 'env.ground' is your ground mesh
 const groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
@@ -92,6 +97,35 @@ groundMaterial.transparencyMode = BABYLON.Material.MATERIAL_ALPHABLEND;
 // Apply the material to the ground mesh
 env.ground.material = groundMaterial;
 env.ground.setAbsolutePosition(new BABYLON.Vector3(0, -1, 0));
+
+// Import the .env file as a CubeTexture
+const texture = new BABYLON.CubeTexture('./src/skybox.env', scene);
+// Create a skybox mesh using this texture
+const skybox = scene.createDefaultSkybox(texture, true, 10000, 0.1);
+
+// Create a visible ground mesh
+const groundSize = 1000;
+const ground = BABYLON.MeshBuilder.CreateGround("visibleGround", {
+    width: groundSize, 
+    height: groundSize,
+    subdivisions: 2
+}, scene);
+ground.position.y = -1;
+
+// Then replace your visibleGroundMaterial with this
+const visibleGroundMaterial = new GridMaterial("groundMaterial", scene);
+visibleGroundMaterial.majorUnitFrequency = 10; // A major line every 10 units
+visibleGroundMaterial.minorUnitVisibility = 0.45; // Minor grid lines visibility
+visibleGroundMaterial.gridRatio = 1; // Grid cell size
+visibleGroundMaterial.backFaceCulling = false;
+visibleGroundMaterial.mainColor = new BABYLON.Color3(1, 1, 1); // White
+visibleGroundMaterial.lineColor = new BABYLON.Color3(0.8, 0.8, 0.9); // Light blue-gray lines
+visibleGroundMaterial.opacity = 0.99; // Almost fully opaque
+
+// No need for the gradient texture now
+// Apply material directly to ground
+ground.material = visibleGroundMaterial;
+
 
 // Enable XR
 export const xr = await scene.createDefaultXRExperienceAsync({
