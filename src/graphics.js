@@ -466,6 +466,7 @@ recommendationsMenuBehavior.handConstraintVisibility =
 recommendationsMenuBehavior.targetZone = BABYLON.HandConstraintZone.ULNAR_SIDE;
 recommendationsMenuBehavior.nodeOrientationMode = BABYLON.HandConstraintOrientation.HAND_ROTATION;
 recommendationsMenuBehavior.targetOffset = 0.15;
+recommendationsMenuBehavior.handedness = "left";
 recommendationsMenu.columns = 2;
 
 guiManager.addControl(recommendationsMenu);
@@ -556,6 +557,7 @@ authorMenuBehavior.handConstraintVisibility = BABYLON.HandConstraintVisibility.P
 authorMenuBehavior.targetZone = BABYLON.HandConstraintZone.ULNAR_SIDE;
 authorMenuBehavior.nodeOrientationMode = BABYLON.HandConstraintOrientation.HAND_ROTATION;
 authorMenuBehavior.targetOffset = 0.15;
+authorMenuBehavior.handedness = "left";
 authorMenu.columns = 2;
 
 guiManager.addControl(authorMenu);
