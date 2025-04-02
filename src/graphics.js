@@ -389,7 +389,7 @@ export const createClustersButton = createButton("createClusters", "Cluster Pape
 export const summarizeButton = createButton("summarizeButton", "Summarize Paper");
 export const keywordsButton = createButton("keywordsButton", "Generate Keywords");
 
-export const annotateButton = createButton("annotateButton", "Start Annotating", false);
+export const annotateButton = createButton("annotateButton", "Start Annotation", false);
 annotateButton.isToggleButton = true;
 export const clearAnnotationButton = createButton("clearAnnotationButton", "Clear Annotation");
 
@@ -445,13 +445,13 @@ annotateButton.onToggleObservable.add(() => {
         console.log("Annotate Button toggled on");
         annotateButton.plateMaterial.alphaMode = BABYLON.Engine.ALPHA_ONEONE;
         annotateButton.plateMaterial.diffuseColor = new BABYLON.Color3(0, 255, 255);
-        annotateButton.text = "Stop Annotating";
+        annotateButton.text = "Stop Annotation";
         socket.emit("annotateButtonPressed", {});
     } else {
         console.log("Annotate Button toggled off");
         annotateButton.plateMaterial.alphaMode = 2;
         annotateButton.plateMaterial.diffuseColor = new BABYLON.Color3(0.4, 0.4, 0.4);
-        annotateButton.text = "Start Annotating";
+        annotateButton.text = "Start Annotation";
         socket.emit("annotateButtonReleased", {});
     }
 });
