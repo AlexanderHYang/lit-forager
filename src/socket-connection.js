@@ -16,7 +16,7 @@ import {
 } from "./graph.js";
 import { logEvent } from "../main.js";
 
-import { paperDetailsPanelId } from "./graphics.js";
+import { paperDetailsPanelId, setFullScreenUIText } from "./graphics.js";
 
 // Declare a socket variable to be used globally
 let socket;

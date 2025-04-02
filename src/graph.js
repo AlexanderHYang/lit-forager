@@ -48,7 +48,7 @@ const shouldDrag = {};
 const isDragging = {};
 const isPointerOver = {};
 const excludeFromNodeConnection = [];
-const CLICK_DELAY_THRESHOLD = 400; // milliseconds
+const CLICK_DELAY_THRESHOLD = 600; // milliseconds
 export let waitingForAPI = false;
 const linkColorMap = {
     citation: Color3.Magenta(),
@@ -414,7 +414,7 @@ export function createNodes() {
         });
         dragBehavior.onPositionChangedObservable.add((data) => {
             let delta = n.position.subtract(initialPosition);
-            if (delta.length() > 0.02) {
+            if (delta.length() > 0.008) {
                 shouldDrag[d.paperId] = true;
             }
             d.x = n.position.x;
@@ -1250,6 +1250,7 @@ function generateFibonacciLatticePositions(n, center, radius) {
 }
 
 export async function createClustersFromGemini(response) {
+
     logEvent("createClustersFromGemini() called", { response: response });
     console.log("createClustersFromGemini() called");
 
