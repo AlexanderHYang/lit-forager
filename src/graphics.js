@@ -460,9 +460,9 @@ handMenu.addButton(recommendButton);
 const recommendationsMenu = new GUI.HandMenu(xr.baseExperience, "recommendationsMenu");
 
 const recommendationsMenuBehavior = recommendationsMenu.handConstraintBehavior;
-recommendationsMenuBehavior.palmUpStrictness = 0.9;
+recommendationsMenuBehavior.palmUpStrictness = 0.8;
 recommendationsMenuBehavior.handConstraintVisibility =
-    BABYLON.HandConstraintVisibility.PALM_AND_GAZE;
+    BABYLON.HandConstraintVisibility.PALM_UP;
 recommendationsMenuBehavior.targetZone = BABYLON.HandConstraintZone.ULNAR_SIDE;
 recommendationsMenuBehavior.nodeOrientationMode = BABYLON.HandConstraintOrientation.HAND_ROTATION;
 recommendationsMenuBehavior.targetOffset = 0.15;
