@@ -586,6 +586,7 @@ export function clearNodeSelection() {
     logEvent("clearNodeSelection() called", { selectedIds: selectedIds });
     console.log("clearNodeSelection() called");
     selectedIds.length = 0;
+    updatePaperPanelToNode(null, null);
     nodes.run((d, n, i) => {
         highlighter.removeMesh(n);
     });
@@ -630,7 +631,7 @@ export async function addRecommendationsFromSelectedPapers() {
         const recommendedPaperIds = d.recommendedPapers.map((a) => a.paperId);
 
         paperData.forEach((p) => {
-            if (selectedIds.includes(p.paperId)) {
+            if (recommendationSourceIds.includes(p.paperId)) {
                 recommendedPaperIds.forEach((rec) => {
                     if (!p.recommends.includes(rec)) {
                         p.recommends.push(rec);
