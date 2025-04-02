@@ -71,11 +71,11 @@ export let paperAnnotationsMap = {};
 // Paper with 2000+ authors: "8b16f29a47a86fbd2b3daaf5bcb6356528ba32c0"
 export let simulation;
 
-const seedPaperIDs = [
-    "0ffd57884d7957f6b5634b9fa24843dc3759668f",
-    "944da0eb2aba11aaed51bba35d6e25bda33b2571",
-    "644482c6c6ca800ccc4ef07505e34dbde8cefcb4",
-];
+// const seedPaperIDs = [
+//     "0ffd57884d7957f6b5634b9fa24843dc3759668f",
+//     "944da0eb2aba11aaed51bba35d6e25bda33b2571",
+//     "644482c6c6ca800ccc4ef07505e34dbde8cefcb4",
+// ];
 
 // VIS Papers
 // const seedPaperIDs = [
@@ -85,11 +85,11 @@ const seedPaperIDs = [
 // ];
 
 // HCI Papers
-// const seedPaperIDs = [
-//     "a49f11cbf5eb48c20e6a8e486db46aa2f8765fb7",  // "Empathy machine": how virtual reality affects human rights attitudes
-//     "e5176c8b05a986aecd89d34eb24684078c7ac21f",  // A Survey on Applications of Augmented, Mixed and Virtual Reality for Nature and Environment
-//     "dab8f7dc0f470513e4694d7c2f948a08425e4d60",  // Have We Taken On Too Much?: A Critical Review of the Sustainable HCI Landscape
-// ];
+const seedPaperIDs = [
+    "a49f11cbf5eb48c20e6a8e486db46aa2f8765fb7",  // "Empathy machine": how virtual reality affects human rights attitudes
+    "e5176c8b05a986aecd89d34eb24684078c7ac21f",  // A Survey on Applications of Augmented, Mixed and Virtual Reality for Nature and Environment
+    "dab8f7dc0f470513e4694d7c2f948a08425e4d60",  // Have We Taken On Too Much?: A Critical Review of the Sustainable HCI Landscape
+];
 
 // CV Papers
 // const seedPaperIDs = [
@@ -774,6 +774,7 @@ export function removeSelectedNodesFromGraph() {
     removeNodesFromGraph(selectedIds);
     removedPaperIds.push(...selectedIds);
     selectedIds.length = 0;
+    updatePaperPanelToNode(null, null);
 }
 
 /**
