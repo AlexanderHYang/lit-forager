@@ -122,6 +122,33 @@ visibleGroundMaterial.mainColor = new BABYLON.Color3(1, 1, 1); // White
 visibleGroundMaterial.lineColor = new BABYLON.Color3(0.8, 0.8, 0.9); // Light blue-gray lines
 visibleGroundMaterial.opacity = 0.99; // Almost fully opaque
 
+// Create a solid ground material for comparison
+const solidGroundMaterial = new BABYLON.StandardMaterial("solidGroundMaterial", scene);
+solidGroundMaterial.diffuseColor = new BABYLON.Color3(0.9, 0.9, 1.0); // Dark blue-gray color
+solidGroundMaterial.alpha = 0.1
+solidGroundMaterial.specularColor = new BABYLON.Color3(0.9, 0.9, 0.9); // Low specular reflection
+
+// Create a second ground mesh that can be toggled with the grid ground
+const solidGround = BABYLON.MeshBuilder.CreateGround("solidGround", {
+    width: groundSize, 
+    height: groundSize,
+    subdivisions: 2
+}, scene);
+solidGround.position.y = -1.01; // Slightly below the grid to prevent z-fighting
+solidGround.material = solidGroundMaterial;
+solidGround.isVisible = false; // Start with grid visible by default
+
+// Add a key handler to toggle between grid and solid ground
+scene.onKeyboardObservable.add((kbInfo) => {
+    if(kbInfo.type === BABYLON.KeyboardEventTypes.KEYDOWN && kbInfo.event.key === 'g') {
+        ground.isVisible = !ground.isVisible;
+        solidGround.isVisible = !solidGround.isVisible;
+    }
+});
+
+solidGround.isVisible = true;
+ground.isVisible = false;
+
 // No need for the gradient texture now
 // Apply material directly to ground
 ground.material = visibleGroundMaterial;
