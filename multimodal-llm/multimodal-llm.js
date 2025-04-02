@@ -541,7 +541,13 @@ async function processAnnotationGemini(currentlyViewingPaperData) {
     }
 }
 
+let waitingOnGeminiCluster = false;
 async function createClustersGemini() {
+    if (waitingOnGeminiCluster) {
+        console.warn("Waiting on Gemini cluster generation, please wait.");
+        return;
+    }
+    waitingOnGeminiCluster = true;
     try {
         // Final check for null or 0 paper ids
         if (!allNodesData) {
@@ -611,5 +617,7 @@ Now, **process the following input and generate clusters accordingly:**`;
         });
     } catch (error) {
         console.error("Error sending custom prompt to Gemini:", error);
+    } finally {
+        waitingOnGeminiCluster = false; // Reset the flag
     }
 }
