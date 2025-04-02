@@ -10,7 +10,7 @@ import {
     MeshBuilder,
     DebugLayer,
 } from "@babylonjs/core";
-import {GridMaterial, GradientMaterial} from "@babylonjs/materials";
+import { GridMaterial, GradientMaterial } from "@babylonjs/materials";
 import {
     AdvancedDynamicTexture,
     Rectangle,
@@ -99,7 +99,7 @@ env.ground.material = groundMaterial;
 env.ground.setAbsolutePosition(new BABYLON.Vector3(0, -1, 0));
 
 // Import the .env file as a CubeTexture
-const texture = new BABYLON.CubeTexture('./src/skybox.env', scene);
+const texture = new BABYLON.CubeTexture("./src/skybox.env", scene);
 // Create a skybox mesh using this texture
 const skybox = scene.createDefaultSkybox(texture, true, 10000, 0.1);
 const skyboxBrightness = 0.5; // Adjust this value to make the skybox dimmer
@@ -112,11 +112,15 @@ if (skybox && skybox.material) {
 
 // Create a visible ground mesh
 const groundSize = 1000;
-const ground = BABYLON.MeshBuilder.CreateGround("visibleGround", {
-    width: groundSize, 
-    height: groundSize,
-    subdivisions: 2
-}, scene);
+const ground = BABYLON.MeshBuilder.CreateGround(
+    "visibleGround",
+    {
+        width: groundSize,
+        height: groundSize,
+        subdivisions: 2,
+    },
+    scene
+);
 ground.position.y = -1;
 
 // Then replace your visibleGroundMaterial with this
@@ -129,10 +133,36 @@ visibleGroundMaterial.mainColor = (new BABYLON.Color3(1, 1, 1)).scale(0.8); // W
 visibleGroundMaterial.lineColor = (new BABYLON.Color3(0.8, 0.8, 0.9)).scale(0.8); // Light blue-gray lines
 visibleGroundMaterial.opacity = 0.99; // Almost fully opaque
 
+// Create a solid ground material for comparison
+const solidGroundMaterial = new BABYLON.StandardMaterial("solidGroundMaterial", scene);
+solidGroundMaterial.diffuseColor = new BABYLON.Color3(0.9, 0.9, 1.0); // Dark blue-gray color
+solidGroundMaterial.alpha = 0.1
+solidGroundMaterial.specularColor = new BABYLON.Color3(0.9, 0.9, 0.9); // Low specular reflection
+
+// Create a second ground mesh that can be toggled with the grid ground
+const solidGround = BABYLON.MeshBuilder.CreateGround("solidGround", {
+    width: groundSize, 
+    height: groundSize,
+    subdivisions: 2
+}, scene);
+solidGround.position.y = -1.01; // Slightly below the grid to prevent z-fighting
+solidGround.material = solidGroundMaterial;
+solidGround.isVisible = false; // Start with grid visible by default
+
+// Add a key handler to toggle between grid and solid ground
+scene.onKeyboardObservable.add((kbInfo) => {
+    if(kbInfo.type === BABYLON.KeyboardEventTypes.KEYDOWN && kbInfo.event.key === 'g') {
+        ground.isVisible = !ground.isVisible;
+        solidGround.isVisible = !solidGround.isVisible;
+    }
+});
+
+solidGround.isVisible = true;
+ground.isVisible = false;
+
 // No need for the gradient texture now
 // Apply material directly to ground
 ground.material = visibleGroundMaterial;
-
 
 // Enable XR
 export const xr = await scene.createDefaultXRExperienceAsync({
@@ -457,8 +487,9 @@ handMenu.addButton(recommendButton);
 const recommendationsMenu = new GUI.HandMenu(xr.baseExperience, "recommendationsMenu");
 
 const recommendationsMenuBehavior = recommendationsMenu.handConstraintBehavior;
-recommendationsMenuBehavior.palmUpStrictness = 0.8;
-recommendationsMenuBehavior.handConstraintVisibility = BABYLON.HandConstraintVisibility.PALM_UP;
+recommendationsMenuBehavior.palmUpStrictness = 0.9;
+recommendationsMenuBehavior.handConstraintVisibility =
+    BABYLON.HandConstraintVisibility.PALM_AND_GAZE;
 recommendationsMenuBehavior.targetZone = BABYLON.HandConstraintZone.ULNAR_SIDE;
 recommendationsMenuBehavior.nodeOrientationMode = BABYLON.HandConstraintOrientation.HAND_ROTATION;
 recommendationsMenuBehavior.targetOffset = 0.15;
@@ -627,7 +658,7 @@ paperDetailsPanel.material = panelMaterial;
 
 // Create an AdvancedDynamicTexture for the panel
 const panelTexture = AdvancedDynamicTexture.CreateForMesh(paperDetailsPanel, 1024, 3072);
-let loadedGUI = await panelTexture.parseFromSnippetAsync("#R4A2E9#20");
+let loadedGUI = await panelTexture.parseFromSnippetAsync("#R4A2E9#21");
 
 let paperDetailPanelBackground = panelTexture.getControlByName("paperDetailPanelBackground");
 let paperDetailStackPanel = paperDetailPanelBackground.getChildByName("paperDetailStackPanel");
