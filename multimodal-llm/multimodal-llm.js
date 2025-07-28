@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import http from "http";
 import chalk from "chalk";
 import { Writable } from "stream";
@@ -26,6 +27,7 @@ const streamingLimit = 55000; // ms - low value for demo
 
 // Replace with your actual API key
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+console.log(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
 // Google Speech client & config
@@ -40,6 +42,9 @@ const request = {
     interimResults: true,
 };
 
+// Logging...
+let logData = [];
+
 // Variables for managing the audio stream
 let recognizeStream = null;
 let restartCounter = 0;
@@ -51,6 +56,9 @@ let finalRequestEndTime = 0;
 let newStream = true;
 let bridgingOffset = 0;
 let lastTranscriptWasFinal = false;
+let transcript = null;
+let annotationTranscript = "";
+let isAnnotating = false;
 
 // -------------------- Speech Streaming Functions --------------------
 function startStream() {
@@ -87,7 +95,9 @@ const speechCallback = (stream) => {
         isFinalEndTime = resultEndTime;
         lastTranscriptWasFinal = true;
 
-        const transcript = stream.results[0].alternatives[0].transcript;
+        transcript = stream.results[0].alternatives[0].transcript;
+
+        if (isAnnotating) annotationTranscript += transcript + " ";
 
         // Detect keyword combinations with a required keyword and optional keywords
         const keywordCombinations = [
@@ -113,7 +123,7 @@ const speechCallback = (stream) => {
             },
             {
                 required: "change",
-                optional: ["links", "link", "link type"],
+                optional: ["links", "link", "link type", "connection", "connections", "connection type"],
                 eventType: "toggleLinks",
             },
             {
@@ -125,6 +135,11 @@ const speechCallback = (stream) => {
                 required: "summarize",
                 optional: ["paper", "papers"],
                 eventType: "summarizePaper",
+            },
+            {
+                required: "keyword",
+                optional: ["summarize", "generate", "create", "extract", "find"],
+                eventType: "generateKeywords",
             },
             {
                 required: "delete",
@@ -156,6 +171,31 @@ const speechCallback = (stream) => {
                 optional: ["deleted", "delete", "paper", "papers", "node", "nodes"],
                 eventType: "restoreDeletedPapers",
             },
+            {
+                required: "cluster",
+                optional: ["papers", "nodes", "create"],
+                eventType: "createClusters",
+            },
+            {
+                required: "clusters",
+                optional: ["create", "generate", "organize"],
+                eventType: "createClusters",
+            },
+            {
+                required: "start",
+                optional: ["annotate", "notes", "annotating", "annotation"],
+                eventType: "startAnnotate",
+            },
+            {
+                required: "stop",
+                optional: ["annotate", "notes", "annotating", "annotation"],
+                eventType: "stopAnnotate",
+            },
+            {
+                required: "clear",
+                optional: ["annotate", "annotation", "annotating", "notes", "note", "annotations"],
+                eventType: "clearAnnotation",
+            },
         ];
 
         keywordCombinations.forEach((combo) => {
@@ -174,17 +214,31 @@ const speechCallback = (stream) => {
                 );
 
                 if (combo.eventType === "summarizePaper") {
-                    if (
-                        selectedPaperData &&
-                        selectedPaperData.paperIds &&
-                        selectedPaperData.paperIds.length === 1
-                    ) {
+                    if (currentlyViewingPaperData && currentlyViewingPaperData.paperId) {
                         // Use the data received from sendPaperData
-                        summarizePaperGemini(selectedPaperData);
+                        summarizePaperGemini(currentlyViewingPaperData);
                     } else {
                         // Optionally, fallback if no data has been received yet.
-                        console.warn("No nodes selected or no selection data available");
+                        console.warn("No nodes selected or more than one node selected");
                     }
+                } else if (combo.eventType === "generateKeywords") {
+                    if (currentlyViewingPaperData && currentlyViewingPaperData.paperId) {
+                        // Use the data received from sendPaperData
+                        generateKeywordsGemini(currentlyViewingPaperData);
+                    } else {
+                        // Optionally, fallback if no data has been received yet.
+                        console.warn("No nodes selected or more than one node selected");
+                    }
+                } else if (combo.eventType == "createClusters") {
+                    createClustersGemini();
+                } else if (combo.eventType === "startAnnotate") {
+                    annotationTranscript = "";
+                    isAnnotating = true;
+                    console.log("Annotation started");
+                } else if (combo.eventType === "stopAnnotate") {
+                    isAnnotating = false;
+                    console.log("Annotation stopped. Transcript:", annotationTranscript);
+                    processAnnotationGemini(currentlyViewingPaperData);
                 } else {
                     // For all other events, emit normally.
                     io.emit(combo.eventType, {
@@ -283,6 +337,71 @@ const options = {
     // Optionally, add ca, passphrase, etc.
 };
 
+// Increase request body size limit
+app.use(express.json({ limit: "5000mb" })); // Adjust size as needed
+app.use(express.urlencoded({ limit: "5000mb", extended: true }));
+
+// Handle preflight requests (OPTIONS method)
+app.options("*", (req, res) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    res.header("Access-Control-Allow-Headers", "Content-Type");
+    res.sendStatus(204);
+});
+
+// Endpoint to receive log data
+app.post("/upload-log", (req, res) => {
+    // Set CORS headers
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    res.header("Access-Control-Allow-Headers", "Content-Type");
+
+    try {
+        const body = req.body; // Get request body
+        const sessionId = body.sessionId; // Get sessionId from request body
+        const logData = body.logData; // Get log data from request body
+
+        if (!Array.isArray(logData)) {
+            return res.status(400).json({ error: "Invalid log data format" });
+        }
+
+        // Define the file path directly in the /logs/ folder
+        const filePath = join(__dirname, "logs", `${sessionId}.json`);
+
+        // Check if the file exists
+        if (fs.existsSync(filePath)) {
+            // If the file exists, read its content and append the new log data
+            const existingData = JSON.parse(fs.readFileSync(filePath, "utf8"));
+            if (Array.isArray(existingData)) {
+                existingData.push(...logData);
+                fs.writeFileSync(filePath, JSON.stringify(existingData, null, 2));
+            } else {
+                return res.status(500).json({ error: "Existing log file format is invalid" });
+            }
+        } else {
+            // If the file doesn't exist, create it with the new log data
+            fs.writeFileSync(filePath, JSON.stringify(logData, null, 2));
+        }
+
+        console.log("Log data received and appended.");
+        
+        // Send response once
+        res.status(200).json({ message: "Log data received successfully", filePath });
+    } catch (error) {
+        console.error("Error processing log data:", error);
+        
+        // Send error response once
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+app.use(cors({
+    origin: "*", // Allow only your frontend
+    methods: ["GET", "POST"], // Allow specific HTTP methods
+    allowedHeaders: ["Content-Type"] // Allow specific headers
+}));
+
+
 // Create an HTTPS server using your certificates
 const server = https.createServer(options, app);
 
@@ -291,6 +410,7 @@ const io = new Server(server, {
         origin: "*",
         methods: ["GET", "POST"],
     },
+    maxHttpBufferSize: 1e8, // 100MB
 });
 
 // Serve a simple HTML file for testing
@@ -303,44 +423,201 @@ server.listen(3000, "0.0.0.0", () => {
     console.log(`Secure WebSocket server listening on port 3000`);
 });
 
-// Global variable to store data from the "sendPaperData" event.
-let selectedPaperData = null;
+// Global variable to store data from the "sendPaperData" event and "sendAllNodesData".
+let currentlyViewingPaperData = null;
+let allNodesData = null;
 
 // Listen for client connections and handle "sendPaperData" events.
 io.on("connection", (socket) => {
     console.log("Client connected:", socket.id);
-    socket.on("sendSelectedNodesData", (data) => {
-        console.log("Received data for paper", data.paperIds);
-        selectedPaperData = data; // Update global data store.
+    socket.on("sendCurrentlyViewingNodeData", (data) => {
+        console.log("Received data for paper", data.paperId);
+        currentlyViewingPaperData = data; // Update global data store.
+    });
+
+    // Handle sendAllNodesData event
+    socket.on("sendAllNodesData", (data) => {
+        console.log(
+            "Received all nodes data for paperIds:",
+            data.map((d) => d.paperId)
+        );
+        allNodesData = data;
+    });
+
+    // Handle createClustersButtonPressed event
+    socket.on("createClustersButtonPressed", (data) => {
+        console.log("Received createClustersButtonPressed event with data", data);
+        createClustersGemini();
+    });
+
+    // Handle summarizeButtonPressed event
+    socket.on("summarizeButtonPressed", () => {
+        console.log("Received summarizeButtonPressed event");
+        summarizePaperGemini(currentlyViewingPaperData);
+    });
+
+    // Handle KeywordsButtonPressed event
+    socket.on("keywordsButtonPressed", () => {
+        console.log("Received KeywordsButtonPressed event");
+        generateKeywordsGemini(currentlyViewingPaperData);
+    });
+
+    // Handle annotateButtonPressed event
+    socket.on("annotateButtonPressed", () => {
+        console.log("Received annotateButtonPressed event");
+        annotationTranscript = "";
+        isAnnotating = true;
+        console.log("Annotation started");
+    });
+
+    // Handle annotateButtonReleased event
+    socket.on("annotateButtonReleased", () => {
+        console.log("Received annotateButtonReleased event");
+        isAnnotating = false;
+        console.log("Annotation stopped. Transcript:", annotationTranscript);
+        processAnnotationGemini(currentlyViewingPaperData);
     });
 });
 
 // -------------------- Gemini Functions --------------------
 
-async function summarizePaperGemini(selectedPaperData) {
+async function summarizePaperGemini(currentlyViewingPaperData) {
     try {
-        // Final check for exactly one paper id
-        if (
-            !selectedPaperData ||
-            !selectedPaperData.paperIds ||
-            selectedPaperData.paperIds.length !== 1
-        ) {
-            console.warn("Final check failed: Exactly one paper id is required");
-            return;
-        }
         // Combine your custom prompt with the incoming custom data
-        const customPrompt = `Summarize the following paper information in a concise TLDR format:\nTitle: ${selectedPaperData.titles[0]}\nAbstract: ${selectedPaperData.abstracts[0]}`;
-        console.log(customPrompt);
+        const customPrompt = `Summarize the following paper information in a concise TLDR format:\nTitle: ${currentlyViewingPaperData.title}\nAbstract: ${currentlyViewingPaperData.abstract}`;
+        // console.log(customPrompt);
         // Use the Gemini model to generate a response (adjust according to your Gemini API usage)
         const result = await model.generateContent(customPrompt);
-        const responseText = result.response.text();
-        console.log("Gemini response:", responseText);
+        const responseText = result.response.text().replace(/[*\n]/g, "");
+        // console.log("Gemini response:", responseText);
         // Emit an event back to clients with the Gemini response and the single paper id
         io.emit("summarizePaperGemini", {
             response: responseText,
-            paperId: selectedPaperData.paperIds[0],
+            paperId: currentlyViewingPaperData.paperId,
         });
     } catch (error) {
         console.error("Error sending custom prompt to Gemini:", error);
+    }
+}
+
+async function generateKeywordsGemini(currentlyViewingPaperData) {
+    try {
+        // Combine your custom prompt with the incoming custom data
+        const customPrompt = `Extract only the thematic keywords/index terms from the following research paper and return the 5 most important ones as a comma-separated list. Do not include any extra text or explanation. ${currentlyViewingPaperData.title}\nAbstract: ${currentlyViewingPaperData.abstract}`;
+        // console.log(customPrompt);
+        // Use the Gemini model to generate a response (adjust according to your Gemini API usage)
+        const result = await model.generateContent(customPrompt);
+        const responseText = "Keywords: " + result.response.text().replace(/[*\n]/g, "");
+        console.log("Gemini response:", responseText);
+        // Emit an event back to clients with the Gemini response and the single paper id
+        io.emit("generateKeywordsGemini", {
+            response: responseText,
+            paperId: currentlyViewingPaperData.paperId,
+        });
+    } catch (error) {
+        console.error("Error sending custom prompt to Gemini:", error);
+    }
+}
+
+async function processAnnotationGemini(currentlyViewingPaperData) {
+    try {
+        // Combine your custom prompt with the incoming custom data
+        const customPrompt = `You are a language model that transforms raw transcript text into well-formed, complete sentences. Your task is to reformat the input transcript by:
+	•	Converting phrases into coherent, grammatically correct sentences.
+	•	Inserting appropriate punctuation and capitalization.
+	•	Removing any extraneous instructions or markers (for example, “stop annotate”).
+    Do not return any additional text or information beyond the processed transcript. If the input transcript is empty or does not contain any tokens, return "Try annotating again".
+    Here's the transcript: ${annotationTranscript}`;
+        // console.log(customPrompt);
+        const result = await model.generateContent(customPrompt);
+        const responseText = result.response.text().replace(/[*\n]/g, "");
+        console.log("Gemini response:", responseText);
+        io.emit("annotateGemini", {
+            response: responseText,
+            paperId: currentlyViewingPaperData.paperId,
+        });
+    } catch (error) {
+        console.error("Error sending custom prompt to Gemini:", error);
+    }
+}
+
+let waitingOnGeminiCluster = false;
+async function createClustersGemini() {
+    if (waitingOnGeminiCluster) {
+        console.warn("Waiting on Gemini cluster generation, please wait.");
+        return;
+    }
+    waitingOnGeminiCluster = true;
+    try {
+        // Final check for null or 0 paper ids
+        if (!allNodesData) {
+            console.warn("Final check failed: ");
+            return;
+        }
+
+        // Combine your custom prompt with the incoming custom data
+        const basePrompt = `You are an AI that clusters academic papers based on thematic similarity. Given a list of papers, each with a unique "paperId", "title", and "abstract", your task is to organize them into **at least 2 clusters** with **at least 2 papers per cluster**.
+
+### Instructions:
+- Group papers based on their thematic similarity by analyzing the **title** and **abstract**.
+- Each cluster should have a **descriptive name** that summarizes the common theme of the grouped papers.
+- Ensure that **each paper appears in only one cluster**.
+- **Do not leave any papers unclustered.**
+- Return the result in a **valid JSON format** that is easy to parse in JavaScript.
+
+### Input Format Example:
+{
+    "papers": [
+        {"paperId": "p1", "title": "Deep Learning in Healthcare", "abstract": "This paper explores deep learning models applied to medical diagnostics."},
+        {"paperId": "p2", "title": "AI in Radiology", "abstract": "We discuss how AI models analyze radiology scans."},
+        {"paperId": "p3", "title": "Quantum Computing Advances", "abstract": "Recent progress in quantum computing and its impact on cryptography."},
+        {"paperId": "p4", "title": "Secure Quantum Cryptography", "abstract": "New quantum cryptographic protocols to enhance cybersecurity."}
+    ]
+}
+
+### Expected Output Format:
+{
+    "clusters": [
+        {
+            "name": "AI in Healthcare",
+            "paperIds": ["p1", "p2"]
+        },
+        {
+            "name": "Quantum Computing & Security",
+            "paperIds": ["p3", "p4"]
+        }
+    ]
+}
+
+### Additional Guidelines:
+- **Be concise and accurate** when naming the clusters.
+- **Do not add extra commentary**—just return the JSON object. Do NOT include any backticks (\`\`\`) before or after the response, and do NOT include a JSON label. The first and last characters should be { and } respectively.
+- The response **must be in valid JSON format** with proper syntax.
+
+Now, **process the following input and generate clusters accordingly:**`;
+
+        const prompt = `${basePrompt}\n\n${JSON.stringify(allNodesData, null, 4)}`;
+        console.log(prompt);
+
+        // Use the Gemini model to generate a response (adjust according to your Gemini API usage)
+        const result = await model.generateContent(prompt);
+
+        // Extract JSON from response
+        const responseText = await result.response.text(); // Await response text
+        const cleanedResponse = responseText
+            .replace(/```json/g, "") // Remove opening json block
+            .replace(/```/g, "") // Remove closing block
+            .trim(); // Trim any extra whitespace
+        const parsedResponse = JSON.parse(cleanedResponse); // Parse JSON
+
+        // Emit structured response to the frontend
+        io.emit("createClustersGemini", {
+            status: "success",
+            clusters: parsedResponse.clusters, // Only send the relevant part
+        });
+    } catch (error) {
+        console.error("Error sending custom prompt to Gemini:", error);
+    } finally {
+        waitingOnGeminiCluster = false; // Reset the flag
     }
 }
