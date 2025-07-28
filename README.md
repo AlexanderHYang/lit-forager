@@ -1,11 +1,10 @@
 <p align="center">
-  <img src="img/logo.png" alt="LitForager Logo" width="100"/>
+  <img src="img/logo.png" alt="LitForager Logo" width="80"/>
 </p>
 
-# LitForagern: Exploring Multimodal Literature Foraging Strategies in Immersive Sensemaking
+# LitForager: Exploring Multimodal Literature Foraging Strategies in Immersive Sensemaking
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-<hr/>
 
 LitForager is an **immersive analytics system** designed to help researchers **forage, organize, and make sense of academic literature** using **interactive 3D network visualizations** and **multimodal interactions** (gesture, voice, and menus) in **VR**.
 
@@ -21,7 +20,7 @@ LitForager is an **immersive analytics system** designed to help researchers **f
 ## Quick Start
 ## Credits
 
-❤️ **LitForager** was developed and maintained by [Alex Yang](https://alexanderyang.me), [Elliott Faa](https://www.linkedin.com/in/elliottfaa/), [Weijian Liu](https://www.linkedin.com/in/weijian-liu-77b643237/), [Shunan Guo](https://research.adobe.com/person/shunan-guo/), [Polo Chau](https://poloclub.github.io/polochau/), and [Yalong Yang](https://ivi.cc.gatech.edu/pi.html).
+❤️ **LitForager** was developed by [Alex Yang](https://alexanderyang.me), [Elliott Faa](https://www.linkedin.com/in/elliottfaa/), [Weijian Liu](https://www.linkedin.com/in/weijian-liu-77b643237/), [Shunan Guo](https://research.adobe.com/person/shunan-guo/), [Polo Chau](https://poloclub.github.io/polochau/), and [Yalong Yang](https://ivi.cc.gatech.edu/pi.html).
 ## License
 
 **LitForager** is available under the MIT License. It uses the **Semantic Scholar Open Research Corpus API** (licensed under [ODC-BY](https://opendatacommons.org/licenses/by/)), as described in *Waleed Ammar et al. 2018. Construction of the Literature Graph in Semantic Scholar. NAACL*. LitForager also integrates **Gemini 2.5 Flash** (provided under [Google’s Generative AI Terms of Service](https://ai.google.dev/terms)) and relies on **WebXR technologies** and libraries such as [Babylon.js](https://www.babylonjs.com/), which are available under the [Apache 2.0 License](https://www.apache.org/licenses/LICENSE-2.0).
