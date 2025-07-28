@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="img/logo.png" alt="LitForager Logo" width="80"/>
+  <img src="img/logo.png" alt="LitForager Logo" width="100"/>
 </p>
 
 # LitForager: Exploring Multimodal Literature Foraging Strategies in Immersive Sensemaking
