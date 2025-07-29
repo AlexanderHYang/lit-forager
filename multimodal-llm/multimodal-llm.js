@@ -365,8 +365,14 @@ app.post("/upload-log", (req, res) => {
             return res.status(400).json({ error: "Invalid log data format" });
         }
 
-        // Define the file path directly in the /logs/ folder
-        const filePath = join(__dirname, "logs", `${sessionId}.json`);
+        // Ensure logs directory exists
+        const logsDir = join(__dirname, "logs");
+        if (!fs.existsSync(logsDir)) {
+            fs.mkdirSync(logsDir, { recursive: true });
+        }
+
+        // Define the file path for the log file
+        const filePath = join(logsDir, `${sessionId}.json`);
 
         // Check if the file exists
         if (fs.existsSync(filePath)) {
