@@ -33,7 +33,7 @@ cd LitForager
 Create a `certificates` directory at `multimodal-llm/certificates` and generate self-signed certificates for local development:
 ```sh
 mkdir -p multimodal-llm/certificates
-openssl req -nodes -new -x509 -keyout certificates/key.pem -out certificates/cert.pem -days 365
+openssl req -nodes -new -x509 -keyout multimodal-llm/certificates/key.pem -out multimodal-llm/certificates/cert.pem -days 365
 ```
 > _Note: Do not commit your certificate files to version control._
 
