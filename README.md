@@ -51,7 +51,7 @@ openssl req -nodes -new -x509 -keyout multimodal-llm/certificates/key.pem -out m
   ```
   GEMINI_API_KEY=your-gemini-api-key-here
   ```
-- Refer to `.env.example` for the expected format.
+- Refer to `multimodal-llm/.env.example` for the expected format.
 
 **d. Install Backend Dependencies**  
 ```sh
@@ -67,7 +67,8 @@ npm install
   ```
   VITE_SS_API_KEY=your-semantic-scholar-api-key-here
   ```
-> _Note: Each user must use their own API key. Do not share or commit your key to version control._
+  > _Note: Each user must use their own API key. Do not share or commit your key to version control._
+- Refer to `.env.example` for the expected format.
 
 **b. Install Frontend Dependencies**  
 Open a new terminal in the project root and install frontend dependencies:
@@ -84,6 +85,8 @@ node multimodal-llm.js
 ```
 
 **b. Start the Frontend (with network access)**
+
+In a new terminal window, run the following command from the **project root**:
 ```sh
 npm run dev -- --host
 ```
