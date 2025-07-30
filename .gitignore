@@ -1,4 +1,4 @@
 node_modules
 .env
-multimodal-llm/certificates
-multimodal-llm/logs
+multimodal-llm/certificates/*.pem
+multimodal-llm/logs/*
