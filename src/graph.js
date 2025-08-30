@@ -198,6 +198,9 @@ export function generateLinkData() {
     paperData.forEach((d1, i) => {
         paperData.forEach((d2, j) => {
             if (d1.paperId !== d2.paperId) {
+                if (!d1.references) {
+                    console.log(d1);
+                }
                 d1.references.forEach((ref) => {
                     if (ref.paperId === d2.paperId) {
                         citationLinkData.push({ source: d1, target: d2 });
