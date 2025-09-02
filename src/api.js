@@ -38,6 +38,15 @@ export async function getDetailsForMultiplePapers(paperIds) {
 
             const data = await response.json();
             console.log("Paper details received from Semantic Scholar!");
+            console.log("Paper details:", data);
+
+            // fix references being null from api sometimes
+            data.forEach((paper) => {
+                if (!paper.references) {
+                    paper.references = [];
+                }
+            });
+
             return data;
         } catch (error) {
             attempts++;
