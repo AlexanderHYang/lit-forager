@@ -4,7 +4,8 @@
 
 # LitForager: Exploring Multimodal Literature Foraging Strategies in Immersive Sensemaking
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-
+[![arxiv badge](https://img.shields.io/badge/arXiv-2508.15043-red)](https://arxiv.org/abs/2508.15043)
+[![IEEE TVCG](https://img.shields.io/badge/IEEE-TVCG-green)](https://ieeexplore.ieee.org/)
 
 LitForager is an **immersive analytics system** designed to help researchers **forage, organize, and make sense of academic literature** using **interactive 3D network visualizations** and **multimodal interactions** (gesture, voice, and menus) in **VR**.
 
@@ -99,7 +100,19 @@ This will display a network URL, e.g., `https://192.168.x.x:5173/`.
 
 ## Credits
 
-❤️ **LitForager** was developed by [Alex Yang](https://alexanderyang.me), [Elliott Faa](https://www.linkedin.com/in/elliottfaa/), [Weijian Liu](https://www.linkedin.com/in/weijian-liu-77b643237/), [Shunan Guo](https://research.adobe.com/person/shunan-guo/), [Polo Chau](https://poloclub.github.io/polochau/), and [Yalong Yang](https://ivi.cc.gatech.edu/pi.html).
+❤️ **LitForager** is a collaborative effort between [Georgia Tech](https://gatech.edu) and [Adobe Research](https://research.adobe.com/), created by [Alex Yang](https://alexanderyang.me), [Elliott Faa](https://www.linkedin.com/in/elliottfaa/), [Weijian Liu](https://www.linkedin.com/in/weijian-liu-77b643237/), [Shunan Guo](https://research.adobe.com/person/shunan-guo/), [Polo Chau](https://poloclub.github.io/polochau/), and [Yalong Yang](https://ivi.cc.gatech.edu/pi.html).
+
+## Citation
+
+```bibTeX
+@article{yang2025litforager,
+  title   = {LitForager: Exploring Multimodal Literature Foraging Strategies in Immersive Sensemaking},
+  author  = {Haoyang Yang and Elliott H. Faa and Weijian Liu and Shunan Guo and Duen Horng Chau and Yalong Yang},
+  journal = {IEEE Transactions on Visualization and Computer Graphics (TVCG)},
+  year    = {2025},
+  note    = {To appear, Proceedings of the IEEE International Symposium on Mixed and Augmented Reality (ISMAR) 2025}
+}
+```
 ## License
 
 **LitForager** is available under the MIT License. It uses the **Semantic Scholar Open Research Corpus API** (licensed under [ODC-BY](https://opendatacommons.org/licenses/by/)), as described in *Waleed Ammar et al. 2018. Construction of the Literature Graph in Semantic Scholar. NAACL*. LitForager also integrates **Gemini 2.5 Flash** (provided under [Google’s Generative AI Terms of Service](https://ai.google.dev/terms)) and relies on **WebXR technologies** and libraries such as [Babylon.js](https://www.babylonjs.com/), which are available under the [Apache 2.0 License](https://www.apache.org/licenses/LICENSE-2.0).
