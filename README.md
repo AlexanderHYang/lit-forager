@@ -102,6 +102,8 @@ This will display a network URL, e.g., `https://192.168.x.x:5173/`.
 
 ❤️ **LitForager** is a collaborative effort between [Georgia Tech](https://gatech.edu) and [Adobe Research](https://research.adobe.com/), created by [Alex Yang](https://alexanderyang.me), [Elliott Faa](https://www.linkedin.com/in/elliottfaa/), [Weijian Liu](https://www.linkedin.com/in/weijian-liu-77b643237/), [Shunan Guo](https://research.adobe.com/person/shunan-guo/), [Polo Chau](https://poloclub.github.io/polochau/), and [Yalong Yang](https://ivi.cc.gatech.edu/pi.html).
 
+💙 LitForager draws inspiration from [Anu.js](https://jpmorganchase.github.io/anu/) ([GitHub Repo](https://github.com/jpmorganchase/anu)), an open-source immersive analytics toolkit by JPMorgan Chase. We thank the Anu.js team for their pioneering work in immersive data visualization.
+
 ## Citation
 
 ```bibTeX
@@ -115,4 +117,4 @@ This will display a network URL, e.g., `https://192.168.x.x:5173/`.
 ```
 ## License
 
-**LitForager** is available under the MIT License. It uses the **Semantic Scholar Open Research Corpus API** (licensed under [ODC-BY](https://opendatacommons.org/licenses/by/)), as described in *Waleed Ammar et al. 2018. Construction of the Literature Graph in Semantic Scholar. NAACL*. LitForager also integrates **Gemini 2.5 Flash** (provided under [Google’s Generative AI Terms of Service](https://ai.google.dev/terms)) and relies on **WebXR technologies** and libraries such as [Babylon.js](https://www.babylonjs.com/), which are available under the [Apache 2.0 License](https://www.apache.org/licenses/LICENSE-2.0).
+**LitForager** is available under the MIT License. It uses the **Semantic Scholar Open Research Corpus API** (licensed under [ODC-BY](https://opendatacommons.org/licenses/by/)), as described in *Waleed Ammar et al. 2018. Construction of the Literature Graph in Semantic Scholar. NAACL*. LitForager also integrates **Gemini 2.5 Flash** (provided under [Google’s Generative AI Terms of Service](https://ai.google.dev/terms)), relies on **WebXR technologies** and libraries such as [Babylon.js](https://www.babylonjs.com/) (Apache 2.0 License), and is inspired by [Anu.js](https://github.com/jpmorganchase/anu) (Apache 2.0 License).
