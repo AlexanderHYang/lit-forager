@@ -5,6 +5,7 @@
 # LitForager: Exploring Multimodal Literature Foraging Strategies in Immersive Sensemaking
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![arxiv badge](https://img.shields.io/badge/arXiv-2508.15043-red)](https://arxiv.org/abs/2508.15043)
+[![ISMAR 2025](https://img.shields.io/badge/ISMAR-2025-green)](https://ismar.ieee.org/)
 [![IEEE TVCG](https://img.shields.io/badge/IEEE-TVCG-green)](https://ieeexplore.ieee.org/)
 
 LitForager is an **immersive analytics system** designed to help researchers **forage, organize, and make sense of academic literature** using **interactive 3D network visualizations** and **multimodal interactions** (gesture, voice, and menus) in **VR**.
@@ -108,11 +109,15 @@ This will display a network URL, e.g., `https://192.168.x.x:5173/`.
 
 ```bibTeX
 @article{yang2025litforager,
-  title   = {LitForager: Exploring Multimodal Literature Foraging Strategies in Immersive Sensemaking},
-  author  = {Haoyang Yang and Elliott H. Faa and Weijian Liu and Shunan Guo and Duen Horng Chau and Yalong Yang},
-  journal = {IEEE Transactions on Visualization and Computer Graphics (TVCG)},
-  year    = {2025},
-  note    = {To appear, Proceedings of the IEEE International Symposium on Mixed and Augmented Reality (ISMAR) 2025}
+  author={Yang, Haoyang and Faa, Elliott H. and Liu, Weijian and Guo, Shunan and Chau, Duen Horng and Yang, Yalong},
+  journal={IEEE Transactions on Visualization and Computer Graphics}, 
+  title={LITFORAGER: Exploring Multimodal Literature Foraging Strategies in Immersive Sensemaking}, 
+  year={2025},
+  volume={},
+  number={},
+  pages={1-11},
+  keywords={Systematic literature review;Interviews;Three-dimensional displays;Iterative methods;Organizations;Pain;Hands;Electronic mail;Cognition;Annotations;Immersive analytics;immersive sensemaking;information foraging;literature exploration;multimodal interaction},
+  doi={10.1109/TVCG.2025.3616732}}
 }
 ```
 ## License
