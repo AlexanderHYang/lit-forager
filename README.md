@@ -5,8 +5,8 @@
 # LitForager: Exploring Multimodal Literature Foraging Strategies in Immersive Sensemaking
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![arxiv badge](https://img.shields.io/badge/arXiv-2508.15043-red)](https://arxiv.org/abs/2508.15043)
-[![ISMAR 2025](https://img.shields.io/badge/ISMAR-2025-green)](https://ismar.ieee.org/)
-[![IEEE TVCG](https://img.shields.io/badge/IEEE-TVCG-green)](https://ieeexplore.ieee.org/)
+[![ISMAR 2025](https://img.shields.io/badge/ISMAR-2025-green)](https://www.ieeeismar.net/2025/program/papers/#october-9-2025-17-30-18-30-room-205-document-search)
+[![IEEE TVCG](https://img.shields.io/badge/IEEE-TVCG-green)](https://www.doi.org/10.1109/TVCG.2025.3616732)
 
 LitForager is an **immersive analytics system** designed to help researchers **forage, organize, and make sense of academic literature** using **interactive 3D network visualizations** and **multimodal interactions** (gesture, voice, and menus) in **VR**.
 
