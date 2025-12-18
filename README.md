@@ -111,11 +111,11 @@ This will display a network URL, e.g., `https://192.168.x.x:5173/`.
 @article{yang2025litforager,
   author={Yang, Haoyang and Faa, Elliott H. and Liu, Weijian and Guo, Shunan and Chau, Duen Horng and Yang, Yalong},
   journal={IEEE Transactions on Visualization and Computer Graphics}, 
-  title={LITFORAGER: Exploring Multimodal Literature Foraging Strategies in Immersive Sensemaking}, 
+  title={LitForager: Exploring Multimodal Literature Foraging Strategies in Immersive Sensemaking}, 
   year={2025},
-  volume={},
-  number={},
-  pages={1-11},
+  volume={31},
+  number={11},
+  pages={9614-9624},
   keywords={Systematic literature review;Interviews;Three-dimensional displays;Iterative methods;Organizations;Pain;Hands;Electronic mail;Cognition;Annotations;Immersive analytics;immersive sensemaking;information foraging;literature exploration;multimodal interaction},
   doi={10.1109/TVCG.2025.3616732}}
 }

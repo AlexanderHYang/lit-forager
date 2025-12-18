@@ -1,0 +1,54 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "LitForager: Exploring Multimodal Literature Foraging Strategies in Immersive Sensemaking"
+authors:
+  - family-names: "Yang"
+    given-names: "Haoyang"
+    orcid: "https://orcid.org/0000-0002-0566-0169"
+  - family-names: "Faa"
+    given-names: "Elliott H."
+    orcid: "https://orcid.org/0009-0002-8698-0961"
+  - family-names: "Liu"
+    given-names: "Weijian"
+    orcid: "https://orcid.org/0009-0004-4771-2539"
+  - family-names: "Guo"
+    given-names: "Shunan"
+    orcid: "https://orcid.org/0000-0001-5355-8399"
+  - family-names: "Chau"
+    given-names: "Duen Horng"
+    orcid: "https://orcid.org/0000-0001-9824-3323"
+  - family-names: "Yang"
+    given-names: "Yalong"
+    orcid: "https://orcid.org/0000-0001-9414-9911"
+doi: 10.1109/TVCG.2025.3616732
+url: https://doi.org/10.1109/TVCG.2025.3616732
+preferred-citation:
+  type: article
+  authors:
+    - family-names: "Yang"
+      given-names: "Haoyang"
+      orcid: "https://orcid.org/0000-0002-0566-0169"
+    - family-names: "Faa"
+      given-names: "Elliott H."
+      orcid: "https://orcid.org/0009-0002-8698-0961"
+    - family-names: "Liu"
+      given-names: "Weijian"
+      orcid: "https://orcid.org/0009-0004-4771-2539"
+    - family-names: "Guo"
+      given-names: "Shunan"
+      orcid: "https://orcid.org/0000-0001-5355-8399"
+    - family-names: "Chau"
+      given-names: "Duen Horng"
+      orcid: "https://orcid.org/0000-0001-9824-3323"
+    - family-names: "Yang"
+      given-names: "Yalong"
+      orcid: "https://orcid.org/0000-0001-9414-9911"
+  title: "LitForager: Exploring Multimodal Literature Foraging Strategies in Immersive Sensemaking"
+  journal: IEEE Transactions on Visualization and Computer Graphics
+  year: 2025
+  volume: 31
+  issue: 11
+  start: 9614
+  end: 9624
+  doi: 10.1109/TVCG.2025.3616732
+  url: https://doi.org/10.1109/TVCG.2025.3616732
