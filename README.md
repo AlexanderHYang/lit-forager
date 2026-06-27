@@ -13,7 +13,7 @@ LitForager is an <u>immersive analytics system</u> designed to help researchers 
 
 <table>
   <tr align="center">
-    <td><a href="https://youtu.be/yQX7393hvCw"><b>📺 Preview Video</b></a></td>
+    <td><a href="https://youtu.be/yQX7393hvCw"><b>📺 Preview</b></a></td>
     <td><a href="https://youtu.be/oGhm9GgBCgU?si=aa8plWjskykkCQ8w"><b>🎤 Paper Talk</b></a></td>
     <td><a href="https://doi.org/10.1109/TVCG.2025.3616732"><b>📖 Paper Link</b></a></td>
   </tr>
