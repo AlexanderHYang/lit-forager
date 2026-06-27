@@ -1,24 +1,32 @@
+<h1>LitForager <a href="https://doi.org/10.1109/TVCG.2025.3616732"><img align="right" alt="LitForager logo." src="img/logo.png" width="30" height="30"></a></h1>
 
-
-# LitForager
-[![arxiv badge](https://img.shields.io/badge/arXiv-2508.15043-red)](https://arxiv.org/abs/2508.15043)
 [![ISMAR 2025](https://img.shields.io/badge/ISMAR-2025-green)](https://www.ieeeismar.net/2025/program/papers/#october-9-2025-17-30-18-30-room-205-document-search)
+[![MIT License](https://img.shields.io/badge/License-MIT-orange)](https://opensource.org/license/mit)
+[![arxiv badge](https://img.shields.io/badge/arXiv-2508.15043-red)](https://arxiv.org/abs/2508.15043)
 [![DOI](https://img.shields.io/badge/DOI-10.1109%2FTVCG.2025.3616732-blue)](https://doi.org/10.1109/TVCG.2025.3616732)
 
-LitForager is an **immersive analytics system** designed to help researchers **forage, organize, and make sense of academic literature** using **interactive 3D network visualizations** and **multimodal interactions** (gesture, voice, and menus) in **VR**.
+LitForager is an <u>immersive analytics system</u> designed to help researchers **forage, organize, and make sense of academic literature** using <u>interactive 3D network visualizations</u> and <u>multimodal interactions</u> (gesture, voice, and menus) in VR.
 
 <p align="center">
   <img src="img/banner.png" alt="LitForager banner"/>
 </p>
 
+<table>
+  <tr align="center">
+    <td><a href="https://youtu.be/yQX7393hvCw"><b>📺 Preview Video</b></a></td>
+    <td><a href="https://youtu.be/oGhm9GgBCgU?si=aa8plWjskykkCQ8w"><b>🎤 Paper Talk</b></a></td>
+    <td><a href="https://doi.org/10.1109/TVCG.2025.3616732"><b>📖 Paper Link</b></a></td>
+  </tr>
+</table>
+
 ## Features
 
-- **Immersive 3D Literature Network:** Visualize papers—retrieved from the **Semantic Scholar Open Research Corpus**—as nodes and their relationships (citations, authorship, thematic similarity, and custom links) as edges in an immersive spatial graph powered by **WebXR** and **Babylon.js**.
-- **Multimodal Interaction:** Seamlessly interact with the system using hand gestures, voice commands, and WIMP-style hand menus.
-- **Intelligent Recommendations:** Expand your literature network with recommendations based on thematic similarity, citation links, and author-centric exploration.
-- **AI-Powered Insights:** Summarize papers and extract keywords using LLMs (e.g., **Gemini 2.5 Flash**).
-- **Flexible Spatial Organization:** Arrange, cluster, and link papers in 3D space to externalize your understanding and support sensemaking.
-- **Speech-Based Annotation:** Dictate and attach notes to papers without breaking your exploration flow.
+- **🌐 Immersive 3D Literature Network:** Visualize papers—retrieved from the **Semantic Scholar Open Research Corpus**—as nodes and their relationships (citations, authorship, thematic similarity, and custom links) as edges in an immersive spatial graph powered by **WebXR** and **Babylon.js**.
+- **🖐️ Multimodal Interaction:** Seamlessly interact with the system using hand gestures, voice commands, and WIMP-style hand menus.
+- **✨ Intelligent Recommendations:** Expand your literature network with recommendations based on thematic similarity, citation links, and author-centric exploration.
+- **🤖 AI-Powered Insights:** Summarize papers and extract keywords using LLMs (e.g., **Gemini 2.5 Flash**).
+- **🧩 Flexible Spatial Organization:** Arrange, cluster, and link papers in 3D space to externalize your understanding and support sensemaking.
+- **🎙️ Speech-Based Annotation:** Dictate and attach notes to papers without breaking your exploration flow.
 
 ## Quick Start
 
