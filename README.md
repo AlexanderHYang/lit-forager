@@ -5,7 +5,7 @@
 [![arxiv badge](https://img.shields.io/badge/arXiv-2508.15043-red)](https://arxiv.org/abs/2508.15043)
 [![DOI](https://img.shields.io/badge/DOI-10.1109%2FTVCG.2025.3616732-blue)](https://doi.org/10.1109/TVCG.2025.3616732)
 
-LitForager is an <u>immersive analytics system</u> designed to help researchers **forage, organize, and make sense of academic literature** using <u>interactive 3D network visualizations</u> and <u>multimodal interactions</u> (gesture, voice, and menus) in VR.
+📚 LitForager is an <u>immersive analytics system</u> designed to help researchers **forage, organize, and make sense of academic literature** using <u>interactive 3D network visualizations</u> and <u>multimodal interactions</u> (gesture, voice, and menus) in VR.
 
 <p align="center">
   <img src="img/banner.png" alt="LitForager banner"/>
